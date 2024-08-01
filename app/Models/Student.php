@@ -1,0 +1,44 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Student extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'email',
+        'name',
+        'student_code',
+        'date_of_birth',
+        'phone_number',
+        'gender',
+        'status',
+        'address',
+        'created_at',
+    ];
+
+    public function enrollments()
+    {
+        return $this->hasMany(Enrolment::class);
+    }
+
+    // A student can enroll in many courses
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'enrolments');
+    }
+
+    public function studentExams()
+    {
+        return $this->hasMany(StudentExams::class);
+    }
+
+    public function examsResults()
+    {
+        return $this->hasMany(StudentExamResults::class);
+    }
+}

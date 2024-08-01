@@ -1,0 +1,132 @@
+@extends('layouts.master')
+
+@section('title')
+Students | Admin Panel
+@endsection
+
+@section('content')
+<!-- Delete Modal -->
+<div class="modal fade" id="deletemodal" tabindex="-1" aria-labelledby="deleteModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModal">Delete Record</h5>
+                <button type="button" class="btn" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="student_delete_modal" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="modal-body">
+                    Are you sure you want to delete?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header actions">
+                    <h5 class="text-capitalize">Students</h5>
+                    <div class="actions_item">
+
+                        <a class="btn btn-darken" href="{{ route('students.create') }}" title="Add New Student">
+                            <i class="material-icons">add</i> New Student
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    @if ($message = Session::get('success'))
+                    <div class="alert alert-success alert-dismissible text-white">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <span>{{ $message }}</span>
+                    </div>
+                    @endif
+                    <div class="table-responsive">
+                        <table class="table" id="studenttable">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Student Code</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Name</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Gender</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Status</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($students as $row)
+                                <tr>
+                                    <td></td>
+                                    <td>{{ $row->student_code }}</td>
+                                    <td>{{ $row->name }}</td>
+                                    <td>{{ $row->gender }}</td>
+                                    <td>{{ $row->status }}</td>
+                                    <td>
+                                        <div class="dropdown float-lg-end pe-4">
+                                            <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                                <i class="fa fa-ellipsis-v text-secondary"></i>
+                                            </a>
+                                            <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5"
+                                                aria-labelledby="dropdownTable">
+                                                <li><a class="dropdown-item border-radius-md"
+                                                    href="{{ route('students.show', $row->id) }}"> <i class="material-icons">remove_red_eye</i> View</a></li>
+                                                <li><a class="dropdown-item border-radius-md"
+                                                        href="{{ route('students.edit', $row->id) }}"> <i class="material-icons">edit</i> Edit</a></li>
+                                                <li><a class="deletebtn dropdown-item border-radius-md" href="#"
+                                                        data-action="{{ route('students.destroy', $row->id) }}"> <i class="material-icons">delete</i>Delete</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endsection
+
+
+    @section('scripts')
+    <script>
+        $(document).ready(function () {
+            $('#studenttable').DataTable({
+                columnDefs: [{
+                    orderable: false,
+                    render: DataTable.render.select(),
+                    targets: 0
+                }],
+                order: [[1, 'asc']],
+                select: {
+                    style: 'os',
+                    selector: 'td:first-child'
+                }
+            });
+
+            $('#studenttable').on('click', '.deletebtn', function () {
+                $action = $(this).attr("data-action");
+                $('#student_delete_modal').attr('action', $action);
+                $('#deletemodal').modal('show');
+            });
+        });
+    </script>
+    @endsection
