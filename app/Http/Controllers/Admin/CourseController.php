@@ -64,6 +64,8 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
-        return view('admin.courses.show', compact('course'));
+        $enrolments = $course->enrolments()->with('student')->get();
+        $exams = $course->exams; 
+        return view('admin.courses.show', compact('course', 'enrolments', 'exams'));
     }
 }

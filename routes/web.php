@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\CourseController;
+use App\Http\Controllers\Admin\ExamController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -26,5 +27,7 @@ Route::resource('/admin/courses', CourseController::class);
 // Route::get('/admin/courses', [CourseController::class, 'index'])->name('admin.courses');
 
 Route::resource('/admin/students', StudentController::class);
+
+Route::resource('/admin/exams', ExamController::class);
 
 require __DIR__.'/auth.php';

@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
 @section('title')
-Courses | Admin Panel
+Exams | Admin Panel
 @endsection
 
 @section('content')
@@ -15,7 +15,7 @@ Courses | Admin Panel
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="course_delete_modal" method="POST">
+            <form id="exam_delete_modal" method="POST">
                 @csrf
                 @method('DELETE')
                 <div class="modal-body">
@@ -35,11 +35,11 @@ Courses | Admin Panel
         <div class="col-12">
             <div class="card">
                 <div class="card-header actions">
-                    <h5 class="text-capitalize">Courses</h5>
+                    <h5 class="text-capitalize">Exams</h5>
                     <div class="actions_item">
 
-                        <a class="btn btn-darken" href="{{ route('courses.create') }}" title="Add New Course">
-                            <i class="material-icons">add</i> New Course
+                        <a class="btn btn-darken" href="{{ route('exams.create') }}" title="Add New Exam">
+                            <i class="material-icons">add</i> New Exam
                         </a>
                     </div>
                 </div>
@@ -53,27 +53,39 @@ Courses | Admin Panel
                     </div>
                     @endif
                     <div class="table-responsive">
-                        <table class="table" id="coursetable">
+                        <table class="table" id="examtable">
                             <thead>
                                 <tr>
                                     <th></th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Title</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Exam Date</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Course Code</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
-                                        Course</th>
+                                        Duration</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
-                                        Course Fee</th>
+                                        Status</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($courses as $row)
+                                @foreach ($exams as $row)
                                 <tr>
                                     <td></td>
-                                    <td>{{ $row->course_code }}</td>
                                     <td>{{ $row->title }}</td>
-                                    <td>@money($row->price)</td>
+                                    <td>{{ $row->title }}</td>
+                                    <td>{{ $row->course->course_code }}</td>
+                                    <td>
+                                        {{ $row->formatDuration() }}
+                                    </td>
+                                    <td>@if ($row->status == 'available')
+                                        <span class="badge bg-success">Available</span>
+                                        @else
+                                            <span class="badge bg-warning">Not Available</span>
+                                        @endif</td>
                                     <td>
                                         <div class="dropdown float-lg-end pe-4">
                                             <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown"
@@ -83,11 +95,11 @@ Courses | Admin Panel
                                             <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5"
                                                 aria-labelledby="dropdownTable">
                                                 <li><a class="dropdown-item border-radius-md"
-                                                    href="{{ route('courses.show', $row->id) }}"> <i class="material-icons">remove_red_eye</i> View</a></li>
+                                                    href="{{ route('exams.show', $row->id) }}"> <i class="material-icons">remove_red_eye</i> View</a></li>
                                                 <li><a class="dropdown-item border-radius-md"
-                                                        href="{{ route('courses.edit', $row->id) }}"> <i class="material-icons">edit</i> Edit</a></li>
+                                                        href="{{ route('exams.edit', $row->id) }}"> <i class="material-icons">edit</i> Edit</a></li>
                                                 <li><a class="deletebtn dropdown-item border-radius-md" href="#"
-                                                        data-action="{{ route('courses.destroy', $row->id) }}"> <i class="material-icons">delete</i>Delete</a></li>
+                                                        data-action="{{ route('exams.destroy', $row->id) }}"> <i class="material-icons">delete</i>Delete</a></li>
                                             </ul>
                                         </div>
                                     </td>
@@ -106,7 +118,7 @@ Courses | Admin Panel
     @section('scripts')
     <script>
         $(document).ready(function () {
-            $('#coursetable').DataTable({
+            $('#examtable').DataTable({
                 columnDefs: [{
                     orderable: false,
                     render: DataTable.render.select(),
@@ -119,9 +131,9 @@ Courses | Admin Panel
                 }
             });
 
-            $('#coursetable').on('click', '.deletebtn', function () {
+            $('#examtable').on('click', '.deletebtn', function () {
                 $action = $(this).attr("data-action");
-                $('#course_delete_modal').attr('action', $action);
+                $('#exam_delete_modal').attr('action', $action);
                 $('#deletemodal').modal('show');
             });
         });

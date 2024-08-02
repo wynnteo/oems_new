@@ -23,8 +23,13 @@ class Course extends Model
     }
 
     // A course can have many enrollments
-    public function enrollments()
+    public function enrolments()
     {
         return $this->hasMany(Enrolment::class);
+    }
+
+    public function students()
+    {
+        return $this->hasManyThrough(Student::class, Enrolment::class, 'course_id', 'id', 'id', 'student_id');
     }
 }

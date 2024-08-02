@@ -36,4 +36,27 @@ class Exam extends Model
     {
         return $this->belongsTo(Course::class);
     }
+
+    public function formatDuration()
+    {
+        if ($this->unit === 'minutes') {
+            $hours = intdiv($this->duration, 60);
+            $minutes = $this->duration % 60;
+
+            $formatted = '';
+            if ($hours > 0) {
+                $formatted .= $hours . ' hr';
+                if ($minutes > 0) {
+                    $formatted .= ' ' . $minutes . ' mins';
+                }
+            } else {
+                $formatted .= $minutes . ' mins';
+            }
+
+            return $formatted;
+        } elseif ($this->unit === 'hours') {
+            $formatted = $this->duration . ' hr';
+            return $formatted;
+        }
+    }
 }
