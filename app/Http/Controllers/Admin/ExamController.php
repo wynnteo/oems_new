@@ -27,11 +27,41 @@ class ExamController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'exam_date' => 'required|date',
+            'description' => 'nullable|string',
+            'duration' => 'nullable|integer|min:0',
+            'duration_unit' => 'required|string|in:minutes,hours',
+            'start_time' => 'nullable|date',
+            'number_of_questions' => 'nullable|integer|min:1',
+            'randomize_questions' => 'nullable|boolean',
+            'retake_allowed' => 'nullable|boolean',
+            'number_retake' => 'nullable|integer|min:0',
+            'passing_grade' => 'nullable|numeric|between:0,100',
+            'review_questions' => 'nullable|boolean',
+            'show_answers' => 'nullable|boolean',
+            'status' => 'required|string|in:available,not_available',
+            'access_code' => 'nullable|string|max:255',
+            'allow_rating' => 'nullable|boolean',
             'course_id' => 'required|exists:courses,id',
         ]);
 
-        Exam::create($request->all());
+        Exam::create([
+            'title' => $request->input('title'),
+            'description' => $request->input('description'),
+            'duration' => $request->input('duration'),
+            'duration_unit' => $request->input('duration_unit'),
+            'start_time' => $request->input('start_time'),
+            'number_of_questions' => $request->input('number_of_questions'),
+            'randomize_questions' => $request->input('randomize_questions'),
+            'retake_allowed' => $request->input('retake_allowed'),
+            'number_retake' => $request->input('number_retake'),
+            'passing_grade' => $request->input('passing_grade'),
+            'review_questions' => $request->input('review_questions'),
+            'show_answers' => $request->input('show_answers'),
+            'status' => $request->input('status'),
+            'access_code' => $request->input('access_code'),
+            'allow_rating' => $request->input('allow_rating'),
+            'course_id' => $request->input('course_id'),
+        ]);
 
         return redirect()->route('exams.index')->with('success', 'Exam created successfully.');
     }
