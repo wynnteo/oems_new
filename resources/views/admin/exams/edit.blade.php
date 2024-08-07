@@ -89,7 +89,7 @@ Edit Exam | Admin Panel
                                 <div class="form-group">
                                     <strong>Exam Date Time:</strong>
                                     <input type="datetime-local" name="start_time" class="form-control"
-                                        value="{{ old('start_time', $exam->start_time ? $exam->start_time->format('Y-m-d\TH:i') : '') }}">
+                                        value="{{ old('start_time', $exam->start_time) }}">
                                     
                                 </div>
                             </div>
@@ -134,9 +134,6 @@ Edit Exam | Admin Panel
                                     <small class="form-text text-muted"><i>Enter the percentage or grade required to pass the exam.</i></small>
                                 </div>
                             </div>
-
-                            <!-- Randomize Questions, Review Questions, Show Answers -->
-                            
                             <div class="col-xs-12 col-sm-12 col-md-6">
                                 <div class="form-group">
                                     <strong>Show Results:</strong>

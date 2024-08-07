@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Exam;
 use App\Models\Course;
+use Illuminate\Support\Facades\Log;
 
 class ExamController extends Controller
 {
@@ -25,6 +26,14 @@ class ExamController extends Controller
     // Store a newly created exam in storage
     public function store(Request $request)
     {
+        $request->merge([
+            'randomize_questions' => $request->has('randomize_questions'),
+            'review_questions' => $request->has('review_questions'),
+            'allow_rating' => $request->has('allow_rating'),
+            'retake_allowed' => $request->has('retake_allowed'),
+            'show_answers' => $request->has('show_answers'),
+        ]);
+
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -75,20 +84,41 @@ class ExamController extends Controller
     // Show the form for editing the specified exam
     public function edit(Exam $exam)
     {
-        return view('admin.exams.edit', compact('exam'));
+        $courses = Course::all();
+        return view('admin.exams.edit', compact('exam', 'courses'));
     }
 
     // Update the specified exam in storage
     public function update(Request $request, Exam $exam)
     {
+        $request->merge([
+            'randomize_questions' => $request->has('randomize_questions'),
+            'review_questions' => $request->has('review_questions'),
+            'allow_rating' => $request->has('allow_rating'),
+            'retake_allowed' => $request->has('retake_allowed'),
+            'show_answers' => $request->has('show_answers'),
+        ]);
+
         $request->validate([
             'title' => 'required|string|max:255',
-            'exam_date' => 'required|date',
+            'description' => 'nullable|string',
+            'duration' => 'nullable|integer|min:0',
+            'duration_unit' => 'required|string|in:minutes,hours',
+            'start_time' => 'nullable|date',
+            'number_of_questions' => 'nullable|integer|min:1',
+            'randomize_questions' => 'nullable|boolean',
+            'retake_allowed' => 'nullable|boolean',
+            'number_retake' => 'nullable|integer|min:0',
+            'passing_grade' => 'nullable|numeric|between:0,100',
+            'review_questions' => 'nullable|boolean',
+            'show_answers' => 'nullable|boolean',
+            'status' => 'required|string|in:available,not_available',
+            'access_code' => 'nullable|string|max:255',
+            'allow_rating' => 'nullable|boolean',
             'course_id' => 'required|exists:courses,id',
         ]);
 
         $exam->update($request->all());
-
         return redirect()->route('exams.index')->with('success', 'Exam updated successfully.');
     }
 

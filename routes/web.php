@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\ExamController;
+use App\Http\Controllers\Admin\QuestionController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -29,5 +30,7 @@ Route::resource('/admin/courses', CourseController::class);
 Route::resource('/admin/students', StudentController::class);
 
 Route::resource('/admin/exams', ExamController::class);
+
+Route::resource('/admin/questions', QuestionController::class);
 
 require __DIR__.'/auth.php';

@@ -27981,3 +27981,15 @@ h5 i {
 .form-group {
   padding-bottom: 10px;
 }
+
+.answer_panel {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  margin: 20px 0 0 0;
+  position: relative;
+}
+
+.data-content {
+  border-top: 1px solid #DDD;
+  padding: 20px;
+}

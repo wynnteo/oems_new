@@ -42,7 +42,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white " href="../pages/rtl.html">
+          <a class="nav-link text-white {{ Request::is('admin/questions/*') || Request::is('admin/questions') ? 'active' : '' }} " href="{{ route('questions.index') }}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">check_circle</i>
             </div>
