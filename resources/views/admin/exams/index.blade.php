@@ -76,7 +76,7 @@ Exams | Admin Panel
                                 <tr>
                                     <td></td>
                                     <td>{{ $row->title }}</td>
-                                    <td>{{ $row->title }}</td>
+                                    <td>{{ $row->start_time }}</td>
                                     <td>{{ $row->course->course_code }}</td>
                                     <td>
                                         {{ $row->formatDuration() }}
@@ -98,6 +98,8 @@ Exams | Admin Panel
                                                     href="{{ route('exams.show', $row->id) }}"> <i class="material-icons">remove_red_eye</i> View</a></li>
                                                 <li><a class="dropdown-item border-radius-md"
                                                         href="{{ route('exams.edit', $row->id) }}"> <i class="material-icons">edit</i> Edit</a></li>
+                                                <li><a class="dropdown-item border-radius-md"
+                                                    href="{{ route('questions.create', $row->id) }}"> <i class="material-icons">question_answer</i> Add Question</a></li>
                                                 <li><a class="deletebtn dropdown-item border-radius-md" href="#"
                                                         data-action="{{ route('exams.destroy', $row->id) }}"> <i class="material-icons">delete</i>Delete</a></li>
                                             </ul>

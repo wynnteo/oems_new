@@ -115,6 +115,8 @@ Courses | Admin Panel
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Exam Date</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Exam Time</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Exam</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Duration</th>    
@@ -126,28 +128,37 @@ Courses | Admin Panel
                             </thead>
                             <tbody>
                                 @foreach ($exams as $row)
+                                
                                 <tr>
                                     <td></td>
-                                    <td>{{ $row->start_time ? $row->start_time->format('Y-m-d H:i') : '-' }}</td>
+                                    @php
+                                        // Split the start_time string
+                                        $startDateTime = explode(' ', $row->start_time);
+                                        $startDate = $startDateTime[0] ?? '-';
+                                        $startTime = $startDateTime[1] ?? '-';
+                                    @endphp
+                                    <td>{{ $startDate }}</td>
+                                    <td>{{ $startTime }}</td>
                                     <td>{{ $row->title }}</td>
+                                    <td>
+                                        {{ $row->formatDuration() }}
+                                    </td>
                                     <td>@if ($row->status == 'available')
                                         <span class="badge bg-success">Available</span>
                                         @else
                                             <span class="badge bg-warning">Not Available</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        {{ $row->duration }}
-                                    </td>
+                                   
                                     <td>
                                         <div class="dropdown float-lg-end pe-4">
                                             <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="fa fa-ellipsis-v text-secondary"></i>
                                             </a>
                                             <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5" aria-labelledby="dropdownTable">
-                                                <li><a class="dropdown-item border-radius-md" href="{{ route('exams.show', $exam->id) }}"> <i class="material-icons">remove_red_eye</i> View</a></li>
-                                                <li><a class="dropdown-item border-radius-md" href="{{ route('exams.edit', $exam->id) }}"> <i class="material-icons">edit</i> Edit</a></li>
-                                                <li><a class="dropdown-item border-radius-md" href="{{ route('exams.destroy', $exam->id) }}" data-method="DELETE"> <i class="material-icons">delete</i> Delete</a></li>
+                                                <li><a class="dropdown-item border-radius-md" href="{{ route('exams.show', $row->id) }}"> <i class="material-icons">remove_red_eye</i> View</a></li>
+                                                <li><a class="dropdown-item border-radius-md" href="{{ route('exams.edit', $row->id) }}"> <i class="material-icons">edit</i> Edit</a></li>
+                                                <li><a class="dropdown-item border-radius-md" href="{{ route('exams.destroy', $row->id) }}" data-method="DELETE"> <i class="material-icons">delete</i> Delete</a></li>
                                             </ul>
                                         </div>
                                     </td>

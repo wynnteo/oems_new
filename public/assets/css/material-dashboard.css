@@ -2666,8 +2666,8 @@ progress {
 }
 
 .table-responsive {
-  /* overflow-x: auto; */
-  -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+  /* -webkit-overflow-scrolling: touch; */
 }
 
 @media (max-width: 575.98px) {
@@ -27990,6 +27990,43 @@ h5 i {
 }
 
 .data-content {
-  border-top: 1px solid #DDD;
   padding: 20px;
+}
+
+.actions strong {
+  color: #000000;
+  font-weight: 500;
+}
+
+#options-table {
+  width: 100%;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+#options-table th {
+  color: #000000;
+}
+
+#options-table th, #options-table td {
+  padding: 15px;
+  background: #F5F5F5;
+  border-bottom: 1px solid #DDD;
+}
+
+.order_cl {
+  width: 10px;
+  text-align: center;
+}
+
+.ans_cl {
+  width: 65px;
+  text-align: center;
+}
+
+#options-table td input {
+  border: 1px solid #ddd;
+  width: 100%;
+  background-color: #fdfdfd;
+  border-radius: 2px;
 }

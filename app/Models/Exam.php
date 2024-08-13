@@ -39,7 +39,7 @@ class Exam extends Model
 
     public function formatDuration()
     {
-        if ($this->unit === 'minutes') {
+        if ($this->duration_unit === 'minutes') {
             $hours = intdiv($this->duration, 60);
             $minutes = $this->duration % 60;
 
@@ -54,7 +54,7 @@ class Exam extends Model
             }
 
             return $formatted;
-        } elseif ($this->unit === 'hours') {
+        } elseif ($this->duration_unit === 'hours') {
             $formatted = $this->duration . ' hr';
             return $formatted;
         }

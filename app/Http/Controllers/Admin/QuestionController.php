@@ -5,14 +5,23 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
-use App\Models\Question; // Make sure to import your Question model
+use App\Models\Question;
+use App\Models\Exam;
 
 class QuestionController extends Controller
 {
-    // Display the form to create a new question
-    public function create()
+    public function index() 
     {
-        return view('admin.questions.create');
+        $questions = Question::all();
+        return view('admin.questions.index', compact('questions'));
+    }
+
+    // Display the form to create a new question
+    public function create($examId = null)
+    {
+        $exams = Exam::all();
+        // Pass the exams and the optional examId to the view
+        return view('admin.questions.create', compact('exams', 'examId'));
     }
 
     // Store a newly created question in storage

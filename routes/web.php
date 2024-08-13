@@ -32,5 +32,7 @@ Route::resource('/admin/students', StudentController::class);
 Route::resource('/admin/exams', ExamController::class);
 
 Route::resource('/admin/questions', QuestionController::class);
+Route::get('/admin/questions/create/{examId?}', [QuestionController::class, 'create'])->name('questions.create');
+
 
 require __DIR__.'/auth.php';

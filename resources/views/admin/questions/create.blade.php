@@ -37,6 +37,25 @@ Question | Admin Panel
 
                         <div class="row">
 
+                            <!-- Hidden field to store exam ID if present -->
+                            @if($examId)
+                                <input type="hidden" name="exam_id" value="{{ $examId }}">
+                            @endif
+
+                             <!-- Exam  -->
+                             <div class="col-xs-12 col-sm-12 col-md-12">
+                                <div class="form-group">
+                                    <strong>Exam:</strong>
+                                    <select name="exam_id" class="form-control">
+                                        @foreach ($exams as $exam)
+                                            <option value="{{ $exam->id }}" {{ $exam->id == $examId ? 'selected' : '' }}>
+                                                {{ $exam->title }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
                             <!-- Question Text -->
                             <div class="col-xs-12 col-sm-12 col-md-12">
                                 <div class="form-group">
@@ -72,7 +91,8 @@ Question | Admin Panel
                                                     <option value="true_false">True/False</option>
                                                     <option value="single_choice">Single Choice</option>
                                                     <option value="multiple_choice">Multiple Choice</option>
-                                                    <option value="fill_in_the_blank">Fill in the Blank</option>
+                                                    <option value="fill_in_the_blank_choice">Fill in the Blank with Choice</option>
+                                                    <option value="fill_in_the_blank_text">Fill in the Blank with Text</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -86,9 +106,9 @@ Question | Admin Panel
                                         <table id="options-table" style="display: none;" class="table">
                                             <thead>
                                                 <tr>
-                                                    <th>#</th>
-                                                    <th>Option</th>
-                                                    <th>Correct</th>
+                                                    <th class="order_cl">#</th>
+                                                    <th class="qns_cl">Options</th>
+                                                    <th class="ans_cl">Correct?</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="options-body">
@@ -164,15 +184,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td><input type="radio" name="correct_answer" value="false" required></td>
                 </tr>
             `;
-        } else if (questionType === 'single_choice') {
+        } else if (questionType === 'single_choice' || questionType === 'fill_in_the_blank_choice') {
             // Show table for single choice
             optionsContainer.style.display = 'none';
             optionsTable.style.display = 'table';
             optionsBody.innerHTML = `
                 <tr>
                     <td>1</td>
-                    <td><input type="text" name="options[0]" required></td>
-                    <td><input type="radio" name="correct_answer" value="0" required></td>
+                    <td class="qns_cl"><input type="text" name="options[0]" required></td>
+                    <td class="ans_cl"><input type="radio" name="correct_answer" value="0" required></td>
                 </tr>
                 <tr>
                     <td>2</td>
@@ -190,12 +210,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     <td><input type="radio" name="correct_answer" value="3" required></td>
                 </tr>
             `;
-        } else if (questionType === 'fill_in_the_blank') {
+        
+        } else if (questionType === 'fill_in_the_blank_text') {
             // Show input for fill in the blank
             optionsContainer.style.display = 'none';
             optionsTable.style.display = 'table';
             optionsBody.innerHTML = `
-                <label>Correct Answer: <input type="text" name="correct_answer" required></label>
+                <tr>
+                    <td>1</td>
+                    <td class="qns_cl"><input type="text" name="correct_answer" required></td>
+                    <td class="ans_cl"></td>
+                </tr>
             `;
         }
     }
