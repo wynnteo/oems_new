@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('exam_id'); 
             $table->foreign('exam_id')->references('id')->on('exams')->onDelete('cascade');
-            $table->enum('question_type', ['true_false', 'single_choice', 'multiple_choice', 'fill_in_the_blank']);
+            $table->enum('question_type', ['true_false', 'single_choice', 'multiple_choice', 'fill_in_the_blank_with_choice', 'fill_in_the_blank_with_text', 'matching']);
             $table->text('question_text');
             $table->text('description')->nullable();
             $table->string('image_name')->nullable();

@@ -54,10 +54,26 @@ Edit Question | Admin Panel
                                </div>
                            </div>
 
+                            <!-- Question Type -->
+                            <div class="col-xs-12 col-sm-12 col-md-12">
+                                <div class="form-group">
+                                    <strong>Question Type:</strong>
+                                    <select id="question_type" name="question_type" class="form-control" required>
+                                        <option value="">Select Question Type</option>
+                                        <option value="true_false" {{ old('question_type', $question->question_type) == 'true_false' ? 'selected' : '' }}>True/False</option>
+                                        <option value="single_choice" {{ old('question_type', $question->question_type) == 'single_choice' ? 'selected' : '' }}>Single Choice</option>
+                                        <option value="multiple_choice" {{ old('question_type', $question->question_type) == 'multiple_choice' ? 'selected' : '' }}>Multiple Choice</option>
+                                        <option value="fill_in_the_blank_choice" {{ old('question_type', $question->question_type) == 'fill_in_the_blank_choice' ? 'selected' : '' }}>Fill in the Blank with Choice</option>
+                                        <option value="fill_in_the_blank_text" {{ old('question_type', $question->question_type) == 'fill_in_the_blank_text' ? 'selected' : '' }}>Fill in the Blank with Text</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <!-- Question Text -->
                             <div class="col-xs-12 col-sm-12 col-md-12">
                                 <div class="form-group">
                                     <strong>Question Text:</strong>
+                                    <small id="instruction-text" style="display: none;"><em>Using [] for blanks. Example: My name [] John. Nice to [] you?</em></small>
                                     <textarea name="question_text" class="form-control" placeholder="Enter the question text">{{ old('question_text', $question->question_text) }}</textarea>
                                 </div>
                             </div>
@@ -86,22 +102,13 @@ Edit Question | Admin Panel
                                     <div class="">
                                         <div class="actions">
                                             <strong>Question Answers</strong>
-                                            <div class="toolbar_actions">
-                                                <select id="question_type" name="question_type" class="form-control" required>
-                                                    <option value="">Select Question Type</option>
-                                                    <option value="true_false" {{ old('question_type', $question->question_type) == 'true_false' ? 'selected' : '' }}>True/False</option>
-                                                    <option value="single_choice" {{ old('question_type', $question->question_type) == 'single_choice' ? 'selected' : '' }}>Single Choice</option>
-                                                    <option value="multiple_choice" {{ old('question_type', $question->question_type) == 'multiple_choice' ? 'selected' : '' }}>Multiple Choice</option>
-                                                    <option value="fill_in_the_blank_choice" {{ old('question_type', $question->question_type) == 'fill_in_the_blank_choice' ? 'selected' : '' }}>Fill in the Blank with Choice</option>
-                                                    <option value="fill_in_the_blank_text" {{ old('question_type', $question->question_type) == 'fill_in_the_blank_text' ? 'selected' : '' }}>Fill in the Blank with Text</option>
-                                                </select>
-                                            </div>
+                                            
                                         </div>
                                     </div>
                                     <div class="data-content">
                                         <div id="options-container" style="display: none;">
                                             <label>Number of Options:
-                                                <input type="number" id="num-options" min="1" value="{{ old('options') ? count(old('options')) : count(json_decode($question->options)) }}" required>
+                                                <input type="number" id="num-options" min="0" value="{{ old('options') ? count(old('options')) : count(json_decode($question->options)) }}">
                                             </label>
                                         </div>
                                         <table id="options-table" style="display: none;" class="table">
@@ -140,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const numOptionsInput = document.getElementById('num-options');
     const optionsTable = document.getElementById('options-table');
     const optionsBody = document.getElementById('options-body');
+    const instructionText = document.getElementById('instruction-text');
 
     // Pass old values from Blade to JavaScript
     const oldOptions = @json(json_decode($question->options));
@@ -147,6 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const oldQuestionType = @json($question->question_type);
 
     function updateOptions() {
+        updateInstructionText()
         const questionType = questionTypeSelect.value;
 
         // Hide options container by default
@@ -168,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 optionsBody.innerHTML += `
                     <tr>
                         <td>${i + 1}</td>
-                        <td><input type="text" name="options[${i}]" value="${optionValue}" required></td>
+                        <td><input type="text" name="options[${i}]" value="${optionValue}" ></td>
                         <td><input type="checkbox" name="correct_answer[]" value="${i}" ${checked}></td>
                     </tr>
                 `;
@@ -185,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     optionsBody.innerHTML += `
                         <tr>
                             <td>${i + 1}</td>
-                            <td><input type="text" name="options[${i}]" value="${optionValue}" required></td>
+                            <td><input type="text" name="options[${i}]" value="${optionValue}" ></td>
                             <td><input type="checkbox" name="correct_answer[]" value="${i}" ${checked}></td>
                         </tr>
                     `;
@@ -212,23 +221,23 @@ document.addEventListener('DOMContentLoaded', function () {
             optionsBody.innerHTML = `
                 <tr>
                     <td>1</td>
-                    <td><input type="text" name="options[0]" value="${oldOptions[0] || ''}" required></td>
-                    <td><input type="radio" name="correct_answer" value="0" ${oldCorrectAnswers == "0" ? 'checked' : ''} required></td>
+                    <td><input type="text" name="options[0]" value="${oldOptions[0] || ''}" ></td>
+                    <td><input type="radio" name="correct_answer" value="0" ${oldCorrectAnswers == "0" ? 'checked' : ''} ></td>
                 </tr>
                 <tr>
                     <td>2</td>
-                    <td><input type="text" name="options[1]" value="${oldOptions[1] || ''}" required></td>
-                    <td><input type="radio" name="correct_answer" value="1" ${oldCorrectAnswers == "1" ? 'checked' : ''} required></td>
+                    <td><input type="text" name="options[1]" value="${oldOptions[1] || ''}" ></td>
+                    <td><input type="radio" name="correct_answer" value="1" ${oldCorrectAnswers == "1" ? 'checked' : ''} ></td>
                 </tr>
                 <tr>
                     <td>3</td>
-                    <td><input type="text" name="options[2]" value="${oldOptions[2] || ''}" required></td>
-                    <td><input type="radio" name="correct_answer" value="2" ${oldCorrectAnswers == "2" ? 'checked' : ''} required></td>
+                    <td><input type="text" name="options[2]" value="${oldOptions[2] || ''}" ></td>
+                    <td><input type="radio" name="correct_answer" value="2" ${oldCorrectAnswers == "2" ? 'checked' : ''} ></td>
                 </tr>
                 <tr>
                     <td>4</td>
-                    <td><input type="text" name="options[3]" value="${oldOptions[3] || ''}" required></td>
-                    <td><input type="radio" name="correct_answer" value="3" ${oldCorrectAnswers == "3" ? 'checked' : ''} required></td>
+                    <td><input type="text" name="options[3]" value="${oldOptions[3] || ''}" ></td>
+                    <td><input type="radio" name="correct_answer" value="3" ${oldCorrectAnswers == "3" ? 'checked' : ''} ></td>
                 </tr>
             `;
         } else if (questionType === 'fill_in_the_blank_text') {
@@ -237,8 +246,11 @@ document.addEventListener('DOMContentLoaded', function () {
             optionsBody.innerHTML = `
                 <tr>
                     <td>1</td>
-                    <td class="qns_cl"><input type="text" name="correct_answer" value="${oldCorrectAnswers || ''}" required></td>
-                    <td class="ans_cl"></td>
+                    <td><input type="text" name="correct_answer" value="${formatCorrectAnswer(oldCorrectAnswers) || ''}" >
+                        <br/>
+                        <small><em>If several possible answers for some blanks, seperate answers with semicolon. Example; [is][meet,see]</em></small> 
+                    </td>
+                    <td></td>
                 </tr>
             `;
         }
@@ -247,6 +259,20 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initial load
     questionTypeSelect.value = oldQuestionType;
     updateOptions();
+
+    function formatCorrectAnswer(array) {
+        return array.map(group => `[${group.join(',')}]`).join('');
+    }
+
+    function updateInstructionText() {
+        const questionType = questionTypeSelect.value;
+        // Show instruction text only for 'fill_in_the_blank_choice' and 'fill_in_the_blank_text'
+        if (questionType === 'fill_in_the_blank_choice' || questionType === 'fill_in_the_blank_text') {
+            instructionText.style.display = 'block';
+        } else {
+            instructionText.style.display = 'none';
+        }
+    }
 
     questionTypeSelect.addEventListener('change', updateOptions);
 });

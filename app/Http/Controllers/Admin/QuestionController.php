@@ -13,7 +13,8 @@ class QuestionController extends Controller
     public function index() 
     {
         $questions = Question::all();
-        return view('admin.questions.index', compact('questions'));
+        $exams = Exam::all();
+        return view('admin.questions.index', compact('questions', 'exams'));
     }
 
     // Display the form to create a new question
@@ -29,7 +30,7 @@ class QuestionController extends Controller
     {
         // Validate the request data
         $request->validate([
-            'question_type' => 'required|string|in:true_false,single_choice,multiple_choice,fill_in_the_blank',
+            'question_type' => 'required|string|in:true_false,single_choice,multiple_choice,fill_in_the_blank_text,fill_in_the_blank_choice',
             'question_text' => 'required|string',
             'description' => 'nullable|string',
             'image_name' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -45,12 +46,7 @@ class QuestionController extends Controller
             $imagePath = $image->store('images', 'public');
         }
 
-        $correctAnswer = $request->input('correct_answer');
-
-        // Convert correct_answer to JSON format
-        if (is_array($correctAnswer)) {
-            $correctAnswer = json_encode($correctAnswer);
-        }
+        $correctAnswer = $this->normalizeCorrectAnswer($request->input('correct_answer'));
 
         // Create the question
         $question = new Question();
@@ -65,6 +61,38 @@ class QuestionController extends Controller
 
         // Redirect with a success message
         return redirect()->route('questions.index')->with('success', 'Question created successfully.');
+    }
+
+    function normalizeCorrectAnswer($input) {
+        // If input is already an array, encode it as JSON
+        if (is_array($input)) {
+            return json_encode($input);
+        }
+        
+        // If input is a string in the format [Earth][planet,hello]
+        if (is_string($input)) {
+            // Remove the outermost square brackets
+            $input = trim($input, '[]');
+            
+            // Split the string by '][' to separate the groups
+            $groups = explode('][', $input);
+            
+            // Convert each group into an array of its elements
+            $array = array_map(function($group) {
+                return explode(',', $group);
+            }, $groups);
+            
+            // Encode the result as JSON
+            return json_encode($array);
+        }
+        
+        // If input is a single value, wrap it in an array
+        if (is_scalar($input)) {
+            return json_encode([[$input]]);
+        }
+        
+        // Handle unexpected types
+        throw new InvalidArgumentException('Invalid input format for correct_answer.');
     }
     
     // Display the form to edit a specific question
@@ -83,7 +111,7 @@ class QuestionController extends Controller
     {
         // Validate the request data
         $request->validate([
-            'question_type' => 'required|string|in:true_false,single_choice,multiple_choice,fill_in_the_blank',
+            'question_type' => 'required|string|in:true_false,single_choice,multiple_choice,fill_in_the_blank_text,fill_in_the_blank_choice',
             'question_text' => 'required|string',
             'description' => 'nullable|string',
             'image_name' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -108,12 +136,7 @@ class QuestionController extends Controller
             $imagePath = $question->image_name; // Keep the old image if no new one is uploaded
         }
 
-        $correctAnswer = $request->input('correct_answer');
-
-        // Convert correct_answer to JSON format
-        if (is_array($correctAnswer)) {
-            $correctAnswer = json_encode($correctAnswer);
-        }
+        $correctAnswer = $this->normalizeCorrectAnswer($request->input('correct_answer'));
 
         // Update the question
         $question->question_type = $request->input('question_type');
@@ -127,6 +150,11 @@ class QuestionController extends Controller
 
         // Redirect with a success message
         return redirect()->route('questions.index')->with('success', 'Question updated successfully.');
+    }
+
+    public function import(Request $request)
+    {
+
     }
 
     // Display a specific question

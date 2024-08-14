@@ -33,6 +33,6 @@ Route::resource('/admin/exams', ExamController::class);
 
 Route::resource('/admin/questions', QuestionController::class);
 Route::get('/admin/questions/create/{examId?}', [QuestionController::class, 'create'])->name('questions.create');
-
+Route::post('admin/questions/import', [QuestionController::class, 'import'])->name('questions.import');
 
 require __DIR__.'/auth.php';

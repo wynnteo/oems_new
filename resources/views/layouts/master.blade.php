@@ -36,6 +36,8 @@
   <link id="pagestyle" href="{{ asset('assets/css/material-dashboard.css?v=3.1.0') }}" rel="stylesheet" />
   <link href="https://cdn.datatables.net/2.1.0/css/dataTables.bootstrap5.min.css" rel="stylesheet">
   <link href="https://cdn.datatables.net/select/2.0.3/css/select.dataTables.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.min.css">
+
     
   <!-- Nepcha Analytics (nepcha.com) -->
   <!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
@@ -404,6 +406,12 @@
   <script src="https://cdn.datatables.net/buttons/3.1.0/js/buttons.bootstrap5.min.js" type="text/javascript"></script>
   <script src="https://cdn.datatables.net/select/2.0.3/js/dataTables.select.js" type="text/javascript"></script>
   <script src="https://cdn.datatables.net/select/2.0.3/js/select.dataTables.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" type="text/javascript"></script>
+  <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.html5.min.js" type="text/javascript"></script>
+  <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.print.min.js" type="text/javascript"></script>
+  <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.colVis.min.js" type="text/javascript"></script>
   
   @yield('scripts')
 </body>

@@ -41,6 +41,17 @@ Exams | Admin Panel
                         <a class="btn btn-darken" href="{{ route('exams.create') }}" title="Add New Exam">
                             <i class="material-icons">add</i> New Exam
                         </a>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-light dropdown-toggle" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                Export
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <li><a class="dropdown-item" href="#" data-action="csv">CSV</a></li>
+                                <li><a class="dropdown-item" href="#" data-action="excel">Excel</a></li>
+                                <li><a class="dropdown-item" href="#" data-action="pdf">PDF</a></li>
+                                <li><a class="dropdown-item" href="#" data-action="print">Print</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body px-0 pb-2">
@@ -56,7 +67,7 @@ Exams | Admin Panel
                         <table class="table" id="examtable">
                             <thead>
                                 <tr>
-                                    <th></th>
+                                    <th class="not-export-col"></th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Title</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
@@ -67,7 +78,7 @@ Exams | Admin Panel
                                         Duration</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Status</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                    <th class="not-export-col text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Action</th>
                                 </tr>
                             </thead>
@@ -130,6 +141,55 @@ Exams | Admin Panel
                 select: {
                     style: 'os',
                     selector: 'td:first-child'
+                },
+                layout: {
+                    topStart: {
+                        buttons: [{
+                            text: 'csv',
+                            extend: 'csvHtml5',
+                            exportOptions: {
+                                columns: ':visible:not(.not-export-col)'
+                            }
+                        },
+                        {
+                            text: 'excel',
+                            extend: 'excelHtml5',
+                            exportOptions: {
+                                columns: ':visible:not(.not-export-col)'
+                            }
+                        },
+                        {
+                            text: 'pdf',
+                            extend: 'pdfHtml5',
+                            pageSize: 'A4',
+                            exportOptions: {
+                                columns: ':visible:not(.not-export-col)'
+                            },
+                            customize: function(doc) {
+                                doc.title = 'All Exams | OEMS';
+                                doc.styles.title = {
+                                    fontSize: 14,
+                                    bold: true,
+                                    color: 'black',
+                                    alignment: 'center'
+                                };
+
+                                doc.content.forEach(function (item) {
+                                    if (item.table) {
+                                        // Set table width to 100%
+                                        item.table.widths = Array(item.table.body[0].length).fill('*'); // '*' makes columns stretch to full width
+                                    }
+                                });
+                            }
+                        },
+                        {
+                            text: 'print',
+                            extend: 'print',
+                            exportOptions: {
+                                columns: ':visible:not(.not-export-col)'
+                            }
+                        }]
+                    }
                 }
             });
 
@@ -137,6 +197,29 @@ Exams | Admin Panel
                 $action = $(this).attr("data-action");
                 $('#exam_delete_modal').attr('action', $action);
                 $('#deletemodal').modal('show');
+            });
+
+            $('.dropdown-item').on('click', function (e) {
+                e.preventDefault();
+
+                var table = $('#examtable').DataTable();
+                var action = $(this).data('action');
+                switch (action) {
+                    case 'csv':
+                        table.button('.buttons-csv').trigger();
+                        break;
+                    case 'excel':
+                        table.button('.buttons-excel').trigger();
+                        break;
+                    case 'pdf':
+                        table.button('.buttons-pdf').trigger();
+                        break;
+                    case 'print':
+                        table.button('.buttons-print').trigger();
+                        break;
+                    default:
+                        alert("Unknown action");
+                }
             });
         });
     </script>
