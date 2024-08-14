@@ -35,7 +35,7 @@ Questions | Admin Panel
         <div class="col-12">
             <div class="card">
                 <div class="card-header actions">
-                    <h5 class="text-capitalize">Questions</h5>
+                    <h5 class="text-capitalize"><i class="material-icons opacity-10">question_answer</i> Questions</h5>
                     <div class="actions_item">
                         <a class="btn btn-darken" href="{{ route('questions.create') }}" title="Add New Question">
                             <i class="material-icons">add</i> New Question
@@ -57,9 +57,9 @@ Questions | Admin Panel
                                 <tr>
                                     <th></th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
-                                        Exam Title</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Question Text</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Exam Title</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Question Type</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
@@ -70,8 +70,8 @@ Questions | Admin Panel
                                 @foreach ($questions as $row)
                                 <tr>
                                     <td></td>
-                                    <td>{{ $row->exam->title }}</td>
                                     <td>{{ $row->question_text }}</td>
+                                    <td>{{ $row->exam->title }}</td>
                                     <td>
                                         @switch($row->question_type)
                                             @case('true_false')

@@ -20512,7 +20512,7 @@ fieldset:disabled .btn {
 }
 
 .btn {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   letter-spacing: 0;
   text-transform: uppercase;
   background-size: 150%;
@@ -28014,6 +28014,11 @@ h5 i {
   border-bottom: 1px solid #DDD;
 }
 
+#num-options {
+  width: 50px;
+  border: 1px solid #DDD;
+}
+
 .order_cl {
   width: 10px;
   text-align: center;
@@ -28024,9 +28029,20 @@ h5 i {
   text-align: center;
 }
 
+#options-table em {
+  color: #919191;
+  font-weight: 400;
+}
+
 #options-table td input {
   border: 1px solid #ddd;
   width: 100%;
   background-color: #fdfdfd;
   border-radius: 2px;
+}
+.table th, .table td {
+  padding: 10px;
+}
+.table td {
+  font-size: 14px;
 }

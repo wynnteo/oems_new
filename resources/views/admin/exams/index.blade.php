@@ -35,7 +35,7 @@ Exams | Admin Panel
         <div class="col-12">
             <div class="card">
                 <div class="card-header actions">
-                    <h5 class="text-capitalize">Exams</h5>
+                    <h5 class="text-capitalize"><i class="material-icons opacity-10">assignment</i> Exams</h5>
                     <div class="actions_item">
 
                         <a class="btn btn-darken" href="{{ route('exams.create') }}" title="Add New Exam">
