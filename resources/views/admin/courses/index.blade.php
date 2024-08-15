@@ -127,6 +127,10 @@ Courses | Admin Panel
                     width: '50px' 
                 },
                 {
+                    targets: 1,
+                    width: '150px' 
+                },
+                {
                     targets: -1,
                     width: '100px'
                 }],
