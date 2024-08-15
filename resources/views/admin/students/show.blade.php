@@ -191,7 +191,7 @@ Students | Admin Panel
                                     <td></td>
                                     <td>{{ $row->course->course_code }}</td>
                                     <td>{{ $row->course->title }}</td>
-                                    <td>{{ $row->enrollment_date }}</td>
+                                    <td>{{ $row->enrollment_date->format('Y-m-d H:i')  }}</td>
                                     <td>
                                         <div class="dropdown float-lg-end pe-4">
                                             <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown"
@@ -320,11 +320,6 @@ Students | Admin Panel
                     url: '{{ route("courses.search") }}',
                     dataType: 'json',
                     type: 'GET',
-                    // data: function(params) {
-                    //     return {
-                    //         q: params.term // search term
-                    //     };
-                    // },
                     processResults: function(data) {
                         return {
                             results: data.map(function(course) {

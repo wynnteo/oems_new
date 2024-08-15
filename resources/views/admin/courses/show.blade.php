@@ -68,6 +68,8 @@ Courses | Admin Panel
                                 <tr>
                                     <th></th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Student ID</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Student Name</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Email</th>
@@ -81,9 +83,10 @@ Courses | Admin Panel
                                 @foreach ($enrolments as $row)
                                 <tr>
                                     <td></td>
+                                    <td>{{ $row->student->student_code }}</td>
                                     <td>{{ $row->student->name }}</td>
                                     <td>{{ $row->student->email }}</td>
-                                    <td>{{ $row->enrolled_at->format('Y-m-d H:i')  }}</td>
+                                    <td>{{ $row->enrollment_date->format('Y-m-d H:i')  }}</td>
                                     <td>
                                         <div class="dropdown float-lg-end pe-4">
                                             <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown"
@@ -128,17 +131,10 @@ Courses | Admin Panel
                             </thead>
                             <tbody>
                                 @foreach ($exams as $row)
-                                
                                 <tr>
                                     <td></td>
-                                    @php
-                                        // Split the start_time string
-                                        $startDateTime = explode(' ', $row->start_time);
-                                        $startDate = $startDateTime[0] ?? '-';
-                                        $startTime = $startDateTime[1] ?? '-';
-                                    @endphp
-                                    <td>{{ $startDate }}</td>
-                                    <td>{{ $startTime }}</td>
+                                    <td>{{ $row->start_time->format('Y-m-d') }}</td>
+                                    <td>{{ $row->start_time->format('H i A') }}</td>
                                     <td>{{ $row->title }}</td>
                                     <td>
                                         {{ $row->formatDuration() }}
@@ -182,6 +178,14 @@ Courses | Admin Panel
                     orderable: false,
                     render: DataTable.render.select(),
                     targets: 0
+                },
+                {
+                    targets: 0,
+                    width: '50px' 
+                },
+                {
+                    targets: -1,
+                    width: '100px'
                 }],
                 order: [[1, 'asc']],
                 select: {
@@ -195,6 +199,14 @@ Courses | Admin Panel
                     orderable: false,
                     render: DataTable.render.select(),
                     targets: 0
+                },
+                {
+                    targets: 0,
+                    width: '50px' 
+                },
+                {
+                    targets: -1,
+                    width: '100px'
                 }],
                 order: [[1, 'asc']],
                 select: {

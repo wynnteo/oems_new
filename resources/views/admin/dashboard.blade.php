@@ -64,6 +64,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Chart -->
       <div class="row mt-4">
         <div class="col-lg-4 col-md-6 mt-4 mb-4">
           <div class="card z-index-2 ">
@@ -126,16 +128,18 @@
           </div>
         </div>
       </div>
+
+      <!-- Latest Update-->
       <div class="row mb-4">
         <div class="col-lg-8 col-md-6 mb-md-0 mb-4">
           <div class="card">
             <div class="card-header pb-0">
               <div class="row">
                 <div class="col-lg-6 col-7">
-                  <h6>Projects</h6>
+                  <h6>Exams</h6>
                   <p class="text-sm mb-0">
-                    <i class="fa fa-check text-info" aria-hidden="true"></i>
-                    <span class="font-weight-bold ms-1">30 done</span> this month
+                    <i class="fa fa-list-alt text-info" aria-hidden="true"></i>
+                    <span class="font-weight-bold ms-1">Recent Update</span>
                   </p>
                 </div>
                 <div class="col-lg-6 col-5 my-auto text-end">
@@ -157,9 +161,9 @@
                 <table class="table align-items-center mb-0">
                   <thead>
                     <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Companies</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Members</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Budget</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Exam Date</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Exam</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Passing Rate</th>
                       <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Completion</th>
                     </tr>
                   </thead>

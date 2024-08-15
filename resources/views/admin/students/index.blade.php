@@ -69,7 +69,7 @@ Students | Admin Panel
                                 <tr>
                                     <th class="not-export-col"></th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
-                                        Student Code</th>
+                                        Student ID</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Name</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">

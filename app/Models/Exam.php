@@ -31,6 +31,10 @@ class Exam extends Model
         'updated_at',
     ];
 
+    protected $casts = [
+        'start_time' => 'datetime',
+    ];
+
     // An exam belongs to a course
     public function course()
     {

@@ -15,6 +15,10 @@ class Enrolment extends Model
         'enrollment_date',
     ];
 
+    protected $casts = [
+        'enrollment_date' => 'datetime',
+    ];
+
     // An enrollment belongs to a course
     public function course()
     {
