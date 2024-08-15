@@ -68,4 +68,20 @@ class CourseController extends Controller
         $exams = $course->exams; 
         return view('admin.courses.show', compact('course', 'enrolments', 'exams'));
     }
+
+    public function search(Request $request)
+    {
+        $search = $request->input('q'); // Assuming 'q' is the query parameter for the search term
+
+        // Ensure $search is a string and properly sanitized
+        if (is_string($search)) {
+            $courses = Course::where('title', 'like', "%{$search}%")
+                            ->orWhere('course_code', 'like', "%{$search}%")
+                            ->get(['id', 'title']);
+        } else {
+            $courses = collect(); // Return an empty collection if search input is invalid
+        }
+
+        return response()->json($courses);
+    }
 }

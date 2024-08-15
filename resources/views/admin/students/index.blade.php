@@ -41,6 +41,17 @@ Students | Admin Panel
                         <a class="btn btn-darken" href="{{ route('students.create') }}" title="Add New Student">
                             <i class="material-icons">add</i> New Student
                         </a>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-light dropdown-toggle" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                Export
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <li><a class="dropdown-item dropdown-item-tools border-radius-md" href="#" data-action="csv">CSV</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="excel">Excel</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="pdf">PDF</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="print">Print</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body px-0 pb-2">
@@ -64,6 +75,8 @@ Students | Admin Panel
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Gender</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Email</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Status</th>
                                     <th class="not-export-col text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Action</th>
@@ -76,6 +89,7 @@ Students | Admin Panel
                                     <td>{{ $row->student_code }}</td>
                                     <td>{{ $row->name }}</td>
                                     <td>{{ $row->gender }}</td>
+                                    <td>{{ $row->email }}</td>
                                     <td>{{ $row->status }}</td>
                                     <td>
                                         <div class="dropdown float-lg-end pe-4">
@@ -114,6 +128,18 @@ Students | Admin Panel
                     orderable: false,
                     render: DataTable.render.select(),
                     targets: 0
+                },
+                {
+                    targets: 0,
+                    width: '50px' 
+                },
+                {
+                    targets: 1,
+                    width: '150px' 
+                },
+                {
+                    targets: -1,
+                    width: '100px'
                 }],
                 order: [[1, 'asc']],
                 select: {
@@ -121,7 +147,7 @@ Students | Admin Panel
                     selector: 'td:first-child'
                 },
                 layout: {
-                    topStart: {
+                    top1Start: {
                         buttons: [{
                             text: 'csv',
                             extend: 'csvHtml5',
@@ -177,7 +203,7 @@ Students | Admin Panel
                 $('#deletemodal').modal('show');
             });
 
-            $('.dropdown-item').on('click', function (e) {
+            $('.dropdown-item-tools').on('click', function (e) {
                 e.preventDefault();
 
                 var table = $('#studenttable').DataTable();

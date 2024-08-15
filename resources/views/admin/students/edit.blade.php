@@ -43,51 +43,16 @@ Students | Admin Panel
                                     value="{{ $student->name }}">
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-12">
-                                <div class="form-group">
-                                    <strong>Email:</strong>
-                                    <input type="email" name="email" class="form-control" placeholder=""
-                                    value="{{ $student->email }}">
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-sm-12 col-md-12">
+                            
+                            <div class="col-xs-12 col-sm-12 col-md-6">
                                 <div class="form-group">
                                     <strong>Student Code:</strong>
                                     <input type="text" name="student_code" class="form-control" placeholder="Student Code"
                                     value="{{ $student->student_code }}">
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-12">
-                                <div class="form-group">
-                                    <strong>Date of Birth:</strong>
-                                    <input type="date" name="date_of_birth" class="form-control"
-                                        value="{{ $student->date_of_birth }}">
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-sm-12 col-md-12">
-                                <div class="form-group">
-                                    <strong>Phone Number:</strong>
-                                    <input type="text" name="phone_number" class="form-control" placeholder=""
-                                    value="{{ $student->phone_number }}">
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-sm-12 col-md-12">
-                                <div class="form-group">
-                                    <strong>Gender:</strong>
-                                    <select name="gender" class="form-control">
-                                        <option value="" disabled selected>Select Gender</option>
-                                        <option value="M" {{ $student->gender =='M' ? 'selected' : '' }}>Male</option>
-                                        <option value="F" {{ $student->gender =='F' ? 'selected' : '' }}>Female</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-sm-12 col-md-12">
-                                <div class="form-group">
-                                    <strong>Address:</strong>
-                                    <input type="text" name="address" class="form-control" value="{{ $student->address }}">
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-sm-12 col-md-12 pb-2">
+
+                            <div class="col-xs-12 col-sm-12 col-md-6">
                                 <div class="form-group">
                                     <strong>Status:</strong>
                                     <select name="status" class="form-control">
@@ -98,6 +63,47 @@ Students | Admin Panel
                                     </select>
                                 </div>
                             </div>
+
+                            <div class="col-xs-12 col-sm-12 col-md-6">
+                                <div class="form-group">
+                                    <strong>Email:</strong>
+                                    <input type="email" name="email" class="form-control" placeholder=""
+                                    value="{{ $student->email }}">
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-sm-12 col-md-6">
+                                <div class="form-group">
+                                    <strong>Phone Number:</strong>
+                                    <input type="text" name="phone_number" class="form-control" placeholder=""
+                                    value="{{ $student->phone_number }}">
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-sm-12 col-md-6">
+                                <div class="form-group">
+                                    <strong>Date of Birth:</strong>
+                                    <input type="date" name="date_of_birth" class="form-control"
+                                        value="{{ $student->date_of_birth }}">
+                                </div>
+                            </div>
+
+                            
+                            <div class="col-xs-12 col-sm-12 col-md-6">
+                                <div class="form-group">
+                                    <strong>Gender:</strong>
+                                    <select name="gender" class="form-control">
+                                        <option value="" disabled selected>Select Gender</option>
+                                        <option value="M" {{ $student->gender =='M' ? 'selected' : '' }}>Male</option>
+                                        <option value="F" {{ $student->gender =='F' ? 'selected' : '' }}>Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-sm-12 col-md-12 pb-2">
+                                <div class="form-group">
+                                    <strong>Address:</strong>
+                                    <input type="text" name="address" class="form-control" value="{{ $student->address }}">
+                                </div>
+                            </div>
+                            
                             <div class="col-xs-12 col-sm-12 col-md-12 text-center">
                                 <button type="submit" class="btn bg-gradient-dark">Submit</button>
                             </div>

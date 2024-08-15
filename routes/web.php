@@ -24,10 +24,14 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
+Route::get('/admin/courses/search', [CourseController::class, 'search'])->name('courses.search');
 Route::resource('/admin/courses', CourseController::class);
-// Route::get('/admin/courses', [CourseController::class, 'index'])->name('admin.courses');
+
 
 Route::resource('/admin/students', StudentController::class);
+Route::post('/admin/students/{student}/enroll', [StudentController::class, 'enroll'])->name('students.enroll');
+Route::get('/admin/students/{student}/unenroll/{enrollment}', [StudentController::class, 'unenroll'])->name('students.unenroll');
+
 
 Route::resource('/admin/exams', ExamController::class);
 

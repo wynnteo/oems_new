@@ -207,12 +207,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 <tr>
                     <td>1</td>
                     <td>True</td>
-                    <td><input type="radio" name="correct_answer" value="true" ${oldCorrectAnswers.includes('true') ? 'checked' : ''}></td>
+                    <td><input type="radio" name="correct_answer" value="true" ${oldCorrectAnswers == "true" ? 'checked' : ''}></td>
                 </tr>
                 <tr>
                     <td>2</td>
                     <td>False</td>
-                    <td><input type="radio" name="correct_answer" value="false" ${oldCorrectAnswers.includes('false') ? 'checked' : ''}></td>
+                    <td><input type="radio" name="correct_answer" value="false" ${oldCorrectAnswers == "false" ? 'checked' : ''}></td>
                 </tr>
             `;
         } else if (questionType === 'single_choice' || questionType === 'fill_in_the_blank_choice') {

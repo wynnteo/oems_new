@@ -30,6 +30,40 @@ Students | Admin Panel
     </div>
 </div>
 
+<!-- Enroll Course Modal -->
+<div class="modal fade" id="addcoursemodal" tabindex="-1" aria-labelledby="addcoursemodal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Course Enrollment</h5>
+                <button type="button" class="btn" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="add_course_modal" method="POST" action="{{ route('students.enroll', $student->id) }}">
+                @csrf
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12 col-md-12">
+                            <div class="form-group">
+                                <strong>Search Course:</strong>
+                                <select style="width:100%" id="coursesearchddl" name="courseList[]"
+                                    multiple="multiple">
+                                    <!-- Options will be dynamically populated -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-darken">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -117,8 +151,24 @@ Students | Admin Panel
                     @endif
 
                     <!-- Course Enrolled -->
-                    <div class="table-title-div">
+                    <div class="table-title-div actions">
                         <h5><i class="material-icons me-2">school</i> Course Enrolled</h5>
+                        <div class="actions_item">
+                            <a class="btn btn-darken" href="#" title="Enroll Course" data-bs-toggle="modal" data-bs-target="#addcoursemodal">
+                                <i class="material-icons">add</i> Enroll
+                            </a>
+                            <!-- <div class="btn-group">
+                                <button type="button" class="btn btn-light dropdown-toggle" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Export
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <li><a class="dropdown-item dropdown-item-tools border-radius-md" href="#" data-action="csv">CSV</a></li>
+                                    <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="excel">Excel</a></li>
+                                    <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="pdf">PDF</a></li>
+                                    <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="print">Print</a></li>
+                                </ul>
+                            </div> -->
+                        </div>
                     </div>
                     <div class="table-responsive pb-5">
                         <table class="table" id="enrolmenttable">
@@ -136,12 +186,12 @@ Students | Admin Panel
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($student->courses()->get() as $row)
+                                @foreach ($student->enrollments()->get() as $row)
                                 <tr>
                                     <td></td>
-                                    <td>{{ $row->course_code }}</td>
-                                    <td>{{ $row->title }}</td>
-                                    <td></td>
+                                    <td>{{ $row->course->course_code }}</td>
+                                    <td>{{ $row->course->title }}</td>
+                                    <td>{{ $row->enrollment_date }}</td>
                                     <td>
                                         <div class="dropdown float-lg-end pe-4">
                                             <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown"
@@ -151,7 +201,7 @@ Students | Admin Panel
                                             <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5"
                                                 aria-labelledby="dropdownTable">
                                                 <li><a class="dropdown-item border-radius-md"
-                                                    href="{{ route('students.show', $row->id) }}"> <i class="material-icons">remove_red_eye</i> Unenroll</a></li>
+                                                    href="{{ route('students.unenroll', [$student->id, $row->id]) }}"> <i class="material-icons">remove_red_eye</i> Unenroll</a></li>
                                             </ul>
                                         </div>
                                     </td>
@@ -224,12 +274,20 @@ Students | Admin Panel
                     orderable: false,
                     render: DataTable.render.select(),
                     targets: 0
+                },
+                {
+                    targets: 0,
+                    width: '50px' 
+                },
+                {
+                    targets: -1,
+                    width: '100px'
                 }],
                 order: [[1, 'asc']],
                 select: {
                     style: 'os',
                     selector: 'td:first-child'
-                }
+                },
             });
 
             $('#attemptedexamtable').DataTable({
@@ -237,11 +295,44 @@ Students | Admin Panel
                     orderable: false,
                     render: DataTable.render.select(),
                     targets: 0
+                },
+                {
+                    targets: 0,
+                    width: '50px' 
+                },
+                {
+                    targets: -1,
+                    width: '100px'
                 }],
                 order: [[1, 'asc']],
                 select: {
                     style: 'os',
                     selector: 'td:first-child'
+                },
+            });
+
+
+            $('#coursesearchddl').select2({
+                placeholder: "Select courses",
+                multiple: true,
+                width: '100%',
+                ajax: {
+                    url: '{{ route("courses.search") }}',
+                    dataType: 'json',
+                    type: 'GET',
+                    // data: function(params) {
+                    //     return {
+                    //         q: params.term // search term
+                    //     };
+                    // },
+                    processResults: function(data) {
+                        return {
+                            results: data.map(function(course) {
+                                return { id: course.id, text: course.title };
+                            })
+                        };
+                    },
+                    cache: true
                 }
             });
 

@@ -48,7 +48,7 @@ Questions | Admin Panel
                         <div class="col-xs-12 col-sm-12 col-md-12">
                             <div class="form-group">
                                 <small><em>Please download the <a
-                                            href="{{ asset('public/assets/sample_excel.xlsx') }}">import template</a>.
+                                            href="{{ asset('public/assets/templates/sample_excel.xlsx') }}">import template</a>.
                                         Do not remove any columns.</em></small>
                             </div>
                         </div>
@@ -103,10 +103,10 @@ Questions | Admin Panel
                                 Export
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <li><a class="dropdown-item" href="#" data-action="csv">CSV</a></li>
-                                <li><a class="dropdown-item" href="#" data-action="excel">Excel</a></li>
-                                <li><a class="dropdown-item" href="#" data-action="pdf">PDF</a></li>
-                                <li><a class="dropdown-item" href="#" data-action="print">Print</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools border-radius-md" href="#" data-action="csv">CSV</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="excel">Excel</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="pdf">PDF</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="print">Print</a></li>
                             </ul>
                         </div>
                     </div>
@@ -201,61 +201,68 @@ Questions | Admin Panel
                 orderable: false,
                 render: DataTable.render.select(),
                 targets: 0
-            }],
+            },{
+                    targets: 0,
+                    width: '50px' 
+                },
+                {
+                    targets: -1,
+                    width: '100px'
+                }],
             order: [[1, 'asc']],
             select: {
                 style: 'os',
                 selector: 'td:first-child'
             },
             layout: {
-                    topStart: {
-                        buttons: [{
-                            text: 'csv',
-                            extend: 'csvHtml5',
-                            exportOptions: {
-                                columns: ':visible:not(.not-export-col)'
-                            }
+                top1Start: {
+                    buttons: [{
+                        text: 'csv',
+                        extend: 'csvHtml5',
+                        exportOptions: {
+                            columns: ':visible:not(.not-export-col)'
+                        }
+                    },
+                    {
+                        text: 'excel',
+                        extend: 'excelHtml5',
+                        exportOptions: {
+                            columns: ':visible:not(.not-export-col)'
+                        }
+                    },
+                    {
+                        text: 'pdf',
+                        extend: 'pdfHtml5',
+                        pageSize: 'A4',
+                        exportOptions: {
+                            columns: ':visible:not(.not-export-col)'
                         },
-                        {
-                            text: 'excel',
-                            extend: 'excelHtml5',
-                            exportOptions: {
-                                columns: ':visible:not(.not-export-col)'
-                            }
-                        },
-                        {
-                            text: 'pdf',
-                            extend: 'pdfHtml5',
-                            pageSize: 'A4',
-                            exportOptions: {
-                                columns: ':visible:not(.not-export-col)'
-                            },
-                            customize: function(doc) {
-                                doc.title = 'All Questions | OEMS';
-                                doc.styles.title = {
-                                    fontSize: 14,
-                                    bold: true,
-                                    color: 'black',
-                                    alignment: 'center'
-                                };
+                        customize: function(doc) {
+                            doc.title = 'All Questions | OEMS';
+                            doc.styles.title = {
+                                fontSize: 14,
+                                bold: true,
+                                color: 'black',
+                                alignment: 'center'
+                            };
 
-                                doc.content.forEach(function (item) {
-                                    if (item.table) {
-                                        // Set table width to 100%
-                                        item.table.widths = Array(item.table.body[0].length).fill('*'); // '*' makes columns stretch to full width
-                                    }
-                                });
-                            }
-                        },
-                        {
-                            text: 'print',
-                            extend: 'print',
-                            exportOptions: {
-                                columns: ':visible:not(.not-export-col)'
-                            }
-                        }]
-                    }
+                            doc.content.forEach(function (item) {
+                                if (item.table) {
+                                    // Set table width to 100%
+                                    item.table.widths = Array(item.table.body[0].length).fill('*'); // '*' makes columns stretch to full width
+                                }
+                            });
+                        }
+                    },
+                    {
+                        text: 'print',
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':visible:not(.not-export-col)'
+                        }
+                    }]
                 }
+            }
         });
 
         $('#questiontable').on('click', '.deletebtn', function () {
@@ -269,7 +276,7 @@ Questions | Admin Panel
             $('#importmodal').modal('show'); // Show the import modal
         });
 
-        $('.dropdown-item').on('click', function (e) {
+        $('.dropdown-item-tools').on('click', function (e) {
                 e.preventDefault();
 
                 var table = $('#questiontable').DataTable();

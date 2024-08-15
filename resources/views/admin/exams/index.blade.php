@@ -46,10 +46,10 @@ Exams | Admin Panel
                                 Export
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <li><a class="dropdown-item" href="#" data-action="csv">CSV</a></li>
-                                <li><a class="dropdown-item" href="#" data-action="excel">Excel</a></li>
-                                <li><a class="dropdown-item" href="#" data-action="pdf">PDF</a></li>
-                                <li><a class="dropdown-item" href="#" data-action="print">Print</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools border-radius-md" href="#" data-action="csv">CSV</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="excel">Excel</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="pdf">PDF</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="print">Print</a></li>
                             </ul>
                         </div>
                     </div>
@@ -69,11 +69,11 @@ Exams | Admin Panel
                                 <tr>
                                     <th class="not-export-col"></th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Course Code</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Title</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Exam Date</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
-                                        Course Code</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Duration</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
@@ -86,9 +86,10 @@ Exams | Admin Panel
                                 @foreach ($exams as $row)
                                 <tr>
                                     <td></td>
+                                    <td>{{ $row->course->course_code }}</td>
                                     <td>{{ $row->title }}</td>
                                     <td>{{ $row->start_time }}</td>
-                                    <td>{{ $row->course->course_code }}</td>
+                                    
                                     <td>
                                         {{ $row->formatDuration() }}
                                     </td>
@@ -136,6 +137,13 @@ Exams | Admin Panel
                     orderable: false,
                     render: DataTable.render.select(),
                     targets: 0
+                },{
+                    targets: 0,
+                    width: '50px' 
+                },
+                {
+                    targets: -1,
+                    width: '100px'
                 }],
                 order: [[1, 'asc']],
                 select: {
@@ -143,7 +151,7 @@ Exams | Admin Panel
                     selector: 'td:first-child'
                 },
                 layout: {
-                    topStart: {
+                    top1Start: {
                         buttons: [{
                             text: 'csv',
                             extend: 'csvHtml5',
@@ -199,7 +207,7 @@ Exams | Admin Panel
                 $('#deletemodal').modal('show');
             });
 
-            $('.dropdown-item').on('click', function (e) {
+            $('.dropdown-item-tools').on('click', function (e) {
                 e.preventDefault();
 
                 var table = $('#examtable').DataTable();

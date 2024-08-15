@@ -2667,6 +2667,8 @@ progress {
 
 .table-responsive {
   overflow-x: auto;
+  display: block;
+    width: 100%;
   /* -webkit-overflow-scrolling: touch; */
 }
 
@@ -3623,7 +3625,7 @@ textarea.form-control.is-invalid {
   --bs-btn-bg: transparent;
   --bs-btn-border-width: 1px;
   --bs-btn-border-color: transparent;
-  --bs-btn-border-radius: 0.5rem;
+  --bs-btn-border-radius: 0.25rem;
   --bs-btn-hover-border-color: transparent;
   --bs-btn-box-shadow: 0 4px 7px -1px rgba(0, 0, 0, 0.11), 0 2px 4px -1px rgba(0, 0, 0, 0.07);
   --bs-btn-disabled-opacity: 0.65;
@@ -5236,9 +5238,9 @@ fieldset:disabled .btn {
   --bs-card-title-spacer-y: 0.5rem;
   --bs-card-border-width: 0;
   --bs-card-border-color: rgba(0, 0, 0, 0.125);
-  --bs-card-border-radius: 0.75rem;
+  --bs-card-border-radius: 0.125rem;
   --bs-card-box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --bs-card-inner-border-radius: 0.75rem;
+  --bs-card-inner-border-radius: 0.125rem;
   --bs-card-cap-padding-y: 0.5rem;
   --bs-card-cap-padding-x: 1rem;
   --bs-card-cap-bg: #fff;
@@ -5726,7 +5728,7 @@ fieldset:disabled .btn {
   --bs-badge-font-size: 0.75em;
   --bs-badge-font-weight: 700;
   --bs-badge-color: #fff;
-  --bs-badge-border-radius: 0.45rem;
+  --bs-badge-border-radius: 0.25rem;
   display: inline-block;
   padding: var(--bs-badge-padding-y) var(--bs-badge-padding-x);
   font-size: var(--bs-badge-font-size);
@@ -10655,7 +10657,7 @@ fieldset:disabled .btn {
 }
 
 .text-secondary {
-  color: #7b809a !important;
+  color: #222222 !important;
 }
 
 .text-success {
@@ -28046,6 +28048,7 @@ h5 i {
 }
 .table td {
   font-size: 14px;
+  text-wrap: pretty;
 }
 
 .dt-buttons  {
@@ -28054,4 +28057,8 @@ h5 i {
 
 .dataTable {
   border: 1px solid rgb(221, 221, 221);
+}
+
+.dt-info {
+  font-size: 14px;
 }

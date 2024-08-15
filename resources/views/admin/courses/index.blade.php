@@ -46,10 +46,10 @@ Courses | Admin Panel
                                 Export
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <li><a class="dropdown-item" href="#" data-action="csv">CSV</a></li>
-                                <li><a class="dropdown-item" href="#" data-action="excel">Excel</a></li>
-                                <li><a class="dropdown-item" href="#" data-action="pdf">PDF</a></li>
-                                <li><a class="dropdown-item" href="#" data-action="print">Print</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools border-radius-md" href="#" data-action="csv">CSV</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="excel">Excel</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="pdf">PDF</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="print">Print</a></li>
                             </ul>
                         </div>
                     </div>
@@ -122,14 +122,23 @@ Courses | Admin Panel
                     orderable: false,
                     render: DataTable.render.select(),
                     targets: 0
+                },{
+                    targets: 0,
+                    width: '50px' 
+                },
+                {
+                    targets: -1,
+                    width: '100px'
                 }],
                 order: [[1, 'asc']],
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],  // Add this line to control the entries per page
+                pageLength: 10,
                 select: {
                     style: 'os',
                     selector: 'td:first-child'
                 },
                 layout: {
-                    topStart: {
+                    top1Start: {
                         buttons: [{
                             text: 'csv',
                             extend: 'csvHtml5',
@@ -185,7 +194,7 @@ Courses | Admin Panel
                 $('#deletemodal').modal('show');
             });
 
-            $('.dropdown-item').on('click', function (e) {
+            $('.dropdown-item-tools').on('click', function (e) {
                 e.preventDefault();
 
                 var table = $('#coursetable').DataTable();

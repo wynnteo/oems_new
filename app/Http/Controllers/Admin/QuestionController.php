@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use App\Models\Question;
 use App\Models\Exam;
@@ -69,12 +70,11 @@ class QuestionController extends Controller
             return json_encode($input);
         }
         
-        // If input is a string in the format [Earth][planet,hello]
-        if (is_string($input)) {
-            // Remove the outermost square brackets
+        if (strpos($input, '][') !== false) {
+            // Remove outer brackets
             $input = trim($input, '[]');
             
-            // Split the string by '][' to separate the groups
+            // Split by '][' to get groups
             $groups = explode('][', $input);
             
             // Convert each group into an array of its elements
@@ -82,13 +82,14 @@ class QuestionController extends Controller
                 return explode(',', $group);
             }, $groups);
             
-            // Encode the result as JSON
+            // Return as JSON for storage
             return json_encode($array);
         }
-        
-        // If input is a single value, wrap it in an array
-        if (is_scalar($input)) {
-            return json_encode([[$input]]);
+
+        // Handle True/False or Single Choice format
+        if (is_numeric($input) || in_array($input, ['true', 'false'])) {
+            // Convert to a single array with one value
+            return json_encode([$input]);
         }
         
         // Handle unexpected types
@@ -154,7 +155,14 @@ class QuestionController extends Controller
 
     public function import(Request $request)
     {
+        $request->validate([
+            'exam_id' => 'required|integer|exists:exams,id',
+            'file' => 'required|file|mimes:xlsx,csv',
+        ]);
 
+        Excel::import(new QuestionsImport, $request->file('file'));
+
+        return redirect()->back()->with('success', 'Questions imported successfully.');
     }
 
     // Display a specific question
