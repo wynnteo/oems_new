@@ -8,13 +8,20 @@ use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\ExamController;
 use App\Http\Controllers\Admin\QuestionController;
 
+use App\Http\Controllers\StudentDashboardController;
+use App\Http\Controllers\StudentCourseController;
+use App\Http\Controllers\StudentExamController;
+use App\Http\Controllers\EWalletController;
+use App\Http\Controllers\PayPalController;
+use App\Http\Controllers\StripeController;
+
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -38,5 +45,27 @@ Route::resource('/admin/exams', ExamController::class);
 Route::resource('/admin/questions', QuestionController::class);
 Route::get('/admin/questions/create/{examId?}', [QuestionController::class, 'create'])->name('questions.create');
 Route::post('admin/questions/import', [QuestionController::class, 'import'])->name('questions.import');
+
+
+
+// Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+    Route::get('/courses', [StudentCourseController::class, 'index'])->name('student.courses.index');
+    Route::get('/ewallet', [EWalletController::class, 'index'])->name('student.ewallet.index');
+
+    Route::post('/stripe/create-payment-intent', [StripeController::class, 'createPaymentIntent'])->name('stripe.create');
+    Route::get('/stripe/payment-success', [StripeController::class, 'handleTransaction'])->name('payment.success');
+
+    Route::post('/paypal/create', [PayPalController::class, 'createOrder'])->name('paypal.create');
+    Route::get('/paypal/return', [PayPalController::class, 'captureOrder'])->name('paypal.return');
+    Route::get('/paypal/cancel', function () {
+        return redirect()->route('student.ewallet.index')->with('error', 'Payment cancelled.');
+    })->name('paypal.cancel');
+
+
+    Route::get('/exam/{examId}', [StudentExamController::class, 'show'])->name('student.exam.show');
+    Route::post('/exam/{examId}/start', [StudentExamController::class, 'start'])->name('student.exam.start');
+
+// });
 
 require __DIR__.'/auth.php';
