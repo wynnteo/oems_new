@@ -1,7 +1,7 @@
 @extends('layouts.exammaster')
 
 @section('title')
-    eWallet | Student Portal
+    Exam | Student Portal
 @endsection
 <style>
 

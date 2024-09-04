@@ -13,13 +13,15 @@ return new class extends Migration
     {
         Schema::create('student_exams', function (Blueprint $table) {
             $table->id();
+            $table->string('session_key')->nullable();
             $table->unsignedBigInteger('exam_id'); 
             $table->unsignedBigInteger('student_id'); 
             $table->foreign('student_id')->references('id')->on('students')->onDelete('cascade');
             $table->foreign('exam_id')->references('id')->on('exams')->onDelete('cascade');
             $table->timestamp('started_at');
             $table->timestamp('completed_at')->nullable();
-            $table->json('progress')->nullable(); // Stores which questions have been answered or skipped
+            $table->json('progress')->nullable();
+            $table->string('status')->default("STARTED");
             $table->string('current_question_id')->nullable();
             $table->timestamps();
         });
