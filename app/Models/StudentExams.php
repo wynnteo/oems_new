@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class StudentExams extends Model
 {
@@ -18,6 +19,12 @@ class StudentExams extends Model
         'completed_at',
         'progress',
         'current_question_id',
+    ];
+
+    protected $casts = [
+        'started_at' => 'datetime', // Cast to Carbon instance
+        'started_at_utc' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     public function exam()

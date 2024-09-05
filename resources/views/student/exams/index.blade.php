@@ -8,8 +8,13 @@
 
     <!-- Registered Exams Section -->
     <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Registered Exams</h5>
+        <div class="card-header actions">
+            <h5 class="mb-0">Upcoming Exams</h5>
+            <div class="actions_item">
+                <a class="btn btn-darken" href="" title="Schedule an Exam">
+                    <i class="material-icons">add</i>  Schedule an Exam
+                </a>
+            </div>
         </div>
         <div class="card-body">
             @if($registeredExams->isEmpty())
@@ -17,7 +22,7 @@
                     No registered exams found.
                 </div>
             @else
-                <table class="table table-striped">
+                <table class="table table-striped" id="examtable">
                     <thead>
                         <tr>
                             <th style="width:150px">Exam Code</th>
@@ -34,42 +39,9 @@
                                 <td>{{ $exam->exam->title }}</td>
                                 <td>{{ $exam->exam->start_time }}</td>
                                 <td>{{ $exam->status }}</td>
-                                <td></td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @endif
-        </div>
-    </div>
+                                <td>
 
-    <!-- Upcoming Exams Section -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Upcoming Exams</h5>
-        </div>
-        <div class="card-body">
-            @if($upcomingExams->isEmpty())
-                <div class="alert alert-info" role="alert">
-                    No upcoming exams found.
-                </div>
-            @else
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th style="width:150px">Exam Code</th>
-                            <th>Title</th>
-                            <th style="width:150px">Exam Date</th>
-                            <th style="width:150px">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($upcomingExams as $index => $exam)
-                            <tr>
-                                <td>{{ $exam->exam->exam_code }}</td>
-                                <td>{{ $exam->exam->title }}</td>
-                                <td>{{ $exam->exam->start_time }}</td>
-                                <td>{{ $exam->status }}</td>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -89,12 +61,13 @@
                     No completed exams found.
                 </div>
             @else
-                <table class="table table-striped">
+                <table class="table table-striped" id="cexamtable">
                     <thead>
                         <tr>
                             <th style="width:150px">Exam Code</th>
                             <th>Title</th>
-                            <th style="width:150px">Completion Date</th>
+                            <th style="width:150px">Start At</th>
+                            <th style="width:150px">Completed At</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -102,6 +75,7 @@
                             <tr>
                                 <td>{{ $exam->exam->exam_code }}</td>
                                 <td>{{ $exam->exam->title }}</td>
+                                <td>{{ $exam->started_at }}</td>
                                 <td>{{ $exam->completed_at }}</td>
                             </tr>
                         @endforeach
@@ -112,3 +86,35 @@
     </div>
 </div>
 @endsection
+
+
+@section('scripts')
+    <script>
+        $(document).ready(function () {
+            $('#examtable').DataTable({
+                columnDefs: [
+                {
+                    targets: 0,
+                    width: '100px' 
+                },
+                {
+                    targets: -1,
+                    width: '100px'
+                }]
+            });
+
+            $('#cexamtable').DataTable({
+                columnDefs: [
+                {
+                    targets: 0,
+                    width: '100px' 
+                },
+                {
+                    targets: -1,
+                    width: '100px'
+                }]
+            });
+            
+        });
+    </script>
+    @endsection

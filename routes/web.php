@@ -68,6 +68,7 @@ Route::post('admin/questions/import', [QuestionController::class, 'import'])->na
     Route::get('/exam/{examId}', [StudentExamController::class, 'show'])->name('student.exam.show');
     Route::post('/exam/{examId}/start', [StudentExamController::class, 'start'])->name('student.exam.start');
     Route::get('/exam/{code}/{session_key}', [StudentExamController::class, 'showExamPage'])->name('exam.page');
+    Route::get('/exam/summary/{code}/{session_key}', [StudentExamController::class, 'showAfterExamCompleted'])->name('exam.summary');
     Route::post('/exam/{examId}/submit-answer', [StudentExamController::class, 'submitAnswer'])
         ->name('student.exam.submit_answer');
 

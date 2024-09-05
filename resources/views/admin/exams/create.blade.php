@@ -117,7 +117,7 @@ Exams | Admin Panel
                             </div>
                             <div class="col-xs-12 col-sm-12 col-md-6">
                                 <div class="form-group">
-                                    <strong>Retake Allowed:</strong>
+                                    <strong>Re-attempt Exam:</strong>
                                     <input type="checkbox" name="retake_allowed" {{ old('retake_allowed') ? 'checked' : '' }}>
                                     <br/>
                                     <small class="form-text text-muted"><i>Allow students to retake the exam if needed.</i></small>
@@ -133,7 +133,7 @@ Exams | Admin Panel
                             </div>
                             <div class="col-xs-12 col-sm-12 col-md-6">
                                 <div class="form-group">
-                                    <strong>Passing Percentage (%):</strong>
+                                    <strong>Passing Percentage:</strong>
                                     <input type="number" step='0.01' name="passing_grade" class="form-control"
                                         placeholder="Passing Grade" value="{{ old('passing_grade') }}">
                                         <small class="form-text text-muted"><i>Enter the percentage or grade required to pass the exam.</i></small>
@@ -144,10 +144,10 @@ Exams | Admin Panel
                             
                             <div class="col-xs-12 col-sm-12 col-md-6">
                                 <div class="form-group">
-                                    <strong>Show Results:</strong>
+                                    <strong>Show Result On Completion:</strong>
                                     <input type="checkbox" name="review_questions" {{ old('review_questions') ? 'checked' : '' }}>
                                     <br/>
-                                    <small class="form-text text-muted"><i>The exam result will be shown to the students.</i></small>
+                                    <small class="form-text text-muted"><i>The exam results will be displayed to the students at the end of the exam.</i></small>
                                 </div>
                             </div>
                             <div class="col-xs-12 col-sm-12 col-md-6">
@@ -155,7 +155,7 @@ Exams | Admin Panel
                                     <strong>Show Answers:</strong>
                                     <input type="checkbox" name="show_answers" {{ old('show_answers') ? 'checked' : '' }}>
                                     <br/>
-                                    <small class="form-text text-muted"><i>The exam result with correct answers will be shown to the students.</i></small>
+                                    <small class="form-text text-muted"><i>The correct answers will be displayed to the students at the end of the exam.</i></small>
                                 </div>
                             </div>
                             <!-- Status -->

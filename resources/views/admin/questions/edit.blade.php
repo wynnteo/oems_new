@@ -61,6 +61,7 @@ Edit Question | Admin Panel
                                     <select id="question_type" name="question_type" class="form-control" required>
                                         <option value="">Select Question Type</option>
                                         <option value="true_false" {{ old('question_type', $question->question_type) == 'true_false' ? 'selected' : '' }}>True/False</option>
+                                        <option value="matching" {{ old('question_type', $question->question_type) == 'matching' ? 'selected' : '' }}>Matching</option>
                                         <option value="single_choice" {{ old('question_type', $question->question_type) == 'single_choice' ? 'selected' : '' }}>Single Choice</option>
                                         <option value="multiple_choice" {{ old('question_type', $question->question_type) == 'multiple_choice' ? 'selected' : '' }}>Multiple Choice</option>
                                         <option value="fill_in_the_blank_choice" {{ old('question_type', $question->question_type) == 'fill_in_the_blank_choice' ? 'selected' : '' }}>Fill in the Blank with Choice</option>

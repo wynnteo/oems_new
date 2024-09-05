@@ -128,7 +128,7 @@ Questions | Admin Panel
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Question Text</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
-                                        Exam Title</th>
+                                        Exam Code</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Question Type</th>
                                     <th class="not-export-col text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
@@ -140,7 +140,7 @@ Questions | Admin Panel
                                 <tr>
                                     <td></td>
                                     <td>{{ $row->question_text }}</td>
-                                    <td>{{ $row->exam->title }}</td>
+                                    <td>{{ $row->exam->exam_code }}</td>
                                     <td>
                                         @switch($row->question_type)
                                             @case('true_false')

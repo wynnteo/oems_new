@@ -9,6 +9,7 @@ use App\Models\Exam;
 use App\Models\Student;
 use App\Models\Question;
 use App\Models\StudentExams;
+use Carbon\Carbon;
 
 class StudentExamController extends Controller
 {
@@ -22,54 +23,40 @@ class StudentExamController extends Controller
 
         // Fetch student exams
         $registeredExams = $student->studentExams()
-            ->with('exam') // Eager load the related exam
-            ->get();
-
-        $upcomingExams = $student->studentExams()
-            ->whereHas('exam', function($query) {
-                $query->where('start_time', '>', now()); // Fetch exams with a start date in the future
-            })
-            ->with('exam') // Eager load the related exam
+            ->with('exam')
+            ->whereNull('completed_at')
             ->get();
 
         $completedExams = $student->studentExams()
             ->whereNotNull('completed_at')
-            ->with('exam') // Eager load the related exam
+            ->with('exam')
             ->get();
 
-        // Pass the exams to the view
         return view('student.exams.index', [
             'registeredExams' => $registeredExams,
-            'upcomingExams' => $upcomingExams,
             'completedExams' => $completedExams,
         ]);
     }
     public function show($examId)
     {
-        // Fetch the exam details using the unique ID
         $exam = Exam::findOrFail($examId);
 
        // $student = Auth::user();
         $student = Student::find(1);
-        // Initialize an empty error message
         $error = null;
 
-        // Check if the student is enrolled in the course associated with the exam
         if (!$student->courses->contains($exam->course_id)) {
             $error = 'You are not enrolled in the course for this exam.';
         }
 
-        // Check if the exam is active
         if ($exam->status !== 'active') {
             $error = 'This exam is not active.';
         }
 
-        // Check if the current time is after the exam's start time
         if (now()->lt($exam->start_time)) {
             $error = 'This exam is not yet available.';
         }
 
-        // Pass the exam data and the error message to the view
         return view('student.exam', compact('exam', 'error'));
     }
 
@@ -91,23 +78,18 @@ class StudentExamController extends Controller
             return redirect()->back()->withErrors('This exam is not yet available.');
         }
 
-        // Check if the student has already started the exam
         $studentExam = StudentExams::where('exam_id', $exam->id)
             ->where('student_id', $student->id)
             ->where('status', 'STARTED')
             ->first();
 
         if (!$studentExam) {
-            // Randomize and select questions if needed
             $questions = $exam->questions;
             if ($exam->randomize_questions) {
                 $questions = $questions->shuffle();
             }
 
-            // Select the required number of questions
             $selectedQuestions = $questions->take($exam->number_of_questions);
-
-            // Store the question IDs and the selected questions in the progress
             $progress = $selectedQuestions->map(function ($question) {
                 return [
                     'question_id' => $question->id,
@@ -116,7 +98,6 @@ class StudentExamController extends Controller
                 ];
             });
 
-            // Initialize the student exam record
             $studentExam = StudentExams::create([
                 'exam_id' => $exam->id,
                 'student_id' => $student->id,
@@ -140,26 +121,24 @@ class StudentExamController extends Controller
         //$student = Auth::user();
         $student = Student::find(1);
 
-        // Retrieve the specific session for this exam
         $studentExam = StudentExams::where('exam_id', $exam->id)
             ->where('student_id', $student->id)
             ->where('session_key', $session_key)
+            ->selectRaw("*, CONVERT_TZ(started_at, '+08:00', '+00:00') as started_at_utc")
             ->firstOrFail();
 
         $progress = json_decode($studentExam->progress, true);
         $questionIds = collect($progress)->pluck('question_id');
         $questions = Question::whereIn('id', $questionIds)->get();
 
-        // Check if question_index is provided
         $questionIndex = $request->input('question_index');
         if ($questionIndex !== null && is_numeric($questionIndex)) {
             $questionIndex = (int) $questionIndex;
 
-            // Ensure the index is within bounds
             if ($questionIndex >= 0 && $questionIndex < count($questionIds)) {
                 
                 $currentIndex = $questionIndex;
-                $studentExam->current_question_id = $currentIndex; // Update current question
+                $studentExam->current_question_id = $currentIndex;
                 $studentExam->save();
             } else {
                 $currentIndex = $studentExam->current_question_id;
@@ -175,7 +154,22 @@ class StudentExamController extends Controller
         $previousQuestion = $currentIndex > 0 ? $currentIndex - 1 : null;
         $nextQuestion = $currentIndex < $questionIds->count() - 1 ? $currentIndex + 1 : null;
 
-        return view('student.exam.page', compact('exam', 'questions', 'currentIndex', 'progress', 'currentQuestion', 'previousQuestion', 'nextQuestion', 'session_key'));
+        $duration = $exam->duration;
+        $durationUnit = $exam->duration_unit;
+        $startedAt = $studentExam->started_at_utc;
+
+        if ($durationUnit == 'hours') {
+            $durationInMinutes = $duration * 60;
+        } else {
+            $durationInMinutes = $duration;
+        }
+
+        $currentTime = now();
+        $endTime = $startedAt->copy()->addMinutes($durationInMinutes);
+        $timeLeftInSeconds = $currentTime->diffInSeconds($endTime, false); 
+        $timeLeftInSeconds = $timeLeftInSeconds > 0 ? $timeLeftInSeconds : 0;
+
+        return view('student.exam.page', compact('exam', 'timeLeftInSeconds', 'questions', 'currentIndex', 'progress', 'currentQuestion', 'previousQuestion', 'nextQuestion', 'session_key'));
     }
 
     public function submitAnswer($examId, Request $request)
@@ -195,39 +189,81 @@ class StudentExamController extends Controller
                             ->where('session_key', $request->session_key)
                             ->firstOrFail();
 
-        // Update progress
         $progress = json_decode($studentExam->progress, true) ?? [];
         $progressIndex = collect($progress)->search(function ($item) use ($request) {
             return $item['question_id'] == $request->question_id;
         });
 
-
         if ($progressIndex !== false) {
-            // Update the existing progress item
             $progress[$progressIndex]['student_answer'] = $request->input('answer');
             $progress[$progressIndex]['question_marked_review'] = $request->has('question_marked_review');
         }
 
         $studentExam->progress = json_encode($progress);
 
-        // Determine the next or previous question index based on action
-        if ($request->filled('question_index')) {
-            // If a specific question index is provided (for jumping directly to a question)
-            $studentExam->current_question_id = $request->input('question_index');
+        if ($request->input('action') === 'submit') {
+            // Handle exam submission logic here
+            $studentExam->status = 'COMPLETED'; // Update the status to 'COMPLETED'
+            $studentExam->completed_at = now(); // Set the completion time
         } else {
-            // Navigate to the next or previous question
-            if ($request->input('action') === 'next') {
-                $studentExam->current_question_id = min($studentExam->current_question_id + 1, count($progress) - 1);
+            if ($request->filled('question_index')) {
+                $studentExam->current_question_id = $request->input('question_index');
             } else {
-                $studentExam->current_question_id = max($studentExam->current_question_id - 1, 0);
+                if ($request->input('action') === 'next') {
+                    $studentExam->current_question_id = min($studentExam->current_question_id + 1, count($progress) - 1);
+                } else {
+                    $studentExam->current_question_id = max($studentExam->current_question_id - 1, 0);
+                }
             }
         }
-
-        // Save the updated studentExam record
+    
         $studentExam->save();
+        $redirectRoute = $request->input('action') === 'submit' ? 'exam.summary' : 'exam.page';
 
-        return redirect()->route('exam.page', ['code' => $examId, 'session_key' => $request->session_key])
+        return redirect()->route($redirectRoute, ['code' => $examId, 'session_key' => $request->session_key])
                          ->with('success', 'Answer saved successfully!');
+    }
+
+    public function showAfterExamCompleted($code, $session_key, Request $request)
+    {
+        $exam = Exam::findOrFail($code);
+        //$student = Auth::user();
+        $student = Student::find(1);
+
+        $studentExam = StudentExams::where('exam_id', $exam->id)
+            ->where('student_id', $student->id)
+            ->where('session_key', $session_key)
+            ->firstOrFail();
+
+        // Assuming you have a way to get the results, calculate score, etc.
+        $results = $this->calculateResults($studentExam);
+
+        return view('student.exam.summary', [
+            'exam' => $exam,
+            'examStatus' => $studentExam->status,
+            'totalQuestions' => $results['totalQuestions'],
+            'correctAnswers' => $results['correctAnswers'],
+            'incorrectAnswers' => $results['incorrectAnswers'],
+            'score' => $results['score'],
+            'passFailStatus' => $results['passFailStatus'],
+            'showReview' => $request->input('review', false), // Optionally control if review section should be shown
+            'questions' => $results['questions'] // List of questions for review
+        ]);
+    }
+
+    private function calculateResults($studentExam)
+    {
+        // Implement logic to calculate totalQuestions, correctAnswers, incorrectAnswers, score, passFailStatus
+        // You might need to access $studentExam->progress or other related models
+
+        return [
+            'totalQuestions' => 20, // Example value
+            'correctAnswers' => 15, // Example value
+            'incorrectAnswers' => 5, // Example value
+            'score' => 75, // Example value
+            'passFailStatus' => 'Passed', // Example value
+            'questions' => [] // Example list of questions
+        ];
     }
 
 }

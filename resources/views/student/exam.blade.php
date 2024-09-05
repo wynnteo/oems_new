@@ -15,6 +15,8 @@
                     <h4 class="mb-0">{{ $exam->title }}</h4>
                 </div>
                 <div class="card-body">
+                    
+                    <h5>Exam Code: </h5> <p> {{$exam->exam_code}}</p>
                     <!-- Display Validation Errors -->
                     @if($errors->any())
                         <div class="alert alert-danger">
