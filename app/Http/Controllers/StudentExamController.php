@@ -105,7 +105,6 @@ class StudentExamController extends Controller
     public function showExamPage($code, $session_key, Request $request)
     {
         $exam = Exam::findOrFail($code);
-        Log::info('Showing exam page', ['code' => $code, 'session_key' => $session_key]);
         //$student = Auth::user();
         $student = Student::find(1);
 
@@ -144,8 +143,6 @@ class StudentExamController extends Controller
         $previousQuestion = $currentIndex > 0 ? $currentIndex - 1 : null;
         $nextQuestion = $currentIndex < $questionIds->count() - 1 ? $currentIndex + 1 : null;
 
-        Log::info($currentQuestion);
-        Log::info('Showing exam page', ['currentIndex' => $currentIndex, 'previousQuestion' => $previousQuestion, 'nextQuestion' => $nextQuestion]);
         return view('student.exam.page', compact('exam', 'questions', 'currentIndex', 'progress', 'currentQuestion', 'previousQuestion', 'nextQuestion', 'session_key'));
     }
 
@@ -155,7 +152,6 @@ class StudentExamController extends Controller
             'question_id' => 'required|integer|exists:questions,id',
             'answer' => 'nullable|array',
             'answer.*' => 'nullable|string',
-            'question_marked_review' => 'nullable|boolean',
             'action' => 'required|in:next,previous',
             'question_index' => 'nullable|integer', 
         ]);
@@ -173,10 +169,11 @@ class StudentExamController extends Controller
             return $item['question_id'] == $request->question_id;
         });
 
+
         if ($progressIndex !== false) {
             // Update the existing progress item
             $progress[$progressIndex]['student_answer'] = $request->input('answer');
-            $progress[$progressIndex]['question_marked_review'] = $request->input('question_marked_review', false);
+            $progress[$progressIndex]['question_marked_review'] = $request->has('question_marked_review');
         }
 
         $studentExam->progress = json_encode($progress);

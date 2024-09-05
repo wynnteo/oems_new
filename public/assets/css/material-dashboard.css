@@ -28073,3 +28073,38 @@ h5 i {
   font-weight: 300;
   font-size:1rem;
 }
+
+.btn-square {
+  display: inline-block;
+  width: 40px; /* Adjust width as needed */
+  height: 40px; /* Adjust height as needed */
+  padding: 0;
+  text-align: center;
+  line-height: 40px; /* Centers text vertically */
+  border-radius: 5px; /* Adjust as needed */
+  font-size: 14px; /* Adjust font size as needed */
+  background-color: #f8f9fa; /* Default background color */
+  color: #000; /* Text color */
+}
+
+.btn-square.active {
+  background-color: #007bff; /* Active background color */
+  color: #fff; /* Text color for active state */
+}
+
+.btn-square.reviewed {
+  background-color: #ffc107; /* Background color for reviewed questions */
+  color: #000; /* Text color for reviewed questions */
+}
+
+/* Optional: Hover effects */
+.btn-square:hover {
+  background-color: #e9ecef; /* Hover background color */
+  text-decoration: none; /* Remove underline */
+}
+
+.btn-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); /* Adjust button size and responsiveness */
+  gap: 10px; /* Adjust spacing between buttons */
+}
