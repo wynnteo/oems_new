@@ -49,9 +49,11 @@ Route::post('admin/questions/import', [QuestionController::class, 'import'])->na
 
 
 // Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
-    Route::get('/courses', [StudentCourseController::class, 'index'])->name('student.courses.index');
-    Route::get('/ewallet', [EWalletController::class, 'index'])->name('student.ewallet.index');
+    Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+    Route::get('/student/courses', [StudentCourseController::class, 'index'])->name('student.courses.index');
+    Route::get('/student/ewallet', [EWalletController::class, 'index'])->name('student.ewallet.index');
+    Route::get('/student/exams', [StudentExamController::class, 'index'])->name('student.exams.index');
+    
 
     Route::post('/stripe/create-payment-intent', [StripeController::class, 'createPaymentIntent'])->name('stripe.create');
     Route::get('/stripe/payment-success', [StripeController::class, 'handleTransaction'])->name('payment.success');

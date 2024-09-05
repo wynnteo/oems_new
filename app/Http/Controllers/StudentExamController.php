@@ -12,6 +12,38 @@ use App\Models\StudentExams;
 
 class StudentExamController extends Controller
 {
+    public function index()
+    {
+        // Get the currently authenticated student (replace with Auth::user() if authentication is set up)
+        $student = Student::find(1);
+        if (!$student) {
+            return abort(404, 'Student not found');
+        }
+
+        // Fetch student exams
+        $registeredExams = $student->studentExams()
+            ->with('exam') // Eager load the related exam
+            ->get();
+
+        $upcomingExams = $student->studentExams()
+            ->whereHas('exam', function($query) {
+                $query->where('start_time', '>', now()); // Fetch exams with a start date in the future
+            })
+            ->with('exam') // Eager load the related exam
+            ->get();
+
+        $completedExams = $student->studentExams()
+            ->whereNotNull('completed_at')
+            ->with('exam') // Eager load the related exam
+            ->get();
+
+        // Pass the exams to the view
+        return view('student.exams.index', [
+            'registeredExams' => $registeredExams,
+            'upcomingExams' => $upcomingExams,
+            'completedExams' => $completedExams,
+        ]);
+    }
     public function show($examId)
     {
         // Fetch the exam details using the unique ID

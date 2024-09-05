@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
+            $table->string('exam_code');
             $table->integer('duration')->default(0);
             $table->string('duration_unit')->nullable();
             $table->boolean('randomize_questions')->default(false);

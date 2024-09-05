@@ -10,7 +10,7 @@
     <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link text-white {{ Request::is('dashboard') ? 'active' : '' }}" href="{{ route('student.dashboard') }}">
+          <a class="nav-link text-white {{ Request::is('student/dashboard') ? 'active' : '' }}" href="{{ route('student.dashboard') }}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">dashboard</i>
             </div>
@@ -18,7 +18,15 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white {{ Request::is('courses/*') || Request::is('courses') ? 'active' : '' }} " href="{{ route('student.courses.index') }}">
+          <a class="nav-link text-white  {{ Request::is('student/profile/*') || Request::is('student/profile') ? 'active' : '' }} " href="{{ route('student.exams.index') }}">
+            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons opacity-10">person</i>
+            </div>
+            <span class="nav-link-text ms-1">Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white {{ Request::is('student/courses/*') || Request::is('student/courses') ? 'active' : '' }} " href="{{ route('student.courses.index') }}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">book</i>
             </div>
@@ -26,7 +34,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white  {{ Request::is('admin/exams/*') || Request::is('admin/exams') ? 'active' : '' }} " href="{{ route('exams.index') }}">
+          <a class="nav-link text-white  {{ Request::is('student/exams/*') || Request::is('student/exams') ? 'active' : '' }} " href="{{ route('student.exams.index') }}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">assignment</i>
             </div>
@@ -34,11 +42,19 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white {{ Request::is('admin/results/*') || Request::is('admin/results') ? 'active' : '' }} " href="{{ route('questions.index') }}">
+          <a class="nav-link text-white {{ Request::is('student/results/*') || Request::is('student/results') ? 'active' : '' }} " href="{{ route('questions.index') }}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">check_circle</i>
             </div>
-            <span class="nav-link-text ms-1">Statistics</span>
+            <span class="nav-link-text ms-1">Results</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white {{ Request::is('student/ewallet/*') || Request::is('student/ewallet') ? 'active' : '' }} " href="{{ route('student.ewallet.index') }}">
+            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons opacity-10">payments</i>
+            </div>
+            <span class="nav-link-text ms-1">Transactions</span>
           </a>
         </li>
         <li class="nav-item">

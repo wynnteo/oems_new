@@ -36,6 +36,7 @@ class ExamController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
+            'exam_code' => 'required|string',
             'description' => 'nullable|string',
             'duration' => 'nullable|integer|min:0',
             'duration_unit' => 'required|string|in:minutes,hours',
@@ -55,6 +56,7 @@ class ExamController extends Controller
 
         Exam::create([
             'title' => $request->input('title'),
+            'exam_code' => $request->input('exam_code'),
             'description' => $request->input('description'),
             'duration' => $request->input('duration'),
             'duration_unit' => $request->input('duration_unit'),
@@ -101,6 +103,7 @@ class ExamController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
+            'exam_code' => 'required|string',
             'description' => 'nullable|string',
             'duration' => 'nullable|integer|min:0',
             'duration_unit' => 'required|string|in:minutes,hours',

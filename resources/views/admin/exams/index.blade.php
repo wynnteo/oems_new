@@ -71,6 +71,8 @@ Exams | Admin Panel
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Course Code</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Exam Code</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Title</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Exam Date</th>
@@ -87,6 +89,7 @@ Exams | Admin Panel
                                 <tr>
                                     <td></td>
                                     <td>{{ $row->course->course_code }}</td>
+                                    <td>{{ $row->exam_code }}</td>
                                     <td>{{ $row->title }}</td>
                                     <td>{{ $row->start_time }}</td>
                                     

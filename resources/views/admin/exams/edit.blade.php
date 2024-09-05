@@ -51,11 +51,20 @@ Edit Exam | Admin Panel
                             </div>
 
                             <!-- Title -->
-                            <div class="col-xs-12 col-sm-12 col-md-12">
+                            <div class="col-xs-9 col-sm-9 col-md-9">
                                 <div class="form-group">
                                     <strong>Title:</strong>
                                     <input type="text" name="title" class="form-control" placeholder="Exam Title"
                                         value="{{ old('title', $exam->title) }}">
+                                </div>
+                            </div>
+
+                            <!-- Exam Code -->
+                            <div class="col-xs-3 col-sm-3 col-md-3">
+                                <div class="form-group">
+                                    <strong>Exam Code:</strong>
+                                    <input type="text" name="exam_code" class="form-control" placeholder="Exam Code"
+                                    value="{{ old('exam_code', $exam->exam_code) }}">
                                 </div>
                             </div>
 
