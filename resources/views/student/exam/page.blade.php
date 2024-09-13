@@ -171,6 +171,9 @@
     function updateTimer() {
         if (timeLeftInSeconds <= 0) {
             document.getElementById('exam-timer').innerText = "Time's up!";
+
+            document.getElementById('action').value = 'submit';
+            document.getElementById('examForm').submit();
             // Optionally, handle exam expiration here
             return;
         }
