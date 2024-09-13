@@ -9,6 +9,19 @@ class StudentExamResults extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'student_exam_id',  
+        'attempt_number',
+        'total_correct',
+        'total_incorrect',
+        'score',
+        'review',
+    ];
+
+    protected $casts = [
+        'review' => 'array', 
+    ];
+
     public function exam()
     {
         return $this->belongsTo(Exam::class);

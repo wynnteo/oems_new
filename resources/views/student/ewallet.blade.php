@@ -202,7 +202,7 @@ button:disabled {
         </div>
     </div>
 </div>
-@endsection
+@endsection 
 
 @section('scripts')
 <script src="https://js.stripe.com/v3/"></script>
@@ -210,7 +210,6 @@ button:disabled {
     var stripe = Stripe('{{ config('services.stripe.key') }}');
     let elements;
     let selectedAmount = 0;
-
 
     document.querySelectorAll('.amount-button').forEach(button => {
         button.addEventListener('click', async function() {
@@ -263,7 +262,6 @@ button:disabled {
 
         setLoading(false);
     });
-
 
     function showMessage(messageText) {
         const messageContainer = document.querySelector("#payment-message");

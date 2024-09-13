@@ -3,50 +3,41 @@
 @section('title', 'Exam Summary')
 
 @section('content')
+<style>
+    .review_box {
+        border: 1px solid #ccc;
+        border-bottom: none;
+        padding: 10px;
+    }
+
+    .review_box:last-child {
+        border-bottom: 1px solid #ccc;
+    }
+</style>
 <div class="container py-4">
     <h3>{{ $exam->title }} - {{ $exam->exam_code }}</h3>
     
-    @if ($examStatus === 'COMPLETED')
-        <div class="alert alert-success" role="alert">
-            <h4 class="alert-heading">Congratulations!</h4>
-            <p>You have completed the exam.</p>
+    @if ($passFailStatus === 'Failed')
+        <div class="alert text-center" role="alert">
+            <i class="fa-solid fa-list-check" style="color: orange; font-size:60px;"></i>
+            <div class="mb-4"></div>
+            <h2 class="alert-heading">Keep Trying</h2>
+            <div class="mb-4"></div>
+            <p>Unfortunately, you failed the exam this fime.</p>
+            <h5>Your scored {{ $correctAnswers }} / {{ $totalQuestions }}</h5>
+            <h4>{{ $score }}%</h4>
         </div>
     @else
-        <div class="alert alert-danger" role="alert">
-            <h4 class="alert-heading">Exam Incomplete</h4>
-            <p>Your exam has not been completed yet.</p>
+        <div class="alert alert-light text-center" role="alert">
+            <i class="fa-solid fa-list-check" style="color: green; font-size:60px;"></i>
+            <div class="mb-4"></div>
+            <h2 class="alert-heading">You Passed</h2>
+            <div class="mb-4"></div>
+            <p>Congratulaitons on passing the exam!</p>
+            <h5>Your scored {{ $correctAnswers }} / {{ $totalQuestions }}</h5>
+            <h4>{{ $score }}%</h4>
         </div>
     @endif
-    
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Your Results</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>Total Questions</h5>
-                    <p>{{ $totalQuestions }}</p>
-                </div>
-                <div class="col-md-6">
-                    <h5>Correct Answers</h5>
-                    <p>{{ $correctAnswers }}</p>
-                </div>
-                <div class="col-md-6">
-                    <h5>Incorrect Answers</h5>
-                    <p>{{ $incorrectAnswers }}</p>
-                </div>
-                <div class="col-md-6">
-                    <h5>Score</h5>
-                    <p>{{ $score }}%</p>
-                </div>
-                <div class="col-md-6">
-                    <h5>Status</h5>
-                    <p>{{ $passFailStatus }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
     @if ($showReview)
         <div class="card">
@@ -54,13 +45,90 @@
                 <h5 class="mb-0">Review Your Answers</h5>
             </div>
             <div class="card-body">
-                @foreach($questions as $question)
-                    <div class="mb-3">
-                        <h6>Question: {{ $question->text }}</h6>
-                        <p>Your Answer: {{ $question->student_answer }}</p>
-                        <p>Correct Answer: {{ $question->correct_answer }}</p>
+                @foreach($review as $question)
+                    <div class="review_box">
+                        <div class="review_qns">
+                            <h6>
+                                
+                                @if($question['result'] === 'correct')
+                                    <i class="fas fa-check-circle" style="color: green;"></i>
+                                @else
+                                    <i class="fas fa-times-circle" style="color: red;"></i>
+                                @endif
+
+                                Question {{ $loop->iteration }}
+                            </h6>
+                            <div class="question_text">
+                                @if($question['question_type'] != 'fill_in_the_blank_text')
+                                    @if($question['question_type'] == 'fill_in_the_blank_choice')
+                                        @php
+                                            $textWithBlanks = str_replace('[]', '_________', $question['question_text']);
+                                        @endphp
+                                        {!! $textWithBlanks !!}
+                                    @else
+                                        {!! $question['question_text'] !!}
+                                    @endif
+                                @endif
+                            </div>
+                            <p>{{ $question['description'] }}</p>
+
+                            @if($question['image_name'])
+                                <img src="{{ asset('storage/' . $question['image_name']) }}" alt="Question Image" class="img-fluid mb-3">
+                            @endif
+                        </div>
+                        <form>
+                            <div class="options_panel">
+                                @if($question['question_type'] == 'single_choice' || $question['question_type'] == 'fill_in_the_blank_choice')
+                                    @foreach($question['options'] as $option)
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="answer[]" id="option{{ $loop->index }}" value="{{ $option }}"
+                                                {{ in_array($option, $question['student_answer']) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="option{{ $loop->index }}">
+                                                {{ $option }}
+                                            </label>
+                                        </div>
+                                    @endforeach
+                                
+                                @elseif($question['question_type'] == 'multiple_choice')
+                                    @foreach($question['options'] as $option)
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="answer[]" id="option{{ $loop->index }}" value="{{ $option }}"
+                                                {{ in_array($option, $question['student_answer']) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="option{{ $loop->index }}">
+                                                {{ $option }}
+                                            </label>
+                                        </div>
+                                    @endforeach
+                                
+                                @elseif($question['question_type'] == 'true_false')
+                                    @php
+                                        $studentAnswer = $question['student_answer'];
+                                        print_r($studentAnswer[0]);
+                                    @endphp
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="answer[]" id="true" value="true" {{ in_array('true', $studentAnswer) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="true">True</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="answer[]" id="false" value="false" {{ in_array('false', $studentAnswer) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="false">False</label>
+                                    </div>
+                                
+                                @elseif($question['question_type'] == 'fill_in_the_blank_text')
+                                    <p>
+                                        @foreach(explode('[]', $question['question_text']) as $index => $segment)
+                                            {!! $segment !!}
+                                            @if ($index < count(explode('[]', $question['question_text'])) - 1)
+                                                <input type="text" name="answer[]" class="form-control d-inline-block w-auto" value="{{ $question['student_answer'][$index] ?? '' }}">
+                                            @endif
+                                        @endforeach
+                                    </p>
+                                @endif
+                            </div>
+                        </form>
                     </div>
                 @endforeach
+
             </div>
         </div>
     @endif

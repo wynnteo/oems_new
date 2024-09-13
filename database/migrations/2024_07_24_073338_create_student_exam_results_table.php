@@ -16,8 +16,9 @@ return new class extends Migration
             $table->unsignedBigInteger('student_exam_id'); 
             $table->foreign('student_exam_id')->references('id')->on('student_exams')->onDelete('cascade');
             $table->integer('attempt_number')->default(0);
+            $table->integer('total_correct')->default(0);
+            $table->integer('total_incorrect')->default(0);
             $table->float('score', 4, 2)->nullable();
-            $table->json('answers')->nullable(); // Answers provided by the student
             $table->json('review')->nullable(); // Detailed review info
             $table->timestamps();
         });

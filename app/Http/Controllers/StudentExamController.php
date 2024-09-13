@@ -9,6 +9,7 @@ use App\Models\Exam;
 use App\Models\Student;
 use App\Models\Question;
 use App\Models\StudentExams;
+use App\Models\StudentExamResults;
 use Carbon\Carbon;
 
 class StudentExamController extends Controller
@@ -178,7 +179,7 @@ class StudentExamController extends Controller
             'question_id' => 'required|integer|exists:questions,id',
             'answer' => 'nullable|array',
             'answer.*' => 'nullable|string',
-            'action' => 'required|in:next,previous',
+            'action' => 'required|in:next,previous,submit',
             'question_index' => 'nullable|integer', 
         ]);
 
@@ -198,13 +199,44 @@ class StudentExamController extends Controller
             $progress[$progressIndex]['student_answer'] = $request->input('answer');
             $progress[$progressIndex]['question_marked_review'] = $request->has('question_marked_review');
         }
-
         $studentExam->progress = json_encode($progress);
 
         if ($request->input('action') === 'submit') {
-            // Handle exam submission logic here
-            $studentExam->status = 'COMPLETED'; // Update the status to 'COMPLETED'
-            $studentExam->completed_at = now(); // Set the completion time
+            $totalCorrect = 0;
+            $totalQuestions = count($progress);
+            $passMark = $studentExam->exam->passing_grade; 
+            $studentPassed = false; 
+
+            foreach ($progress as &$entry) {
+                $question = Question::find($entry['question_id']);
+                $correctAnswer = json_decode($question->correct_answer, true);
+                $options = json_decode($question->options, true);
+                
+                if ($question->question_type === 'fill_in_the_blank_text') {
+                    $isCorrect = $this->checkFillInTheBlankAnswer($entry['student_answer'], $correctAnswer);
+                } else {
+                    $isCorrect = $this->checkAnswer($entry['student_answer'], $correctAnswer, $options);
+                }
+                $entry['result'] = $isCorrect ? 'correct' : 'incorrect';
+                $entry['correct_answer'] = $correctAnswer;
+    
+                if ($isCorrect) {
+                    $totalCorrect++;
+                }
+            }
+
+            $passPercentage = ($totalCorrect / $totalQuestions) * 100;
+            $studentPassed = $passPercentage >= $passMark;
+            $studentExam->status = 'COMPLETED';
+            $studentExam->completed_at = now();
+
+            StudentExamResults::create([
+                'student_exam_id' => $studentExam->id,
+                'score' => $passPercentage,
+                'total_correct' => $totalCorrect,
+                'total_incorrect' => ($totalQuestions - $totalCorrect),
+                'review' => $this->generateReview($progress, $studentExam), // Generate detailed review info
+            ]);
         } else {
             if ($request->filled('question_index')) {
                 $studentExam->current_question_id = $request->input('question_index');
@@ -224,6 +256,42 @@ class StudentExamController extends Controller
                          ->with('success', 'Answer saved successfully!');
     }
 
+    private function checkAnswer($studentAnswer, $correctAnswer, $options)
+    {
+        if (is_array($studentAnswer)) {
+            $studentAnswerIndexes = array_map(function($answer) use ($options) {
+                return array_search($answer, $options);
+            }, $studentAnswer);
+
+
+            sort($studentAnswerIndexes);
+            sort($correctAnswer);
+
+            return $studentAnswerIndexes == $correctAnswer;
+        }
+
+        return false;
+    }
+
+    private function checkFillInTheBlankAnswer($studentAnswer, $correctAnswer)
+    {
+        if (count($studentAnswer) !== count($correctAnswer)) {
+            return false;
+        }
+        foreach ($studentAnswer as $index => $studentBlankAnswer) {
+            $acceptableAnswers = $correctAnswer[$index];
+            $isCorrect = collect($acceptableAnswers)->contains(function($acceptableAnswer) use ($studentBlankAnswer) {
+                return strtolower(trim($acceptableAnswer)) === strtolower(trim($studentBlankAnswer));
+            });
+
+            if (!$isCorrect) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function showAfterExamCompleted($code, $session_key, Request $request)
     {
         $exam = Exam::findOrFail($code);
@@ -233,37 +301,49 @@ class StudentExamController extends Controller
         $studentExam = StudentExams::where('exam_id', $exam->id)
             ->where('student_id', $student->id)
             ->where('session_key', $session_key)
+            ->latest()
+            ->firstOrFail();
+        
+        $studentExamResult = StudentExamResults::where('student_exam_id', $studentExam->id)
+            ->latest()
             ->firstOrFail();
 
-        // Assuming you have a way to get the results, calculate score, etc.
-        $results = $this->calculateResults($studentExam);
+        $passMark = $studentExam->exam->passing_grade; 
+        $studentPassed = ($studentExamResult->score >= $passMark) ? 'Passed' : 'Failed';
 
         return view('student.exam.summary', [
             'exam' => $exam,
             'examStatus' => $studentExam->status,
-            'totalQuestions' => $results['totalQuestions'],
-            'correctAnswers' => $results['correctAnswers'],
-            'incorrectAnswers' => $results['incorrectAnswers'],
-            'score' => $results['score'],
-            'passFailStatus' => $results['passFailStatus'],
-            'showReview' => $request->input('review', false), // Optionally control if review section should be shown
-            'questions' => $results['questions'] // List of questions for review
+            'totalQuestions' => ($studentExamResult->total_correct + $studentExamResult->total_incorrect),
+            'correctAnswers' => $studentExamResult->total_correct,
+            'incorrectAnswers' => $studentExamResult->total_incorrect,
+            'score' => $studentExamResult->score,
+            'passFailStatus' => $studentPassed,
+            'showReview' => true,
+            'review' => $studentExamResult->review,
         ]);
     }
 
-    private function calculateResults($studentExam)
+    private function generateReview($progress, $studentExam)
     {
-        // Implement logic to calculate totalQuestions, correctAnswers, incorrectAnswers, score, passFailStatus
-        // You might need to access $studentExam->progress or other related models
+        $review = [];
 
-        return [
-            'totalQuestions' => 20, // Example value
-            'correctAnswers' => 15, // Example value
-            'incorrectAnswers' => 5, // Example value
-            'score' => 75, // Example value
-            'passFailStatus' => 'Passed', // Example value
-            'questions' => [] // Example list of questions
-        ];
+        foreach ($progress as $entry) {
+            $question = Question::find($entry['question_id']);
+            $review[] = (object) [
+                'question_id' => $entry['question_id'],
+                'student_answer' => $entry['student_answer'],
+                'correct_answer' => $entry['correct_answer'],
+                'result' => $entry['result'],
+                'question_text' => $question->question_text,
+                'question_type' => $question->question_type,
+                'options' => json_decode($question->options),
+                'description' => $question->description,
+                'image_name' => $question->image_name,
+            ];
+        }
+
+        return $review;
     }
 
 }
