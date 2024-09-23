@@ -3,17 +3,6 @@
 @section('title', 'Exam Summary')
 
 @section('content')
-<style>
-    .review_box {
-        border: 1px solid #ccc;
-        border-bottom: none;
-        padding: 10px;
-    }
-
-    .review_box:last-child {
-        border-bottom: 1px solid #ccc;
-    }
-</style>
 <div class="container py-4">
     <h3>{{ $exam->title }} - {{ $exam->exam_code }}</h3>
     

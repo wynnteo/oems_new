@@ -34,6 +34,11 @@ class StudentExams extends Model
     
     public function examResult()
     {
-        return $this->hasOne(StudentExamResult::class);
+        return $this->hasOne(StudentExamResults::class, 'student_exam_id');
+    }
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
     }
 }

@@ -221,11 +221,15 @@ Students | Admin Panel
                                 <tr>
                                     <th></th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
-                                        Exam Date</th>
+                                        Exam Code</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
-                                        Exam</th>
+                                        Title</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
-                                        Status</th>
+                                        Start At</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Completed At</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
+                                        Grade</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
                                         Result</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">
@@ -234,25 +238,38 @@ Students | Admin Panel
                             </thead>
                             <tbody>
                                 @foreach ($student->studentExams as $row)
-                                <tr>
+
+                                @php
+                                    $result = $row->examResult;
+                                    $status = $result && $result->score > $row->exam->passing_grade ? 'Pass' : ($result ? 'Fail' : 'Not Graded');
+                                    $statusClass = $result
+                                        ? ($result->score > $row->exam->passing_grade ? 'bg-success' : 'bg-danger')
+                                        : 'bg-secondary';
+                                @endphp
+                                <tr> 
                                     <td></td>
-                                    <td>{{ $row->exam->started_at ? $row->exam->started_at->format('Y-m-d H:i') : '-' }}</td>
+                                    <td>{{ $row->exam->exam_code }}</td>
                                     <td>{{ $row->exam->title }}</td>
-                                    <td>@if ($row->completed_at)
-                                        <span class="badge bg-success">Completed</span>
-                                        @else
-                                            <span class="badge bg-warning">In Progress</span>
-                                        @endif
+                                    <td>{{ $row->started_at ? $row->started_at->format('Y-m-d H:i') : '-' }}</td>
+                                    <td>{{ $row->completed_at ? $row->completed_at->format('Y-m-d H:i') : '-' }}</td>
+                                    
+                                    <td><span class="badge {{ $statusClass }}">{{ $status }}</span>
                                     </td>
                                     <td>
-                                        @if ($studentExam->studentExamResult)
+                                        @if ($row->examResult)
                                             {{ $row->examResult->score }}
                                         @else
                                             Not Available
                                         @endif
                                     </td>
                                     <td>
-                                        
+                                        @if($result)
+                                            <a href="" class="btn btn-primary btn-sm">
+                                                <i class="material-icons">remove_red_eye</i> View
+                                            </a>
+                                        @else
+                                            <span class="text-muted">No Result</span>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach

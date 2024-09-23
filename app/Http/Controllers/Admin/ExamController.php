@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Exam;
 use App\Models\Course;
+use App\Models\StudentExams;
+use App\Models\StudentExamResults;
 use Illuminate\Support\Facades\Log;
 
 class ExamController extends Controller
@@ -80,7 +82,30 @@ class ExamController extends Controller
     // Display the specified exam
     public function show(Exam $exam)
     {
-        return view('admin.exams.show', compact('exam'));
+        // Eager load studentExams with related student and studentExamResult
+        $studentExams = $exam->studentExams()->with(['student', 'examResult'])->get();
+
+        Log::info($studentExams);
+
+        // Calculate statistics
+        $totalPass = $studentExams->filter(function ($se) use ($exam) {
+            return $se->examResult && $se->examResult->score > $exam->passing_grade;
+        })->count();
+
+        $totalFail = $studentExams->filter(function ($se) use ($exam) {
+            return !$se->examResult || $se->examResult->score <= $exam->passing_grade;
+        })->count();
+
+        $highestMark = $studentExams->max(function ($se) {
+            return $se->examResult ? $se->examResult->score : 0;
+        });
+
+        $lowestMark = $studentExams->min(function ($se) {
+            return $se->examResult ? $se->examResult->score : 0;
+        });
+
+        // Pass all data to the view
+        return view('admin.exams.show', compact('exam', 'totalPass', 'totalFail', 'highestMark', 'lowestMark', 'studentExams'));
     }
 
     // Show the form for editing the specified exam

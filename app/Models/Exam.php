@@ -32,6 +32,11 @@ class Exam extends Model
         'updated_at',
     ];
 
+    public function studentExams()
+    {
+        return $this->hasMany(StudentExams::class);
+    }
+
     protected $casts = [
         'start_time' => 'datetime',
     ];

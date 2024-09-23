@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\ExamController;
 use App\Http\Controllers\Admin\QuestionController;
+use App\Http\Controllers\Admin\StudentExamsController;
 
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\StudentCourseController;
@@ -46,7 +47,7 @@ Route::resource('/admin/questions', QuestionController::class);
 Route::get('/admin/questions/create/{examId?}', [QuestionController::class, 'create'])->name('questions.create');
 Route::post('admin/questions/import', [QuestionController::class, 'import'])->name('questions.import');
 
-
+Route::get('/admin/results/view/{id}', [StudentExamsController::class, 'view'])->name('results.view');
 
 // Route::middleware(['auth'])->group(function () {
     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');

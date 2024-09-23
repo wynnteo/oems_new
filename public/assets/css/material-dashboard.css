@@ -28108,3 +28108,13 @@ h5 i {
   grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); /* Adjust button size and responsiveness */
   gap: 10px; /* Adjust spacing between buttons */
 }
+
+.review_box {
+  border: 1px solid #ccc;
+  border-bottom: none;
+  padding: 10px;
+}
+
+.review_box:last-child {
+  border-bottom: 1px solid #ccc;
+}

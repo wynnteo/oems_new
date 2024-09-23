@@ -35,6 +35,6 @@ class StudentExamResults extends Model
 
     public function studentExam()
     {
-        return $this->belongsTo(StudentExams::class);
+        return $this->belongsTo(StudentExams::class, 'student_exam_id');
     }
 }

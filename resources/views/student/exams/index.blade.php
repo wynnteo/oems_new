@@ -68,15 +68,37 @@
                             <th>Title</th>
                             <th style="width:150px">Start At</th>
                             <th style="width:150px">Completed At</th>
+                            <th>Score</th>
+                            <th>Grade</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($completedExams as $index => $exam)
+
+                        @php
+                            $result = $exam->examResult;
+                            $status = $result && $result->score > $exam->exam->passing_grade ? 'Pass' : ($result ? 'Fail' : 'Not Graded');
+                            $statusClass = $result
+                                ? ($result->score > $exam->exam->passing_grade ? 'bg-success' : 'bg-danger')
+                                : 'bg-secondary';
+                        @endphp
                             <tr>
                                 <td>{{ $exam->exam->exam_code }}</td>
                                 <td>{{ $exam->exam->title }}</td>
                                 <td>{{ $exam->started_at }}</td>
                                 <td>{{ $exam->completed_at }}</td>
+                                <td>{{ $exam->score }}</td>
+                                <td><span class="badge {{ $statusClass }}">{{ $status }}</span></td>
+                                <td>
+                                    @if($result)
+                                        <a href="" class="btn btn-primary btn-sm">
+                                            <i class="material-icons">remove_red_eye</i> View
+                                        </a>
+                                    @else
+                                        <span class="text-muted">No Result</span>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
