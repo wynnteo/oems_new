@@ -261,13 +261,24 @@ class QuestionController extends Controller
 
     public function destroy($id)
     {
-        $question = Question::findOrFail($id);
-        if ($question->image_name) {
-            \Storage::disk('public')->delete($question->image_name);
-        }
+        try {
+            $question = Question::findOrFail($id);
 
-        $question->delete();
-        return redirect()->route('questions.index')->with('success', 'Question deleted successfully.');
+            // Delete the image if it exists
+            if ($question->image_name) {
+                Storage::disk('public')->delete($question->image_name);
+            }
+
+            // Delete the question
+            $question->delete();
+
+            return redirect()->route('questions.index')
+                           ->with('success', 'Question deleted successfully.');
+                           
+        } catch (\Exception $e) {
+            return redirect()->route('questions.index')
+                           ->with('error', 'Failed to delete question: ' . $e->getMessage());
+        }
     }
 
     public function toggleStatus(Request $request, Question $question)
@@ -318,6 +329,53 @@ class QuestionController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('questions.index')
                            ->with('error', 'Question not found or cannot be duplicated.');
+        }
+    }
+
+    public function bulkAction(Request $request)
+    {
+        try {
+            $request->validate([
+                'action' => 'required|in:activate,deactivate,delete',
+                'question_ids' => 'required|array',
+                'question_ids.*' => 'exists:questions,id'
+            ]);
+
+            $questionIds = $request->question_ids;
+            $action = $request->action;
+            $count = 0;
+
+            switch ($action) {
+                case 'activate':
+                    $count = Question::whereIn('id', $questionIds)->update(['is_active' => true]);
+                    break;
+                    
+                case 'deactivate':
+                    $count = Question::whereIn('id', $questionIds)->update(['is_active' => false]);
+                    break;
+                    
+                case 'delete':
+                    // Delete associated images first
+                    $questions = Question::whereIn('id', $questionIds)->get();
+                    foreach ($questions as $question) {
+                        if ($question->image_name) {
+                            Storage::disk('public')->delete($question->image_name);
+                        }
+                    }
+                    $count = Question::whereIn('id', $questionIds)->delete();
+                    break;
+            }
+
+            $actionText = ucfirst($action) . 'd';
+            return redirect()->back()
+                           ->with('success', "{$count} questions {$actionText} successfully.");
+                           
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                           ->withErrors($e->errors());
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Bulk action failed: ' . $e->getMessage());
         }
     }
 

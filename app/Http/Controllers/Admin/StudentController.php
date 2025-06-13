@@ -23,11 +23,14 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'email' => 'required',
-            'gender' => 'required',
-            'status' => 'required',
-            'student_code' => 'required|unique:students',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:students,email',
+            'phone_number' => 'nullable|string|max:20',
+            'date_of_birth' => 'nullable|date|before:today',
+            'gender' => 'required|in:M,F',
+            'status' => 'required|in:active,inactive',
+            'student_code' => 'required|string|unique:students,student_code|max:50',
+            'address' => 'nullable|string|max:500',
         ]);
 
         Student::create($request->all());
@@ -48,6 +51,17 @@ class StudentController extends Controller
             'gender' => 'required',
             'status' => 'requred',
             'student_code' => 'required|unique:students,student_code,' .$student->student_code ,
+        ]);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:students,email,' . $student->id,
+            'phone_number' => 'nullable|string|max:20',
+            'date_of_birth' => 'nullable|date|before:today',
+            'gender' => 'required|in:M,F',
+            'status' => 'required|in:active,inactive',
+            'student_code' => 'required|string|unique:students,student_code,' . $student->student_code,
+            'address' => 'nullable|string|max:500',
         ]);
 
         $student->update($request->all());
@@ -81,40 +95,66 @@ class StudentController extends Controller
             'courseList.*' => 'exists:courses,id',
         ]);
 
+        $enrolledCount = 0;
+        $alreadyEnrolled = [];
+
         // Enroll student in the selected courses
         foreach ($request->courseList as $courseId) {
-            Enrolment::firstOrCreate([
+            $enrollment = Enrolment::firstOrCreate([
                 'student_id' => $student->id,
                 'course_id' => $courseId,
             ], [
-                'enrollment_date' => now(),  // Assuming you want to capture the date of enrollment
+                'enrollment_date' => now(),
+                'status' => 'active', // Set default status
             ]);
+            
+            if ($enrollment->wasRecentlyCreated) {
+                $enrolledCount++;
+            } else {
+                $alreadyEnrolled[] = $enrollment->course->title ?? "Course ID: $courseId";
+            }
+        }
+
+        $message = "Student enrolled in $enrolledCount course(s) successfully!";
+        if (!empty($alreadyEnrolled)) {
+            $message .= " Note: Already enrolled in: " . implode(', ', $alreadyEnrolled);
         }
 
         // Redirect back with success message
         return redirect()->route('students.show', $student->id)
-            ->with('success', 'Student enrolled in selected courses successfully!');
+            ->with('success', $message);
     }
 
     public function unenroll(Student $student, $enrollmentId)
     {
-        // Find the enrollment record using the enrollment ID
-        $enrollment = Enrolment::where('id', $enrollmentId)->where('student_id', $student->id)->first();
+        $enrollment = Enrolment::where('id', $enrollmentId)
+            ->where('student_id', $student->id)
+            ->with('course')
+            ->first();
 
         if ($enrollment) {
+            $courseName = $enrollment->course->title ?? 'Unknown Course';
+            
             // Delete the enrollment record
             $enrollment->delete();
             
-            // Optional: Flash message or other logic
-            session()->flash('success', 'Successfully unenrolled from course.');
+            $message = "Successfully unenrolled from $courseName.";
         } else {
-            // Optional: Flash error message or other logic
-            session()->flash('error', 'Enrollment record not found.');
+            $message = 'Enrollment record not found.';
         }
 
-        // Redirect back to the previous page
+        // Check if it's an AJAX request
+        if (request()->ajax()) {
+            if ($enrollment) {
+                return response()->json(['success' => true, 'message' => $message]);
+            } else {
+                return response()->json(['success' => false, 'message' => $message], 404);
+            }
+        }
+
+        // Redirect back to the previous page for non-AJAX requests
         return redirect()->route('students.show', $student->id)
-            ->with('success', 'Student unenrolled from course successfully!');
+            ->with($enrollment ? 'success' : 'error', $message);
     }
 
 }
