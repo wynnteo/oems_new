@@ -331,9 +331,9 @@ Questions Management | Admin Panel
                                         </span>
                                     </td>
                                     <td>
-                                        @if($row->is_active == 'active')
+                                        @if($question->is_active == 'active')
                                             <span class="status-badge badge badge-sm bg-gradient-success">Active</span>
-                                        @elseif($row->is_active == 'inactive')
+                                        @elseif($question->is_active == 'inactive')
                                             <span class="status-badge badge badge-sm bg-gradient-danger">Inactive</span>
                                         @else
                                             <span class="status-badge badge badge-sm bg-gradient-warning">Draft</span>

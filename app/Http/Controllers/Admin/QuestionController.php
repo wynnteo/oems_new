@@ -248,7 +248,6 @@ class QuestionController extends Controller
         }
     }
 
-    // Display a specific question
     public function show($id)
     {
         try {
@@ -260,28 +259,21 @@ class QuestionController extends Controller
         }
     }
 
-    // Remove a specific question from storage
     public function destroy($id)
     {
-        // Find the question
         $question = Question::findOrFail($id);
-
-        // Delete the image if it exists
         if ($question->image_name) {
             \Storage::disk('public')->delete($question->image_name);
         }
 
-        // Delete the question
         $question->delete();
-
-        // Redirect with a success message
         return redirect()->route('questions.index')->with('success', 'Question deleted successfully.');
     }
 
     public function toggleStatus(Request $request, Question $question)
     {
         try {
-            $question->update(['is_active' => $request->is_active]);
+            $question->update(['is_active' => $request->status]);
             
             return response()->json([
                 'success' => true,
