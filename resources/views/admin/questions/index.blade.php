@@ -294,8 +294,6 @@ Questions Management | Admin Panel
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Question</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Exam</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Type</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Difficulty</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Points</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Status</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Created</th>
                                     <th class="not-export-col text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Actions</th>
@@ -333,26 +331,12 @@ Questions Management | Admin Panel
                                         </span>
                                     </td>
                                     <td>
-                                        @if($question->difficulty_level)
-                                            @if($question->difficulty_level == 'easy')
-                                                <span class="badge badge-sm bg-gradient-success">Easy</span>
-                                            @elseif($question->difficulty_level == 'medium')
-                                                <span class="badge badge-sm bg-gradient-warning">Medium</span>
-                                            @else
-                                                <span class="badge badge-sm bg-gradient-danger">Hard</span>
-                                            @endif
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span class="text-sm font-weight-bold">{{ $question->points ?? 1 }}</span>
-                                    </td>
-                                    <td>
-                                        @if($question->is_active)
+                                        @if($row->is_active == 'active')
                                             <span class="status-badge badge badge-sm bg-gradient-success">Active</span>
-                                        @else
+                                        @elseif($row->is_active == 'inactive')
                                             <span class="status-badge badge badge-sm bg-gradient-danger">Inactive</span>
+                                        @else
+                                            <span class="status-badge badge badge-sm bg-gradient-warning">Draft</span>
                                         @endif
                                     </td>
                                     <td>
@@ -373,10 +357,10 @@ Questions Management | Admin Panel
                                                 <li><a class="dropdown-item border-radius-md duplicate-btn" href="#" data-id="{{ $question->id }}">
                                                     <i class="material-icons">content_copy</i> Duplicate</a></li>
                                                 @if(!$question->is_active)
-                                                    <li><a class="dropdown-item border-radius-md" href="#" onclick="toggleStatus({{ $question->id }}, 1)">
+                                                    <li><a class="dropdown-item border-radius-md" href="#" onclick="toggleStatus({{ $question->id }}, 'activate')">
                                                         <i class="material-icons">check_circle</i> Activate</a></li>
                                                 @else
-                                                    <li><a class="dropdown-item border-radius-md" href="#" onclick="toggleStatus({{ $question->id }}, 0)">
+                                                    <li><a class="dropdown-item border-radius-md" href="#" onclick="toggleStatus({{ $question->id }}, 'inactive')">
                                                         <i class="material-icons">pause_circle</i> Deactivate</a></li>
                                                 @endif
                                                 <li><hr class="dropdown-divider"></li>
@@ -539,14 +523,14 @@ function updateStatusUI(questionId, newStatus) {
     const statusBadge = $(`#question-${questionId}`).find('.status-badge');
     
     if (newStatus == 1) {
-        statusToggle.attr('onclick', `toggleStatus(${questionId}, 0)`);
+        statusToggle.attr('onclick', `toggleStatus(${questionId}, 'inactive')`);
         statusToggle.html('<i class="material-icons">pause_circle</i> Deactivate');
 
         statusBadge.removeClass('bg-gradient-danger')
                   .addClass('bg-gradient-success')
                   .text('Active');
     } else {
-        statusToggle.attr('onclick', `toggleStatus(${questionId}, 1)`);
+        statusToggle.attr('onclick', `toggleStatus(${questionId}, 'activate')`);
         statusToggle.html('<i class="material-icons">check_circle</i> Activate');
 
         statusBadge.removeClass('bg-gradient-success')
