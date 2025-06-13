@@ -32,8 +32,8 @@
             <div class="card">
                 <div class="card-body">
                     <div class="question_text">
-                    @if($currentQuestion->question_type != 'fill_in_the_blank_text')
-                        @if($currentQuestion->question_type == 'fill_in_the_blank_choice')
+                    @if($currentQuestion->question_type != 'fill_in_the_blank_with_text')
+                        @if($currentQuestion->question_type == 'fill_in_the_blank_with_choice')
                             @php
                                 $textWithBlanks = str_replace('[]', '_________', $currentQuestion->question_text);
                             @endphp
@@ -62,7 +62,7 @@
                             @endphp
                         
                             <!-- Question Options -->
-                            @if($currentQuestion->question_type == 'single_choice' || $currentQuestion->question_type == 'fill_in_the_blank_choice')
+                            @if($currentQuestion->question_type == 'single_choice' || $currentQuestion->question_type == 'fill_in_the_blank_with_choice')
                                 @foreach($currentQuestion->options as $option)
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="answer[]" id="option{{ $loop->index }}" value="{{ $option }}"
@@ -94,7 +94,7 @@
                                     <label class="form-check-label" for="false">False</label>
                                 </div>
                         
-                            @elseif($currentQuestion->question_type == 'fill_in_the_blank_text')
+                            @elseif($currentQuestion->question_type == 'fill_in_the_blank_with_text')
                                 <p>
                                     @foreach(explode('[]', $currentQuestion->question_text) as $index => $segment)
                                         {!! $segment !!}

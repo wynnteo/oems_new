@@ -48,8 +48,8 @@
                                 Question {{ $loop->iteration }}
                             </h6>
                             <div class="question_text">
-                                @if($question['question_type'] != 'fill_in_the_blank_text')
-                                    @if($question['question_type'] == 'fill_in_the_blank_choice')
+                                @if($question['question_type'] != 'fill_in_the_blank_with_text')
+                                    @if($question['question_type'] == 'fill_in_the_blank_with_choice')
                                         @php
                                             $textWithBlanks = str_replace('[]', '_________', $question['question_text']);
                                         @endphp
@@ -67,7 +67,7 @@
                         </div>
                         <form>
                             <div class="options_panel">
-                                @if($question['question_type'] == 'single_choice' || $question['question_type'] == 'fill_in_the_blank_choice')
+                                @if($question['question_type'] == 'single_choice' || $question['question_type'] == 'fill_in_the_blank_with_choice')
                                     @foreach($question['options'] as $option)
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="answer[]" id="option{{ $loop->index }}" value="{{ $option }}"
@@ -103,7 +103,7 @@
                                         <label class="form-check-label" for="false">False</label>
                                     </div>
                                 
-                                @elseif($question['question_type'] == 'fill_in_the_blank_text')
+                                @elseif($question['question_type'] == 'fill_in_the_blank_with_text')
                                     <p>
                                         @foreach(explode('[]', $question['question_text']) as $index => $segment)
                                             {!! $segment !!}

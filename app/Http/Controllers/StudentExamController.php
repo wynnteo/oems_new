@@ -50,13 +50,13 @@ class StudentExamController extends Controller
             $error = 'You are not enrolled in the course for this exam.';
         }
 
-        if ($exam->status !== 'active') {
+        if ($exam->status !== 'available') {
             $error = 'This Exam is Inactive.';
         }
 
-        if (now()->lt($exam->start_time)) {
-            $error = 'This Exam is Unavailable.';
-        }
+        // if (now()->lt($exam->start_time)) {
+        //     $error = 'This Exam is Unavailable.';
+        // }
 
         return view('student.exam', compact('exam', 'error'));
     }
