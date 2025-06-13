@@ -11,39 +11,55 @@ Questions Management | Admin Panel
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Delete Question</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <form id="question_delete_modal" method="POST">
                 @csrf
                 @method('DELETE')
                 <div class="modal-body">
-                    <p>Are you sure you want to delete this question?</p>
-                    <p class="text-danger"><small>This action cannot be undone.</small></p>
+                    <div class="text-center">
+                        <i class="material-icons text-warning mb-3" style="font-size: 48px;">warning</i>
+                        <h6 class="mb-3">Are you sure you want to delete this question?</h6>
+                        <p class="text-muted small">This action cannot be undone. All related exam data will be affected.</p>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-danger">Delete Question</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Bulk Delete Modal -->
-<div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true">
+<!-- Bulk Actions Modal -->
+<div class="modal fade" id="bulkActionModal" tabindex="-1" aria-labelledby="bulkActionModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="bulkDeleteModalLabel">Delete Selected Questions</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="bulkActionModalLabel">Bulk Actions</h5>
+                <button type="button" class="btn" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete <span id="selectedCount">0</span> selected questions?</p>
-                <p class="text-danger"><small>This action cannot be undone.</small></p>
+                <div class="form-group">
+                    <label for="bulkAction">Select Action:</label>
+                    <select id="bulkAction" class="form-control">
+                        <option value="">Choose an action...</option>
+                        <option value="activate">Activate Selected Questions</option>
+                        <option value="deactivate">Deactivate Selected Questions</option>
+                        <option value="duplicate">Duplicate Selected Questions</option>
+                        <option value="delete">Delete Selected Questions</option>
+                    </select>
+                </div>
+                <div id="selectedCount" class="text-muted small mt-2"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmBulkDelete">Delete Selected</button>
+                <button type="button" id="executeBulkAction" class="btn btn-primary">Execute</button>
             </div>
         </div>
     </div>
@@ -55,7 +71,9 @@ Questions Management | Admin Panel
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="importModalLabel">Import Questions</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <form id="import_qns_modal" action="{{ route('questions.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
@@ -100,104 +118,137 @@ Questions Management | Admin Panel
     <div class="row mb-4">
         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
             <div class="card">
-                <div class="card-header p-3 pt-2">
-                    <div class="icon icon-lg icon-shape bg-gradient-primary shadow-primary text-center border-radius-xl mt-n4 position-absolute">
-                        <i class="material-icons opacity-10">quiz</i>
-                    </div>
-                    <div class="text-end pt-1">
-                        <p class="text-sm mb-0 text-capitalize">Total Questions</p>
-                        <h4 class="mb-0">{{ $stats['total'] }}</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-            <div class="card">
-                <div class="card-header p-3 pt-2">
-                    <div class="icon icon-lg icon-shape bg-gradient-success shadow-success text-center border-radius-xl mt-n4 position-absolute">
-                        <i class="material-icons opacity-10">check_box</i>
-                    </div>
-                    <div class="text-end pt-1">
-                        <p class="text-sm mb-0 text-capitalize">Active Questions</p>
-                        <h4 class="mb-0">{{ $stats['active'] }}</h4>
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Total Questions</p>
+                                <h5 class="font-weight-bolder mb-0">{{ $stats['total'] }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
+                                <i class="material-icons opacity-10">quiz</i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
             <div class="card">
-                <div class="card-header p-3 pt-2">
-                    <div class="icon icon-lg icon-shape bg-gradient-warning shadow-warning text-center border-radius-xl mt-n4 position-absolute">
-                        <i class="material-icons opacity-10">disabled_by_default</i>
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Active Questions</p>
+                                <h5 class="font-weight-bolder mb-0">{{ $stats['active'] }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
+                                <i class="material-icons opacity-10">check_circle</i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-end pt-1">
-                        <p class="text-sm mb-0 text-capitalize">Inactive Questions</p>
-                        <h4 class="mb-0">{{ $stats['inactive'] }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Inactive Questions</p>
+                                <h5 class="font-weight-bolder mb-0">{{ $stats['inactive'] }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-warning shadow text-center border-radius-md">
+                                <i class="material-icons opacity-10">pause_circle</i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-xl-3 col-sm-6">
             <div class="card">
-                <div class="card-header p-3 pt-2">
-                    <div class="icon icon-lg icon-shape bg-gradient-info shadow-info text-center border-radius-xl mt-n4 position-absolute">
-                        <i class="material-icons opacity-10">school</i>
-                    </div>
-                    <div class="text-end pt-1">
-                        <p class="text-sm mb-0 text-capitalize">Total Exams</p>
-                        <h4 class="mb-0">{{ $exams->count() }}</h4>
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Total Exams</p>
+                                <h5 class="font-weight-bolder mb-0">{{ $exams->count() }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-info shadow text-center border-radius-md">
+                                <i class="material-icons opacity-10">school</i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="material-icons opacity-10 me-2">question_answer</i>
-                            Questions Management
-                        </h5>
+                <div class="card-header actions">
+                    <h5 class="text-capitalize"><i class="material-icons opacity-10">question_answer</i> Questions Management</h5>
+                    <div class="actions_item">
+                        <a class="btn btn-darken" href="{{ route('questions.create') }}" title="Add New Question">
+                            <i class="material-icons">add</i> New Question
+                        </a>
+                        <button type="button" class="btn btn-info" id="importQuestionsBtn" title="Import Questions">
+                            <i class="material-icons">playlist_add</i> Import
+                        </button>
+                        <button type="button" class="btn btn-info" id="bulkActionsBtn" disabled>
+                            <i class="material-icons">checklist</i> Bulk Actions
+                        </button>
                         <div class="btn-group">
-                            <a class="btn btn-primary" href="{{ route('questions.create') }}" title="Add New Question">
-                                <i class="material-icons me-1">add</i> New Question
-                            </a>
-                            <button type="button" class="btn btn-info" id="importQuestionsBtn" title="Import Questions">
-                                <i class="material-icons me-1">playlist_add</i> Import
+                            <button type="button" class="btn btn-light dropdown-toggle" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="material-icons">download</i> Export
                             </button>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
-                                    <i class="material-icons me-1">download</i> Export
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="csv">
-                                        <i class="material-icons me-2">description</i> CSV
-                                    </a></li>
-                                    <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="excel">
-                                        <i class="material-icons me-2">table_chart</i> Excel
-                                    </a></li>
-                                    <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="pdf">
-                                        <i class="material-icons me-2">picture_as_pdf</i> PDF
-                                    </a></li>
-                                    <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="print">
-                                        <i class="material-icons me-2">print</i> Print
-                                    </a></li>
-                                </ul>
-                            </div>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <li><a class="dropdown-item dropdown-item-tools border-radius-md" href="#" data-action="csv">
+                                    <i class="material-icons">description</i> CSV</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="excel">
+                                    <i class="material-icons">table_chart</i> Excel</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="pdf">
+                                    <i class="material-icons">picture_as_pdf</i> PDF</a></li>
+                                <li><a class="dropdown-item dropdown-item-tools" href="#" data-action="print">
+                                    <i class="material-icons">print</i> Print</a></li>
+                            </ul>
                         </div>
                     </div>
                 </div>
+                <div class="card-body px-0 pb-2">
+                    @if ($message = Session::get('success'))
+                    <div class="alert alert-success alert-dismissible text-white mx-4">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <span><i class="material-icons">check_circle</i> {{ $message }}</span>
+                    </div>
+                    @endif
 
-                <!-- Filters -->
-                <div class="card-body">
-                    <div class="row mb-3">
+                    @if ($message = Session::get('error'))
+                    <div class="alert alert-danger alert-dismissible text-white mx-4">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <span><i class="material-icons">error</i> {{ $message }}</span>
+                    </div>
+                    @endif
+
+                    <!-- Filters -->
+                    <div class="row mx-4 mb-3">
                         <div class="col-md-3">
-                            <label for="examFilter" class="form-label">Filter by Exam</label>
-                            <select id="examFilter" class="form-select">
+                            <select id="examFilter" class="form-control form-control-sm">
                                 <option value="">All Exams</option>
                                 @foreach ($exams as $exam)
                                     <option value="{{ $exam->id }}" {{ request('exam_id') == $exam->id ? 'selected' : '' }}>
@@ -207,8 +258,7 @@ Questions Management | Admin Panel
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="typeFilter" class="form-label">Filter by Type</label>
-                            <select id="typeFilter" class="form-select">
+                            <select id="typeFilter" class="form-control form-control-sm">
                                 <option value="">All Types</option>
                                 <option value="true_false" {{ request('question_type') == 'true_false' ? 'selected' : '' }}>True/False</option>
                                 <option value="single_choice" {{ request('question_type') == 'single_choice' ? 'selected' : '' }}>Single Choice</option>
@@ -219,51 +269,21 @@ Questions Management | Admin Panel
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="statusFilter" class="form-label">Filter by Status</label>
-                            <select id="statusFilter" class="form-select">
+                            <select id="statusFilter" class="form-control form-control-sm">
                                 <option value="">All Status</option>
                                 <option value="1" {{ request('is_active') == '1' ? 'selected' : '' }}>Active</option>
                                 <option value="0" {{ request('is_active') == '0' ? 'selected' : '' }}>Inactive</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="searchInput" class="form-label">Search</label>
-                            <input type="text" id="searchInput" class="form-control" placeholder="Search questions..." value="{{ request('search') }}">
+                            <button type="button" id="clearFilters" class="btn btn-outline-secondary btn-sm">
+                                <i class="material-icons">clear</i> Clear Filters
+                            </button>
                         </div>
                     </div>
-
-                    <!-- Bulk Actions -->
-                    <div class="row mb-3" id="bulkActions" style="display: none;">
-                        <div class="col-12">
-                            <div class="alert alert-info d-flex align-items-center">
-                                <span id="selectedItemsText">0 items selected</span>
-                                <div class="ms-auto">
-                                    <button type="button" class="btn btn-sm btn-danger" id="bulkDeleteBtn">
-                                        <i class="material-icons me-1">delete</i> Delete Selected
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    @if ($message = Session::get('success'))
-                    <div class="alert alert-success alert-dismissible fade show">
-                        <i class="material-icons me-2">check_circle</i>
-                        <span>{{ $message }}</span>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                    @endif
-
-                    @if ($message = Session::get('error'))
-                    <div class="alert alert-danger alert-dismissible fade show">
-                        <i class="material-icons me-2">error</i>
-                        <span>{{ $message }}</span>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                    @endif
 
                     <div class="table-responsive">
-                        <table class="table align-items-center mb-0" id="questiontable">
+                        <table class="table" id="questiontable">
                             <thead>
                                 <tr>
                                     <th class="not-export-col">
@@ -271,67 +291,98 @@ Questions Management | Admin Panel
                                             <input class="form-check-input" type="checkbox" id="selectAll">
                                         </div>
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Question</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Exam</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Type</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Difficulty</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Points</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Status</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Created</th>
-                                    <th class="not-export-col text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Actions</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Question</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Exam</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Type</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Difficulty</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Points</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Status</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Created</th>
+                                    <th class="not-export-col text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($questions as $question)
-                                <tr>
+                                <tr id="question-{{ $question->id }}" data-status="{{ $question->is_active ? '1' : '0' }}" data-type="{{ $question->question_type }}" data-exam="{{ $question->exam_id }}">
                                     <td class="not-export-col">
                                         <div class="form-check">
-                                            <input class="form-check-input question-checkbox" type="checkbox" value="{{ $question->id }}">
+                                            <input class="form-check-input row-checkbox" type="checkbox" value="{{ $question->id }}">
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input status-toggle" type="checkbox" 
-                                                   data-id="{{ $question->id }}" 
-                                                   {{ $question->is_active ? 'checked' : '' }}>
-                                            <label class="form-check-label text-sm">
-                                                {{ $question->is_active ? 'Active' : 'Inactive' }}
-                                            </label>
+                                        <div>
+                                            <h6 class="text-sm font-weight-bold mb-0">{{ Str::limit(strip_tags($question->question_text), 60) }}</h6>
+                                            <p class="text-xs text-secondary mb-0">
+                                                @if($question->question_image)
+                                                    <span class="badge badge-sm bg-gradient-info">Has Image</span>
+                                                @endif
+                                            </p>
                                         </div>
                                     </td>
-                                    <td class="text-sm">
-                                        {{ $question->created_at->format('M d, Y') }}
+                                    <td>
+                                        <div>
+                                            <span class="text-sm font-weight-bold">{{ $question->exam->title ?? 'N/A' }}</span>
+                                            @if($question->exam)
+                                                <br><span class="badge badge-sm bg-gradient-info">{{ $question->exam->exam_code }}</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-sm bg-gradient-secondary">
+                                            {{ str_replace('_', ' ', ucwords($question->question_type)) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if($question->difficulty_level)
+                                            @if($question->difficulty_level == 'easy')
+                                                <span class="badge badge-sm bg-gradient-success">Easy</span>
+                                            @elseif($question->difficulty_level == 'medium')
+                                                <span class="badge badge-sm bg-gradient-warning">Medium</span>
+                                            @else
+                                                <span class="badge badge-sm bg-gradient-danger">Hard</span>
+                                            @endif
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="text-sm font-weight-bold">{{ $question->points ?? 1 }}</span>
+                                    </td>
+                                    <td>
+                                        @if($question->is_active)
+                                            <span class="status-badge badge badge-sm bg-gradient-success">Active</span>
+                                        @else
+                                            <span class="status-badge badge badge-sm bg-gradient-danger">Inactive</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="text-sm">{{ $question->created_at->format('M d, Y') }}</span>
                                         <br>
                                         <small class="text-secondary">{{ $question->created_at->format('h:i A') }}</small>
                                     </td>
                                     <td class="not-export-col">
-                                        <div class="dropdown">
-                                            <button class="btn btn-link text-secondary mb-0" data-bs-toggle="dropdown">
-                                                <i class="fa fa-ellipsis-v text-xs"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end px-2 py-3">
-                                                <li>
-                                                    <a class="dropdown-item border-radius-md" href="{{ route('questions.show', $question->id) }}">
-                                                        <i class="material-icons me-2">visibility</i> View
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item border-radius-md" href="{{ route('questions.edit', $question->id) }}">
-                                                        <i class="material-icons me-2">edit</i> Edit
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item border-radius-md duplicate-btn" href="#" data-id="{{ $question->id }}">
-                                                        <i class="material-icons me-2">content_copy</i> Duplicate
-                                                    </a>
-                                                </li>
+                                        <div class="dropdown float-lg-end pe-4" id="question-{{ $question->id }}-dropdown">
+                                            <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fa fa-ellipsis-v text-secondary"></i>
+                                            </a>
+                                            <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5" aria-labelledby="dropdownTable">
+                                                <li><a class="dropdown-item border-radius-md" href="{{ route('questions.show', $question->id) }}">
+                                                    <i class="material-icons">remove_red_eye</i> View Details</a></li>
+                                                <li><a class="dropdown-item border-radius-md" href="{{ route('questions.edit', $question->id) }}">
+                                                    <i class="material-icons">edit</i> Edit Question</a></li>
+                                                <li><a class="dropdown-item border-radius-md duplicate-btn" href="#" data-id="{{ $question->id }}">
+                                                    <i class="material-icons">content_copy</i> Duplicate</a></li>
+                                                @if(!$question->is_active)
+                                                    <li><a class="dropdown-item border-radius-md" href="#" onclick="toggleStatus({{ $question->id }}, 1)">
+                                                        <i class="material-icons">check_circle</i> Activate</a></li>
+                                                @else
+                                                    <li><a class="dropdown-item border-radius-md" href="#" onclick="toggleStatus({{ $question->id }}, 0)">
+                                                        <i class="material-icons">pause_circle</i> Deactivate</a></li>
+                                                @endif
                                                 <li><hr class="dropdown-divider"></li>
-                                                <li>
-                                                    <a class="dropdown-item border-radius-md text-danger deletebtn" href="#" 
-                                                       data-action="{{ route('questions.destroy', $question->id) }}">
-                                                        <i class="material-icons me-2">delete</i> Delete
-                                                    </a>
-                                                </li>
+                                                <li><a class="deletebtn dropdown-item border-radius-md text-danger" href="#" 
+                                                    data-action="{{ route('questions.destroy', $question->id) }}">
+                                                    <i class="material-icons">delete</i> Delete Question</a></li>
                                             </ul>
                                         </div>
                                     </td>
@@ -350,225 +401,117 @@ Questions Management | Admin Panel
 @section('scripts')
 <script>
 $(document).ready(function () {
-    // Initialize DataTable
     var table = $('#questiontable').DataTable({
-        columnDefs: [
-            {
-                orderable: false,
-                targets: [0, -1] // First and last columns
-            },
-            {
-                targets: 0,
-                width: '50px'
-            },
-            {
-                targets: -1,
-                width: '100px'
-            }
-        ],
+        columnDefs: [{
+            orderable: false,
+            targets: [0, -1] // First and last columns not orderable
+        }, {
+            targets: 0, width: '50px'
+        }, {
+            targets: 1, width: '250px'
+        }, {
+            targets: 2, width: '150px'
+        }],
         order: [[7, 'desc']], // Order by created date
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         pageLength: 25,
-        responsive: true,
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'csvHtml5',
-                text: 'CSV',
-                exportOptions: {
-                    columns: ':visible:not(.not-export-col)'
-                }
-            },
-            {
-                extend: 'excelHtml5',
-                text: 'Excel',
-                exportOptions: {
-                    columns: ':visible:not(.not-export-col)'
-                }
-            },
-            {
-                extend: 'pdfHtml5',
-                text: 'PDF',
-                pageSize: 'A4',
-                orientation: 'landscape',
-                exportOptions: {
-                    columns: ':visible:not(.not-export-col)'
-                },
-                customize: function(doc) {
-                    doc.content[1].table.widths = Array(doc.content[1].table.body[0].length + 1).join('*').split('');
-                    doc.defaultStyle.fontSize = 10;
-                    doc.styles.tableHeader.fontSize = 11;
-                }
-            },
-            {
-                extend: 'print',
-                text: 'Print',
-                exportOptions: {
-                    columns: ':visible:not(.not-export-col)'
-                }
+        layout: {
+            top1Start: {
+                buttons: [{
+                    text: 'CSV', extend: 'csvHtml5',
+                    exportOptions: { columns: ':visible:not(.not-export-col)' }
+                }, {
+                    text: 'Excel', extend: 'excelHtml5',
+                    exportOptions: { columns: ':visible:not(.not-export-col)' }
+                }, {
+                    text: 'PDF', extend: 'pdfHtml5',
+                    pageSize: 'A4',
+                    orientation: 'landscape',
+                    exportOptions: { columns: ':visible:not(.not-export-col)' },
+                    customize: function(doc) {
+                        doc.title = 'Questions Report | OEMS';
+                        doc.styles.title = { fontSize: 14, bold: true, color: 'black', alignment: 'center' };
+                        doc.content.forEach(function (item) {
+                            if (item.table) {
+                                item.table.widths = Array(item.table.body[0].length).fill('*');
+                            }
+                        });
+                    }
+                }, {
+                    text: 'Print', extend: 'print',
+                    exportOptions: { columns: ':visible:not(.not-export-col)' }
+                }]
             }
-        ]
-    });
-
-    // Hide DataTable buttons (we'll use our custom ones)
-    $('.dt-buttons').hide();
-
-    // Custom export buttons
-    $('.dropdown-item-tools').on('click', function (e) {
-        e.preventDefault();
-        var action = $(this).data('action');
-        
-        switch (action) {
-            case 'csv':
-                table.button('.buttons-csv').trigger();
-                break;
-            case 'excel':
-                table.button('.buttons-excel').trigger();
-                break;
-            case 'pdf':
-                table.button('.buttons-pdf').trigger();
-                break;
-            case 'print':
-                table.button('.buttons-print').trigger();
-                break;
         }
     });
 
     // Filters
     $('#examFilter, #typeFilter, #statusFilter').on('change', function() {
-        applyFilters();
-    });
-
-    $('#searchInput').on('keyup', function() {
-        table.search(this.value).draw();
-    });
-
-    function applyFilters() {
-        var examFilter = $('#examFilter').val();
-        var typeFilter = $('#typeFilter').val();
-        var statusFilter = $('#statusFilter').val();
-
-        // Apply exam filter
-        if (examFilter) {
-            table.column(2).search(examFilter, true, false);
-        } else {
-            table.column(2).search('', true, false);
-        }
-
-        // Apply type filter
-        if (typeFilter) {
-            table.column(3).search(typeFilter, true, false);
-        } else {
-            table.column(3).search('', true, false);
-        }
-
-        // Apply status filter
-        if (statusFilter !== '') {
-            var statusText = statusFilter === '1' ? 'Active' : 'Inactive';
-            table.column(6).search(statusText, true, false);
-        } else {
-            table.column(6).search('', true, false);
-        }
-
-        table.draw();
-    }
-
-    // Select All functionality
-    $('#selectAll').on('change', function() {
-        $('.question-checkbox').prop('checked', this.checked);
-        updateBulkActions();
-    });
-
-    // Individual checkbox change
-    $(document).on('change', '.question-checkbox', function() {
-        updateBulkActions();
+        var exam = $('#examFilter').val();
+        var type = $('#typeFilter').val();
+        var status = $('#statusFilter').val();
         
-        // Update select all checkbox
-        var totalCheckboxes = $('.question-checkbox').length;
-        var checkedCheckboxes = $('.question-checkbox:checked').length;
-        
-        $('#selectAll').prop('indeterminate', checkedCheckboxes > 0 && checkedCheckboxes < totalCheckboxes);
-        $('#selectAll').prop('checked', checkedCheckboxes === totalCheckboxes);
-    });
-
-    function updateBulkActions() {
-        var selectedItems = $('.question-checkbox:checked').length;
-        
-        if (selectedItems > 0) {
-            $('#bulkActions').show();
-            $('#selectedItemsText').text(selectedItems + ' items selected');
-        } else {
-            $('#bulkActions').hide();
-        }
-    }
-
-    // Status toggle
-    $(document).on('change', '.status-toggle', function() {
-        var questionId = $(this).data('id');
-        var isChecked = $(this).is(':checked');
-        var label = $(this).siblings('label');
-        
-        $.ajax({
-            url: '/admin/questions/' + questionId + '/toggle-status',
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.success) {
-                    label.text(response.status ? 'Active' : 'Inactive');
-                    showNotification(response.message, 'success');
-                }
-            },
-            error: function() {
-                // Revert the toggle on error
-                $('.status-toggle[data-id="' + questionId + '"]').prop('checked', !isChecked);
-                showNotification('Failed to update status', 'error');
-            }
+        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            var row = $(table.row(dataIndex).node());
+            var rowExam = row.data('exam');
+            var rowType = row.data('type');
+            var rowStatus = row.data('status').toString();
+            
+            var examMatch = !exam || rowExam == exam;
+            var typeMatch = !type || rowType === type;
+            var statusMatch = !status || rowStatus === status;
+            
+            return examMatch && typeMatch && statusMatch;
         });
+        
+        table.draw();
+        $.fn.dataTable.ext.search.pop();
     });
 
-    // Delete single question
-    $(document).on('click', '.deletebtn', function () {
-        var action = $(this).data('action');
+    $('#clearFilters').on('click', function() {
+        $('#examFilter, #typeFilter, #statusFilter').val('');
+        table.draw();
+    });
+
+    // Select all functionality
+    $('#selectAll').on('change', function() {
+        $('.row-checkbox').prop('checked', this.checked);
+        updateBulkActionsButton();
+    });
+
+    $('.row-checkbox').on('change', function() {
+        updateBulkActionsButton();
+        $('#selectAll').prop('checked', $('.row-checkbox:checked').length === $('.row-checkbox').length);
+    });
+
+    function updateBulkActionsButton() {
+        var selectedCount = $('.row-checkbox:checked').length;
+        $('#bulkActionsBtn').prop('disabled', selectedCount === 0);
+        if (selectedCount > 0) {
+            $('#bulkActionsBtn').text('Bulk Actions (' + selectedCount + ')');
+        } else {
+            $('#bulkActionsBtn').text('Bulk Actions');
+        }
+    }
+
+    // Bulk actions
+    $('#bulkActionsBtn').on('click', function() {
+        var selectedCount = $('.row-checkbox:checked').length;
+        $('#selectedCount').text(selectedCount + ' questions selected');
+        $('#bulkActionModal').modal('show');
+    });
+
+    // Delete modal
+    $('#questiontable').on('click', '.deletebtn', function () {
+        var action = $(this).attr("data-action");
         $('#question_delete_modal').attr('action', action);
         $('#deletemodal').modal('show');
     });
 
-    // Bulk delete
-    $('#bulkDeleteBtn').on('click', function() {
-        var selectedIds = $('.question-checkbox:checked').map(function() {
-            return $(this).val();
-        }).get();
-        
-        $('#selectedCount').text(selectedIds.length);
-        $('#bulkDeleteModal').modal('show');
-    });
-
-    $('#confirmBulkDelete').on('click', function() {
-        var selectedIds = $('.question-checkbox:checked').map(function() {
-            return $(this).val();
-        }).get();
-
-        $.ajax({
-            url: '/admin/questions/bulk-delete',
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                ids: selectedIds
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('#bulkDeleteModal').modal('hide');
-                    showNotification(response.message, 'success');
-                    setTimeout(function() {
-                        location.reload();
-                    }, 1500);
-                }
-            },
-            error: function() {
-                showNotification('Failed to delete questions', 'error');
-            }
-        });
+    // Import modal
+    $('#importQuestionsBtn').on('click', function (e) {
+        e.preventDefault();
+        $('#importmodal').modal('show');
     });
 
     // Duplicate question
@@ -581,82 +524,70 @@ $(document).ready(function () {
         }
     });
 
-    // Import modal
-    $('#importQuestionsBtn').on('click', function (e) {
+    // Export buttons
+    $('.dropdown-item-tools').on('click', function (e) {
         e.preventDefault();
-        $('#importmodal').modal('show');
+        var action = $(this).data('action');
+        var buttonClass = '.buttons-' + action;
+        table.button(buttonClass).trigger();
     });
-
-    // Notification function
-    function showNotification(message, type) {
-        var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-        var icon = type === 'success' ? 'check_circle' : 'error';
-        
-        var notification = `
-            <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
-                 style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
-                <i class="material-icons me-2">${icon}</i>
-                <span>${message}</span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        
-        $('body').append(notification);
-        
-        // Auto dismiss after 5 seconds
-        setTimeout(function() {
-            $('.alert').fadeOut();
-        }, 5000);
-    }
-
-    // Auto-hide alerts after 5 seconds
-    setTimeout(function() {
-        $('.alert').fadeOut();
-    }, 5000);
 });
+
+function updateStatusUI(questionId, newStatus) {
+    const dropdown = $(`#question-${questionId}-dropdown`);
+    const statusToggle = dropdown.find('[onclick*="toggleStatus"]');
+    const statusBadge = $(`#question-${questionId}`).find('.status-badge');
+    
+    if (newStatus == 1) {
+        statusToggle.attr('onclick', `toggleStatus(${questionId}, 0)`);
+        statusToggle.html('<i class="material-icons">pause_circle</i> Deactivate');
+
+        statusBadge.removeClass('bg-gradient-danger')
+                  .addClass('bg-gradient-success')
+                  .text('Active');
+    } else {
+        statusToggle.attr('onclick', `toggleStatus(${questionId}, 1)`);
+        statusToggle.html('<i class="material-icons">check_circle</i> Activate');
+
+        statusBadge.removeClass('bg-gradient-success')
+                  .addClass('bg-gradient-danger')
+                  .text('Inactive');
+    }
+}
+
+function toggleStatus(questionId, newStatus) {
+    const token = $('meta[name="csrf-token"]').attr('content');
+    
+    if (!token) {
+        console.error('CSRF token not found');
+        return;
+    }
+    
+    $.ajax({
+        url: `/admin/questions/${questionId}/toggle-status`,
+        type: 'PATCH',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            status: newStatus,
+        },
+        beforeSend: function() {
+            $(`#question-${questionId}`).addClass('opacity-50');
+        },
+        success: function(response) {
+            if (response.success) {
+                updateStatusUI(questionId, newStatus);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error toggling status:', error);
+            alert('Failed to update question status. Please try again.');
+        },
+        complete: function() {
+            $(`#question-${questionId}`).removeClass('opacity-50');
+        }
+    });
+}
 </script>
-
-<style>
-.status-toggle:checked {
-    background-color: #28a745;
-    border-color: #28a745;
-}
-
-.badge {
-    font-size: 0.75em;
-}
-
-.avatar-sm img {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-}
-
-.table td {
-    vertical-align: middle;
-}
-
-.dropdown-menu {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.form-check-input:indeterminate {
-    background-color: #6c757d;
-    border-color: #6c757d;
-}
-
-@media (max-width: 768px) {
-    .btn-group {
-        flex-direction: column;
-    }
-    
-    .btn-group .btn {
-        margin-bottom: 0.25rem;
-    }
-    
-    .table-responsive {
-        font-size: 0.875rem;
-    }
-}
-</style>
 @endsection
