@@ -51,11 +51,11 @@ class StudentExamController extends Controller
         }
 
         if ($exam->status !== 'active') {
-            $error = 'This exam is not active.';
+            $error = 'This Exam is Inactive.';
         }
 
         if (now()->lt($exam->start_time)) {
-            $error = 'This exam is not yet available.';
+            $error = 'This Exam is Unavailable.';
         }
 
         return view('student.exam', compact('exam', 'error'));
