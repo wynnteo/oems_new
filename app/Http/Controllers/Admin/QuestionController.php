@@ -3,153 +3,190 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use App\Models\Question;
 use App\Models\Exam;
+use App\Imports\QuestionsImport;
+use Illuminate\Support\Facades\Storage;
+use InvalidArgumentException;
 
 class QuestionController extends Controller
 {
-    public function index() 
+    public function index(Request $request) 
     {
-        $questions = Question::all();
-        $exams = Exam::all();
-        return view('admin.questions.index', compact('questions', 'exams'));
+        $query = Question::with('exam');
+        
+        // Filter by exam if specified
+        if ($request->filled('exam_id')) {
+            $query->where('exam_id', $request->exam_id);
+        }
+        
+        // Filter by question type if specified
+        if ($request->filled('question_type')) {
+            $query->where('question_type', $request->question_type);
+        }
+        
+        // Filter by active status if specified
+        if ($request->filled('is_active')) {
+            $query->where('is_active', $request->is_active);
+        }
+        
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('question_text', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%')
+                  ->orWhereHas('exam', function($examQuery) use ($search) {
+                      $examQuery->where('title', 'like', '%' . $search . '%')
+                               ->orWhere('exam_code', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+        
+        $questions = $query->latest()->get();
+        $exams = Exam::orderBy('title')->get();
+        
+        // Get statistics for dashboard
+        $stats = [
+            'total' => Question::count(),
+            'active' => Question::where('is_active', true)->count(),
+            'inactive' => Question::where('is_active', false)->count(),
+            'by_type' => Question::selectRaw('question_type, COUNT(*) as count')
+                              ->groupBy('question_type')
+                              ->pluck('count', 'question_type')
+                              ->toArray()
+        ];
+        
+        return view('admin.questions.index', compact('questions', 'exams', 'stats'));
     }
 
-    // Display the form to create a new question
     public function create($examId = null)
     {
-        $exams = Exam::all();
-        // Pass the exams and the optional examId to the view
+        $exams = Exam::orderBy('title')->get();
         return view('admin.questions.create', compact('exams', 'examId'));
     }
 
-    // Store a newly created question in storage
     public function store(Request $request)
     {
-        // Validate the request data
         $request->validate([
-            'question_type' => 'required|string|in:true_false,single_choice,multiple_choice,fill_in_the_blank_text,fill_in_the_blank_choice',
-            'question_text' => 'required|string',
-            'description' => 'nullable|string',
-            'image_name' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'question_type' => 'required|string|in:true_false,single_choice,multiple_choice,fill_in_the_blank_text,fill_in_the_blank_choice,matching',
+            'question_text' => 'required|string|max:5000',
+            'description' => 'nullable|string|max:2000',
+            'explanation' => 'nullable|string|max:2000',
+            'image_name' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'options' => 'nullable|array',
+            'options.*' => 'nullable|string|max:1000',
             'correct_answer' => 'required',
             'exam_id' => 'required|exists:exams,id',
+            'is_active' => 'boolean',
+            'difficulty_level' => 'nullable|string|in:easy,medium,hard',
+            'points' => 'nullable|integer|min:1|max:100',
+            'time_limit' => 'nullable|integer|min:1|max:3600', // seconds
         ]);
 
-        // Handle the image upload if present
         $imagePath = null;
         if ($request->hasFile('image_name')) {
             $image = $request->file('image_name');
-            $imagePath = $image->store('images', 'public');
+            $imagePath = $image->store('questions/images', 'public');
         }
 
         $correctAnswer = $this->normalizeCorrectAnswer($request->input('correct_answer'));
 
-        // Create the question
-        $question = new Question();
-        $question->question_type = $request->input('question_type');
-        $question->question_text = $request->input('question_text');
-        $question->description = $request->input('description');
-        $question->image_name = $imagePath;
-        $question->options = json_encode($request->input('options', []));
-        $question->correct_answer = $correctAnswer;
-        $question->exam_id = $request->input('exam_id');
-        $question->save();
+        $question = Question::create([
+            'question_type' => $request->input('question_type'),
+            'question_text' => $request->input('question_text'),
+            'description' => $request->input('description'),
+            'explanation' => $request->input('explanation'),
+            'image_name' => $imagePath,
+            'options' => json_encode($request->input('options', [])),
+            'correct_answer' => $correctAnswer,
+            'exam_id' => $request->input('exam_id'),
+            'is_active' => $request->boolean('is_active', true),
+            'difficulty_level' => $request->input('difficulty_level', 'medium'),
+            'points' => $request->input('points', 1),
+            'time_limit' => $request->input('time_limit'),
+        ]);
 
-        // Redirect with a success message
         return redirect()->route('questions.index')->with('success', 'Question created successfully.');
     }
 
-    function normalizeCorrectAnswer($input) {
-        // If input is already an array, encode it as JSON
+    private function normalizeCorrectAnswer($input) {
         if (is_array($input)) {
             return json_encode($input);
         }
         
         if (strpos($input, '][') !== false) {
-            // Remove outer brackets
             $input = trim($input, '[]');
-            
-            // Split by '][' to get groups
             $groups = explode('][', $input);
-            
-            // Convert each group into an array of its elements
             $array = array_map(function($group) {
                 return explode(',', $group);
             }, $groups);
-            
-            // Return as JSON for storage
             return json_encode($array);
         }
 
-        // Handle True/False or Single Choice format
         if (is_numeric($input) || in_array($input, ['true', 'false'])) {
-            // Convert to a single array with one value
             return json_encode([$input]);
         }
         
-        // Handle unexpected types
         throw new InvalidArgumentException('Invalid input format for correct_answer.');
     }
     
-    // Display the form to edit a specific question
     public function edit($id)
     {
-        // Retrieve the question and exams
         $question = Question::findOrFail($id);
-        $exams = Exam::all();
-
-        // Pass the question and exams to the view
+        $exams = Exam::orderBy('title')->get();
         return view('admin.questions.edit', compact('question', 'exams'));
     }
 
-    // Update a specific question in storage
     public function update(Request $request, $id)
     {
-        // Validate the request data
         $request->validate([
-            'question_type' => 'required|string|in:true_false,single_choice,multiple_choice,fill_in_the_blank_text,fill_in_the_blank_choice',
-            'question_text' => 'required|string',
-            'description' => 'nullable|string',
-            'image_name' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'question_type' => 'required|string|in:true_false,single_choice,multiple_choice,fill_in_the_blank_text,fill_in_the_blank_choice,matching',
+            'question_text' => 'required|string|max:5000',
+            'description' => 'nullable|string|max:2000',
+            'explanation' => 'nullable|string|max:2000',
+            'image_name' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'options' => 'nullable|array',
+            'options.*' => 'nullable|string|max:1000',
             'correct_answer' => 'required',
             'exam_id' => 'required|exists:exams,id',
+            'is_active' => 'boolean',
+            'difficulty_level' => 'nullable|string|in:easy,medium,hard',
+            'points' => 'nullable|integer|min:1|max:100',
+            'time_limit' => 'nullable|integer|min:1|max:3600',
         ]);
 
-        // Find the question
         $question = Question::findOrFail($id);
 
-        // Handle the image upload if present
         if ($request->hasFile('image_name')) {
-            // Delete the old image if it exists
             if ($question->image_name) {
-                \Storage::disk('public')->delete($question->image_name);
+                Storage::disk('public')->delete($question->image_name);
             }
-
             $image = $request->file('image_name');
-            $imagePath = $image->store('images', 'public');
+            $imagePath = $image->store('questions/images', 'public');
         } else {
-            $imagePath = $question->image_name; // Keep the old image if no new one is uploaded
+            $imagePath = $question->image_name;
         }
 
         $correctAnswer = $this->normalizeCorrectAnswer($request->input('correct_answer'));
 
-        // Update the question
-        $question->question_type = $request->input('question_type');
-        $question->question_text = $request->input('question_text');
-        $question->description = $request->input('description');
-        $question->image_name = $imagePath;
-        $question->options = json_encode($request->input('options', []));
-        $question->correct_answer = $correctAnswer;
-        $question->exam_id = $request->input('exam_id');
-        $question->save();
+        $question->update([
+            'question_type' => $request->input('question_type'),
+            'question_text' => $request->input('question_text'),
+            'description' => $request->input('description'),
+            'explanation' => $request->input('explanation'),
+            'image_name' => $imagePath,
+            'options' => json_encode($request->input('options', [])),
+            'correct_answer' => $correctAnswer,
+            'exam_id' => $request->input('exam_id'),
+            'is_active' => $request->boolean('is_active', true),
+            'difficulty_level' => $request->input('difficulty_level', 'medium'),
+            'points' => $request->input('points', 1),
+            'time_limit' => $request->input('time_limit'),
+        ]);
 
-        // Redirect with a success message
         return redirect()->route('questions.index')->with('success', 'Question updated successfully.');
     }
 
@@ -160,36 +197,79 @@ class QuestionController extends Controller
             'file' => 'required|file|mimes:xlsx,csv',
         ]);
 
-        Excel::import(new QuestionsImport, $request->file('file'));
-
-        return redirect()->back()->with('success', 'Questions imported successfully.');
+        try {
+            Excel::import(new QuestionsImport($request->exam_id), $request->file('file'));
+            return redirect()->back()->with('success', 'Questions imported successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
+        }
     }
 
-    // Display a specific question
     public function show($id)
     {
-        // Retrieve the question
-        $question = Question::findOrFail($id);
-
-        // Pass the question to the view
+        $question = Question::with('exam')->findOrFail($id);
         return view('admin.questions.show', compact('question'));
     }
 
-    // Remove a specific question from storage
     public function destroy($id)
     {
-        // Find the question
         $question = Question::findOrFail($id);
 
-        // Delete the image if it exists
         if ($question->image_name) {
-            \Storage::disk('public')->delete($question->image_name);
+            Storage::disk('public')->delete($question->image_name);
         }
 
-        // Delete the question
         $question->delete();
 
-        // Redirect with a success message
         return redirect()->route('questions.index')->with('success', 'Question deleted successfully.');
+    }
+
+    public function toggleStatus($id)
+    {
+        $question = Question::findOrFail($id);
+        $question->is_active = !$question->is_active;
+        $question->save();
+
+        $status = $question->is_active ? 'activated' : 'deactivated';
+        return response()->json([
+            'success' => true,
+            'message' => "Question {$status} successfully.",
+            'status' => $question->is_active
+        ]);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:questions,id'
+        ]);
+
+        $questions = Question::whereIn('id', $request->ids)->get();
+        
+        foreach ($questions as $question) {
+            if ($question->image_name) {
+                Storage::disk('public')->delete($question->image_name);
+            }
+        }
+
+        Question::whereIn('id', $request->ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => count($request->ids) . ' questions deleted successfully.'
+        ]);
+    }
+
+    public function duplicate($id)
+    {
+        $question = Question::findOrFail($id);
+        
+        $newQuestion = $question->replicate();
+        $newQuestion->question_text = $question->question_text . ' (Copy)';
+        $newQuestion->is_active = false; // Make copies inactive by default
+        $newQuestion->save();
+
+        return redirect()->route('questions.index')->with('success', 'Question duplicated successfully.');
     }
 }

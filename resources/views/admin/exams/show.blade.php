@@ -128,6 +128,118 @@
             </div>
         </div>
     </div>
+    <!-- Additional Statistics Cards Row -->
+    <div class="row mt-4">
+        <!-- Lowest Mark -->
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-dark shadow-dark text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">trending_down</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">Lowest Mark</p>
+                        <h4 class="mb-0">{{ $lowestMark ?? 'N/A' }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Completed Attempts -->
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-info shadow-info text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">task_alt</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">Completed</p>
+                        <h4 class="mb-0">{{ $completedAttempts }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- In Progress -->
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-warning shadow-warning text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">pending</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">In Progress</p>
+                        <h4 class="mb-0">{{ $inProgressAttempts }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Questions -->
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-primary shadow-primary text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">quiz</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">Total Questions</p>
+                        <h4 class="mb-0">{{ $totalQuestions }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Completion Rate -->
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-success shadow-success text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">done_all</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">Completion Rate</p>
+                        <h4 class="mb-0">
+                            {{ $totalAttempts > 0 ? round(($completedAttempts / $totalAttempts) * 100, 1) : 0 }}%
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Average Duration -->
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-secondary shadow-secondary text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">timer</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">Avg Duration</p>
+                        <h4 class="mb-0">
+                            @php
+                                $completedExams = $studentExams->filter(function($se) {
+                                    return $se->started_at && $se->completed_at;
+                                });
+                                
+                                if ($completedExams->count() > 0) {
+                                    $totalSeconds = 0;
+                                    foreach ($completedExams as $se) {
+                                        $totalSeconds += $se->started_at->diffInSeconds($se->completed_at);
+                                    }
+                                    $avgSeconds = $totalSeconds / $completedExams->count();
+                                    $avgMinutes = round($avgSeconds / 60);
+                                    echo $avgMinutes . 'm';
+                                } else {
+                                    echo 'N/A';
+                                }
+                            @endphp
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Exam Details Section -->
     <div class="row mt-4">

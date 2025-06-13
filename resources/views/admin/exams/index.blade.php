@@ -112,7 +112,7 @@ Exams | Admin Panel
                         <div class="col-8">
                             <div class="numbers">
                                 <p class="text-sm mb-0 text-capitalize font-weight-bold">Upcoming Exams</p>
-                                <h5 class="font-weight-bolder mb-0">{{ $exams->where('start_time', '>', now())->count() }}</h5>
+                                <h5 class="font-weight-bolder mb-0">{{ $exams->where('status', 'available')->where('start_time', '>', now())->count() }}</h5>
                             </div>
                         </div>
                         <div class="col-4 text-end">
@@ -296,7 +296,7 @@ Exams | Admin Panel
                                                     <li><a class="dropdown-item border-radius-md" href="#" onclick="toggleStatus({{ $row->id }}, 'available')">
                                                         <i class="material-icons">check_circle</i> Make Available</a></li>
                                                 @else
-                                                    <li><a class="dropdown-item border-radius-md" href="#" onclick="toggleStatus({{ $row->id }}, 'unavailable')">
+                                                    <li><a class="dropdown-item border-radius-md" href="#" onclick="toggleStatus({{ $row->id }}, 'not_available')">
                                                         <i class="material-icons">pause_circle</i> Make Unavailable</a></li>
                                                 @endif
                                                 <li><hr class="dropdown-divider"></li>
@@ -452,7 +452,7 @@ function updateStatusUI(examId, newStatus) {
     const statusBadge = $(`#exam-${examId}`).find('.status-badge');
     
     if (newStatus === 'available') {
-        statusToggle.attr('onclick', `toggleStatus(${examId}, 'unavailable')`);
+        statusToggle.attr('onclick', `toggleStatus(${examId}, 'not_available')`);
         statusToggle.html('<i class="material-icons">pause_circle</i> Make Unavailable');
 
         statusBadge.removeClass('bg-gradient-danger')
