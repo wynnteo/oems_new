@@ -44,6 +44,7 @@ Route::get('/admin/students/{student}/unenroll/{enrollment}', [StudentController
 Route::patch('/admin/exams/{exam}/toggle-status', [ExamController::class, 'toggleStatus']);
 Route::resource('/admin/exams', ExamController::class);
 
+Route::get('/admin/questions/{id}/duplicate', [QuestionController::class, 'duplicate'])->name('questions.duplicate');
 Route::patch('/admin/questions/{question}/toggle-status', [QuestionController::class, 'toggleStatus'])->name('questions.toggle-status');
 Route::resource('/admin/questions', QuestionController::class);
 Route::get('/admin/questions/create/{examId?}', [QuestionController::class, 'create'])->name('questions.create');

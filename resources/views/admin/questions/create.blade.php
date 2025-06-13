@@ -34,6 +34,11 @@ Question | Admin Panel
 
                     <form action="{{ route('questions.store') }}" method="POST" enctype="multipart/form-data" novalidate>
                         @csrf
+                        
+                        @if(isset($isDuplicate) && $isDuplicate)
+                            <input type="hidden" name="is_duplicate" value="1">
+                        @endif
+                        
                         <div class="row">
 
                             <!-- Hidden field to store exam ID if present -->
@@ -48,7 +53,7 @@ Question | Admin Panel
                                    <select name="exam_id" class="form-control" required>
                                        <option value="">Select Exam</option>
                                        @foreach ($exams as $exam)
-                                           <option value="{{ $exam->id }}" {{ old('exam_id', $examId) == $exam->id ? 'selected' : '' }}>
+                                           <option value="{{ $exam->id }}" {{ old('exam_id', $examId ?? (isset($question) ? $question->exam_id : '')) == $exam->id ? 'selected' : '' }}>
                                                {{ $exam->title }}
                                            </option>
                                        @endforeach
@@ -62,11 +67,11 @@ Question | Admin Panel
                                     <strong>Question Type:</strong>
                                     <select id="question_type" name="question_type" class="form-control" required>
                                         <option value="">Select Question Type</option>
-                                        <option value="true_false" {{ old('question_type') == 'true_false' ? 'selected' : '' }}>True/False</option>
-                                        <option value="single_choice" {{ old('question_type') == 'single_choice' ? 'selected' : '' }}>Single Choice</option>
-                                        <option value="multiple_choice" {{ old('question_type') == 'multiple_choice' ? 'selected' : '' }}>Multiple Choice</option>
-                                        <option value="fill_in_the_blank_choice" {{ old('question_type') == 'fill_in_the_blank_choice' ? 'selected' : '' }}>Fill in the Blank with Choice</option>
-                                        <option value="fill_in_the_blank_text" {{ old('question_type') == 'fill_in_the_blank_text' ? 'selected' : '' }}>Fill in the Blank with Text</option>
+                                        <option value="true_false" {{ old('question_type', isset($question) ? $question->question_type : '') == 'true_false' ? 'selected' : '' }}>True/False</option>
+                                        <option value="single_choice" {{ old('question_type', isset($question) ? $question->question_type : '') == 'single_choice' ? 'selected' : '' }}>Single Choice</option>
+                                        <option value="multiple_choice" {{ old('question_type', isset($question) ? $question->question_type : '') == 'multiple_choice' ? 'selected' : '' }}>Multiple Choice</option>
+                                        <option value="fill_in_the_blank_with_choice" {{ old('question_type', isset($question) ? $question->question_type : '') == 'fill_in_the_blank_choice' ? 'selected' : '' }}>Fill in the Blank with Choice</option>
+                                        <option value="fill_in_the_blank_with_text" {{ old('question_type', isset($question) ? $question->question_type : '') == 'fill_in_the_blank_text' ? 'selected' : '' }}>Fill in the Blank with Text</option>
                                     </select>
                                 </div>
                             </div>
@@ -76,7 +81,7 @@ Question | Admin Panel
                                 <div class="form-group">
                                     <strong>Question Text:</strong>
                                     <small id="instruction-text" style="display: none;"><em>Using [] for blanks. Example: My name [] John. Nice to [] you?</em></small>              
-                                    <textarea name="question_text" class="form-control" placeholder="Enter the question text" required>{{ old('question_text') }}</textarea>
+                                    <textarea name="question_text" class="form-control" placeholder="Enter the question text" required>{{ old('question_text', isset($question) ? $question->question_text : '') }}</textarea>
                                 </div>
                             </div>
 
@@ -84,7 +89,7 @@ Question | Admin Panel
                             <div class="col-xs-12 col-sm-12 col-md-12">
                                 <div class="form-group">
                                     <strong>Description:</strong>
-                                    <textarea name="description" class="form-control" placeholder="Enter a description (optional)">{{ old('description') }}</textarea>
+                                    <textarea name="description" class="form-control" placeholder="Enter a description (optional)">{{ old('description', isset($question) ? $question->description : '') }}</textarea>
                                 </div>
                             </div>
 
@@ -92,7 +97,7 @@ Question | Admin Panel
                             <div class="col-xs-12 col-sm-12 col-md-12">
                                 <div class="form-group">
                                     <strong>Explanation (optional):</strong>
-                                    <textarea name="explanation" class="form-control" placeholder="Enter explanation for the answer">{{ old('explanation') }}</textarea>
+                                    <textarea name="explanation" class="form-control" placeholder="Enter explanation for the answer">{{ old('explanation', isset($question) ? $question->explanation : '') }}</textarea>
                                 </div>
                             </div>
 
@@ -104,6 +109,9 @@ Question | Admin Panel
                                     @if (old('image_name'))
                                         <p>Previously uploaded file will not be shown here; re-upload if needed.</p>
                                     @endif
+                                    @if(isset($question) && $question->image_name)
+                                        <p><em>Note: Original question had an image. Upload a new one if you want to include an image.</em></p>
+                                    @endif
                                 </div>
                             </div>
 
@@ -113,9 +121,9 @@ Question | Admin Panel
                                     <strong>Status:</strong>
                                     <select name="is_active" class="form-control" required>
                                         <option value="">Select Status</option>
-                                        <option value="active" {{ old('is_active') == 'active' ? 'selected' : '' }}>Active</option>
-                                        <option value="inactive" {{ old('is_active') == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                                        <option value="draft" {{ old('is_active') == 'draft' ? 'selected' : '' }}>Draft</option>
+                                        <option value="active" {{ old('is_active', isset($question) ? $question->is_active : '') == 'active' ? 'selected' : '' }}>Active</option>
+                                        <option value="inactive" {{ old('is_active', isset($question) ? $question->is_active : '') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                        <option value="draft" {{ old('is_active', isset($question) ? $question->is_active : '') == 'draft' ? 'selected' : '' }}>Draft</option>
                                     </select>
                                 </div>
                             </div>
@@ -177,9 +185,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const instructionText = document.getElementById('instruction-text');
 
     // Safely parse old values from Blade to JavaScript
-    const oldOptions = @json(old('options', []));
-    let oldCorrectAnswers = @json(old('correct_answer', []));
-    const oldQuestionType = @json(old('question_type', ''));
+    const oldOptions = @json(old('options', isset($question) && $question->options ? json_decode($question->options, true) : []));
+    let oldCorrectAnswers = @json(old('correct_answer', isset($question) && $question->correct_answer ? json_decode($question->correct_answer, true) : []));
+    const oldQuestionType = @json(old('question_type', isset($question) ? $question->question_type : ''));
+
 
     // Safely handle oldCorrectAnswers
     if (typeof oldCorrectAnswers === 'string' && oldCorrectAnswers.trim() !== '') {
@@ -237,8 +246,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 </tr>
             `;
 
-        } else if (questionType === 'single_choice' || questionType === 'fill_in_the_blank_choice') {
-            if (questionType === 'fill_in_the_blank_choice') {
+        } else if (questionType === 'single_choice' || questionType === 'fill_in_the_blank_with_choice') {
+            if (questionType === 'fill_in_the_blank_with_choice') {
                 instructionText.style.display = 'block';
             }
             
@@ -258,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
             }
 
-        } else if (questionType === 'fill_in_the_blank_text') {
+        } else if (questionType === 'fill_in_the_blank_with_text') {
             instructionText.style.display = 'block';
             optionsTable.style.display = 'table';
             

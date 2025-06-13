@@ -287,4 +287,38 @@ class QuestionController extends Controller
             ], 500);
         }
     }
+
+    public function duplicate($id)
+    {
+        try {
+            $originalQuestion = Question::with('exam')->findOrFail($id);
+            
+            $exams = Exam::select('id', 'title', 'exam_code', 'status')
+                        ->where('status', 'available')
+                        ->orderBy('exam_code')
+                        ->get();
+            
+            // Create a duplicate question object for the form
+            $question = new Question([
+                'question_type' => $originalQuestion->question_type,
+                'question_text' => $originalQuestion->question_text . ' (Copy)',
+                'description' => $originalQuestion->description,
+                'explanation' => $originalQuestion->explanation,
+                'options' => $originalQuestion->options,
+                'correct_answer' => $originalQuestion->correct_answer,
+                'exam_id' => $originalQuestion->exam_id,
+                'is_active' => 'inactive' // Set as inactive by default for review
+            ]);
+            
+            $examId = $originalQuestion->exam_id;
+            $isDuplicate = true; // Flag to indicate this is a duplicate operation
+            
+            return view('admin.questions.create', compact('exams', 'examId', 'question', 'isDuplicate'));
+            
+        } catch (\Exception $e) {
+            return redirect()->route('questions.index')
+                           ->with('error', 'Question not found or cannot be duplicated.');
+        }
+    }
+
 }
