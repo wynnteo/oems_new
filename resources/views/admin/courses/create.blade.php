@@ -12,7 +12,6 @@ Courses | Admin Panel
                 <div class="card-header actions">
                     <h5 class="text-capitalize">New Course</h5>
                     <div class="actions_item">
-
                         <a class="btn btn-darken" href="{{ route('courses.index') }}" title="Back">
                             <i class="material-icons">arrow_back</i> Back
                         </a>
@@ -32,39 +31,159 @@ Courses | Admin Panel
                         </ul>
                     </div>
                     @endif
-                    <form action="{{ route('courses.store') }}" method="POST">
+                    <form action="{{ route('courses.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="row">
-                            <div class="col-xs-12 col-sm-12 col-md-12">
+                            <!-- Course Code -->
+                            <div class="col-xs-12 col-sm-12 col-md-6">
                                 <div class="form-group">
                                     <strong>Course Code:</strong>
                                     <input type="text" name="course_code" class="form-control" placeholder="Course Code"
-                                        value="{{old('course_code')}}">
+                                        value="{{old('course_code')}}" required>
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-12">
+                            
+                            <!-- Course Title -->
+                            <div class="col-xs-12 col-sm-12 col-md-6">
                                 <div class="form-group">
                                     <strong>Course Name:</strong>
-                                    <input type="text" name="title" class="form-control" placeholder="Title"
-                                        value="{{old('title')}}">
+                                    <input type="text" name="title" class="form-control" placeholder="Course Title"
+                                        value="{{old('title')}}" required>
                                 </div>
                             </div>
+                            
+                            <!-- Slug -->
+                            <div class="col-xs-12 col-sm-12 col-md-6">
+                                <div class="form-group">
+                                    <strong>Slug:</strong>
+                                    <input type="text" name="slug" class="form-control" placeholder="course-slug"
+                                        value="{{old('slug')}}" required>
+                                    <small class="form-text text-muted">URL-friendly version of the course title</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Category -->
+                            <div class="col-xs-12 col-sm-12 col-md-6">
+                                <div class="form-group">
+                                    <strong>Category:</strong>
+                                    <input type="text" name="category" class="form-control" placeholder="Course Category"
+                                        value="{{old('category')}}">
+                                </div>
+                            </div>
+                            
+                            <!-- Description -->
                             <div class="col-xs-12 col-sm-12 col-md-12">
                                 <div class="form-group">
                                     <strong>Description:</strong>
-                                    <textarea class="form-control" name="description"
-                                        placeholder="">{{old('description')}}</textarea>
+                                    <textarea class="form-control" name="description" rows="4"
+                                        placeholder="Course description">{{old('description')}}</textarea>
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-12 pb-2">
+                            
+                            <!-- Price -->
+                            <div class="col-xs-12 col-sm-12 col-md-4">
                                 <div class="form-group">
                                     <strong>Price:</strong>
                                     <input type="number" step='0.01' name="price" class="form-control"
-                                        placeholder="Put the price" value="{{old('price')}}">
+                                        placeholder="0.00" value="{{old('price')}}">
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-12 text-center">
+                            
+                            <!-- Difficulty Level -->
+                            <div class="col-xs-12 col-sm-12 col-md-4">
+                                <div class="form-group">
+                                    <strong>Difficulty Level:</strong>
+                                    <select name="difficulty_level" class="form-control">
+                                        <option value="beginner" {{ old('difficulty_level') == 'beginner' ? 'selected' : '' }}>Beginner</option>
+                                        <option value="intermediate" {{ old('difficulty_level') == 'intermediate' ? 'selected' : '' }}>Intermediate</option>
+                                        <option value="advanced" {{ old('difficulty_level') == 'advanced' ? 'selected' : '' }}>Advanced</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Duration -->
+                            <div class="col-xs-12 col-sm-12 col-md-4">
+                                <div class="form-group">
+                                    <strong>Duration (hours):</strong>
+                                    <input type="number" name="duration" class="form-control" placeholder="Duration in hours"
+                                        value="{{old('duration')}}">
+                                </div>
+                            </div>
+                            
+                            <!-- Instructor -->
+                            <div class="col-xs-12 col-sm-12 col-md-6">
+                                <div class="form-group">
+                                    <strong>Instructor:</strong>
+                                    <input type="text" name="instructor" class="form-control" placeholder="Instructor Name"
+                                        value="{{old('instructor')}}">
+                                </div>
+                            </div>
+                            
+                            <!-- Language -->
+                            <div class="col-xs-12 col-sm-12 col-md-6">
+                                <div class="form-group">
+                                    <strong>Language:</strong>
+                                    <input type="text" name="language" class="form-control" placeholder="Language"
+                                        value="{{old('language', 'English')}}">
+                                </div>
+                            </div>
+                            
+                            <!-- Video URL -->
+                            <div class="col-xs-12 col-sm-12 col-md-6">
+                                <div class="form-group">
+                                    <strong>Video URL:</strong>
+                                    <input type="url" name="video_url" class="form-control" placeholder="https://example.com/video"
+                                        value="{{old('video_url')}}">
+                                </div>
+                            </div>
+                            
+                            <!-- Thumbnail -->
+                            <div class="col-xs-12 col-sm-12 col-md-6">
+                                <div class="form-group">
+                                    <strong>Thumbnail:</strong>
+                                    <input type="file" name="thumbnail" class="form-control" accept="image/*">
+                                    <small class="form-text text-muted">Upload course thumbnail image</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Tags -->
+                            <div class="col-xs-12 col-sm-12 col-md-8">
+                                <div class="form-group">
+                                    <strong>Tags:</strong>
+                                    <input type="text" name="tags" class="form-control" placeholder="tag1, tag2, tag3"
+                                        value="{{old('tags')}}">
+                                    <small class="form-text text-muted">Separate tags with commas</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Status -->
+                            <div class="col-xs-12 col-sm-12 col-md-4">
+                                <div class="form-group">
+                                    <strong>Status:</strong>
+                                    <select name="is_active" class="form-control">
+                                        <option value="active" {{ old('is_active') == 'active' ? 'selected' : '' }}>Active</option>
+                                        <option value="inactive" {{ old('is_active') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                        <option value="draft" {{ old('is_active') == 'draft' ? 'selected' : '' }}>Draft</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Featured -->
+                            <div class="col-xs-12 col-sm-12 col-md-12">
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="is_featured" value="1" class="form-check-input" 
+                                               id="is_featured" {{ old('is_featured') ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="is_featured">
+                                            <strong>Featured Course</strong>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-xs-12 col-sm-12 col-md-12 text-center pt-3">
                                 <button type="submit" class="btn bg-gradient-dark">Submit</button>
+                                <a href="{{ route('courses.index') }}" class="btn btn-secondary ml-2">Cancel</a>
                             </div>
                         </div>
                     </form>
@@ -72,8 +191,8 @@ Courses | Admin Panel
             </div>
         </div>
     </div>
-    @endsection
-
+</div>
+@endsection
 
     @section('scripts')
     <script>

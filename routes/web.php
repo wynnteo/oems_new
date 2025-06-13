@@ -33,8 +33,9 @@ Route::middleware('auth')->group(function () {
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
 Route::get('/admin/courses/search', [CourseController::class, 'search'])->name('courses.search');
+Route::patch('/admin/courses/{course}/toggle-status', [CourseController::class, 'toggleStatus'])->name('courses.toggle-status');
+Route::patch('/admin/courses/{course}/toggle-featured', [CourseController::class, 'toggleFeatured'])->name('courses.toggle-featured');
 Route::resource('/admin/courses', CourseController::class);
-
 
 Route::resource('/admin/students', StudentController::class);
 Route::post('/admin/students/{student}/enroll', [StudentController::class, 'enroll'])->name('students.enroll');

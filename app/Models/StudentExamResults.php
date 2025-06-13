@@ -37,4 +37,16 @@ class StudentExamResults extends Model
     {
         return $this->belongsTo(StudentExams::class, 'student_exam_id');
     }
+
+    public function getTotalQuestionsAttribute()
+    {
+        return $this->total_correct + $this->total_incorrect;
+    }
+
+    public function getPercentageAttribute()
+    {
+        return $this->total_questions > 0 
+            ? round(($this->total_correct / $this->total_questions) * 100, 2)
+            : 0;
+    }
 }

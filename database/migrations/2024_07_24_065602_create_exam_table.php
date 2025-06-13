@@ -33,6 +33,10 @@ return new class extends Migration
             $table->enum('status', ['available', 'not_available'])->default('available');
             $table->string('access_code')->unique();
             $table->timestamps();
+            $table->timestamp('end_time')->nullable();
+            $table->boolean('ip_restrictions')->default(false);
+            $table->decimal('price', 8, 2)->nullable();
+            
         });
     }
 

@@ -17,6 +17,8 @@ class Question extends Model
         'options',
         'correct_answer',
         'exam_id',
+        'is_active',
+        'explanation',
     ];
 
     public function exam()

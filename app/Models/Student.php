@@ -29,7 +29,9 @@ class Student extends Model
     // A student can enroll in many courses
     public function courses()
     {
-        return $this->belongsToMany(Course::class, 'enrolments');
+        return $this->belongsToMany(Course::class, 'enrolments')
+            ->withPivot('id', 'course_id', 'student_id', 'enrollment_date', 'status')
+            ->withTimestamps();
     }
 
     public function studentExams()

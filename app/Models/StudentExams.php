@@ -19,10 +19,11 @@ class StudentExams extends Model
         'completed_at',
         'progress',
         'current_question_id',
+        'ip_address',
     ];
 
     protected $casts = [
-        'started_at' => 'datetime', // Cast to Carbon instance
+        'started_at' => 'datetime', 
         'started_at_utc' => 'datetime',
         'completed_at' => 'datetime',
     ];

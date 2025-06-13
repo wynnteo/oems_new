@@ -18,6 +18,17 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('price', 8, 2)->nullable();
             $table->timestamps();
+            $table->string('category')->nullable();
+            $table->enum('difficulty_level', ['beginner', 'intermediate', 'advanced'])->default('beginner');
+            $table->string('instructor')->nullable();
+            $table->string('thumbnail')->nullable();
+            $table->string('video_url')->nullable();
+            $table->string('slug')->unique();
+            $table->enum('is_active', ['active', 'inactive', 'draft'])->default('active');
+            $table->boolean('is_featured')->default(false);
+            $table->integer('duration')->nullable(); 
+            $table->string('language')->default('English');
+            $table->string('tags')->nullable();
         });
     }
 

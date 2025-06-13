@@ -14,15 +14,37 @@ class Course extends Model
         'course_code',
         'description',
         'price',
-        'created_at'
+        'category',
+        'difficulty_level',
+        'instructor',
+        'thumbnail',
+        'video_url',
+        'slug',
+        'is_active',
+        'is_featured',
+        'duration',
+        'language',
+        'tags',
     ];
+
+    protected $casts = [
+        'price' => 'decimal:2',
+        'is_featured' => 'integer',
+        'duration' => 'integer',
+    ];
+
+    protected $dates = [
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
+
 
     public function exams()
     {
         return $this->hasMany(Exam::class);
     }
 
-    // A course can have many enrollments
     public function enrolments()
     {
         return $this->hasMany(Enrolment::class);

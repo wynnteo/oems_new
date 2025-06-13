@@ -30,7 +30,12 @@ class Exam extends Model
         'status',
         'created_at',
         'updated_at',
+        'ip_restrictions',
+        'price',
+        'end_time',
     ];
+
+    
 
     public function studentExams()
     {
@@ -39,12 +44,30 @@ class Exam extends Model
 
     protected $casts = [
         'start_time' => 'datetime',
+        'end_time' => 'datetime',
+        'randomize_questions' => 'boolean',
+        'review_questions' => 'boolean',
+        'show_answers' => 'boolean',
+        'pagination' => 'boolean',
+        'retake_allowed' => 'boolean',
+        'allow_rating' => 'boolean',
+        'ip_restrictions' => 'boolean',
+        'passing_grade' => 'decimal:2',
+        'price' => 'decimal:2',
+        'duration' => 'integer',
+        'number_of_questions' => 'integer',
+        'number_retake' => 'integer',
     ];
 
     // An exam belongs to a course
     public function course()
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
     }
 
     public function questions()

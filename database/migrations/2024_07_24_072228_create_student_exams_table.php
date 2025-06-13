@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('status')->default("STARTED");
             $table->string('current_question_id')->nullable();
             $table->timestamps();
+            $table->string('ip_address')->nullable();
         });
     }
 

@@ -21,6 +21,9 @@ return new class extends Migration
             $table->string('image_name')->nullable();
             $table->json('options')->nullable();
             $table->json('correct_answer');
+            $table->text('explanation')->nullable();
+            $table->integer('marks')->default(1);
+            $table->enum('is_active', ['active', 'inactive', 'draft'])->default('active');
             $table->timestamps();
         });
     }
