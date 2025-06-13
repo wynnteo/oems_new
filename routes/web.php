@@ -41,7 +41,7 @@ Route::resource('/admin/students', StudentController::class);
 Route::post('/admin/students/{student}/enroll', [StudentController::class, 'enroll'])->name('students.enroll');
 Route::get('/admin/students/{student}/unenroll/{enrollment}', [StudentController::class, 'unenroll'])->name('students.unenroll');
 
-
+Route::patch('/admin/exams/{exam}/toggle-status', [ExamController::class, 'toggleStatus']);
 Route::resource('/admin/exams', ExamController::class);
 
 Route::resource('/admin/questions', QuestionController::class);

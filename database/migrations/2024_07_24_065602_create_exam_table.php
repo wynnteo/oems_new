@@ -36,7 +36,6 @@ return new class extends Migration
             $table->timestamp('end_time')->nullable();
             $table->boolean('ip_restrictions')->default(false);
             $table->decimal('price', 8, 2)->nullable();
-            
         });
     }
 

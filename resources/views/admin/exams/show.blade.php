@@ -1,84 +1,306 @@
 @extends('layouts.master')
 
 @section('title')
-Exams | Admin Panel
+{{ $exam->title }} | Admin Panel
 @endsection
 
 @section('content')
-
-
 <div class="container-fluid">
+    <!-- Exam Header -->
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header actions">
-                    <h5 class="text-capitalize">Exams</h5>
+                    <div>
+                        <h5 class="text-capitalize mb-0">
+                            <i class="material-icons opacity-10 me-2">assignment</i>
+                            {{ $exam->title }}
+                        </h5>
+                        <small class="text-muted">Exam Code: {{ $exam->exam_code }}</small>
+                    </div>
                     <div class="actions_item">
-                        <a class="btn btn-darken" href="{{ route('exams.edit', $exam->id) }}" title="Edit Student">
-                            <i class="material-icons">edit</i> Edit Exam
+                        <a class="btn btn-info btn-sm" href="{{ route('questions.create', $exam->id) }}" title="Add Question">
+                            <i class="material-icons">question_answer</i> Add Question
                         </a>
-                        <a class="btn btn-darken" href="{{ route('exams.index') }}" title="Back">
+                        <a class="btn btn-warning btn-sm" href="{{ route('exams.edit', $exam->id) }}" title="Edit Exam">
+                            <i class="material-icons">edit</i> Edit
+                        </a>
+                        <a class="btn btn-secondary btn-sm" href="{{ route('exams.index') }}" title="Back">
                             <i class="material-icons">arrow_back</i> Back
                         </a>
                     </div>
                 </div>
-                <div class="card-body px-0 pb-2">
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Statistics Cards -->
+    <div class="row mt-4">
+        <!-- Total Attempts -->
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-info shadow-info text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">groups</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">Total Attempts</p>
+                        <h4 class="mb-0">{{ $totalPass + $totalFail }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Pass -->
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-success shadow-success text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">check_circle</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">Total Pass</p>
+                        <h4 class="mb-0">{{ $totalPass }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Fail -->
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-danger shadow-danger text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">cancel</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">Total Fail</p>
+                        <h4 class="mb-0">{{ $totalFail }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pass Rate -->
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-primary shadow-primary text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">percent</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">Pass Rate</p>
+                        <h4 class="mb-0">
+                            {{ ($totalPass + $totalFail) > 0 ? round(($totalPass / ($totalPass + $totalFail)) * 100, 1) : 0 }}%
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Highest Mark -->
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-warning shadow-warning text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">trending_up</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">Highest Mark</p>
+                        <h4 class="mb-0">{{ $highestMark ?? 'N/A' }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Average Mark -->
+        <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-header p-3 pt-2">
+                    <div class="icon icon-lg icon-shape bg-gradient-secondary shadow-secondary text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">analytics</i>
+                    </div>
+                    <div class="text-end pt-1">
+                        <p class="text-sm mb-0 text-capitalize">Average Mark</p>
+                        <h4 class="mb-0">{{ $averageMark ?? 'N/A' }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Details Section -->
+    <div class="row mt-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <h6><i class="material-icons me-2">info</i>Exam Details</h6>
+                </div>
+                <div class="card-body">
                     <div class="row">
-                        <!-- Total Pass -->
-                        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                            <div class="card">
-                                <div class="card-header p-3 pt-2">
-                                    <div class="icon icon-lg icon-shape bg-gradient-success shadow-success text-center border-radius-xl mt-n4 position-absolute">
-                                        <i class="material-icons opacity-10">check_circle</i>
-                                    </div>
-                                    <div class="text-end pt-1">
-                                        <p class="text-sm mb-0 text-capitalize">Total Pass</p>
-                                        <h4 class="mb-0">{{ $totalPass }}</h4>
-                                    </div>
-                                </div>
+                        <!-- Basic Information -->
+                        <div class="col-md-6">
+                            <h6 class="text-uppercase text-body text-xs font-weight-bolder mb-3">Basic Information</h6>
+                            
+                            <div class="info-item mb-3">
+                                <label class="text-dark font-weight-bold text-sm">Course:</label>
+                                <p class="text-sm mb-0">{{ $exam->course->title }} ({{ $exam->course->course_code }})</p>
+                            </div>
+                            
+                            <div class="info-item mb-3">
+                                <label class="text-dark font-weight-bold text-sm">Exam Code:</label>
+                                <p class="text-sm mb-0">{{ $exam->exam_code }}</p>
+                            </div>
+                            
+                            <div class="info-item mb-3">
+                                <label class="text-dark font-weight-bold text-sm">Title:</label>
+                                <p class="text-sm mb-0">{{ $exam->title }}</p>
+                            </div>
+                            
+                            @if($exam->description)
+                            <div class="info-item mb-3">
+                                <label class="text-dark font-weight-bold text-sm">Description:</label>
+                                <p class="text-sm mb-0">{{ $exam->description }}</p>
+                            </div>
+                            @endif
+                            
+                            <div class="info-item mb-3">
+                                <label class="text-dark font-weight-bold text-sm">Status:</label>
+                                <span class="badge {{ $exam->status == 'available' ? 'bg-success' : 'bg-warning' }}">
+                                    {{ ucfirst(str_replace('_', ' ', $exam->status)) }}
+                                </span>
                             </div>
                         </div>
-                        <!-- Total Fail -->
-                        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                            <div class="card">
-                                <div class="card-header p-3 pt-2">
-                                    <div class="icon icon-lg icon-shape bg-gradient-danger shadow-danger text-center border-radius-xl mt-n4 position-absolute">
-                                        <i class="material-icons opacity-10">cancel</i>
-                                    </div>
-                                    <div class="text-end pt-1">
-                                        <p class="text-sm mb-0 text-capitalize">Total Fail</p>
-                                        <h4 class="mb-0">{{ $totalFail }}</h4>
-                                    </div>
-                                </div>
+                        
+                        <!-- Timing & Settings -->
+                        <div class="col-md-6">
+                            <h6 class="text-uppercase text-body text-xs font-weight-bolder mb-3">Timing & Settings</h6>
+                            
+                            <div class="info-item mb-3">
+                                <label class="text-dark font-weight-bold text-sm">Duration:</label>
+                                <p class="text-sm mb-0">
+                                    @if($exam->duration > 0)
+                                        {{ $exam->duration }} {{ $exam->duration_unit }}
+                                    @else
+                                        No time limit
+                                    @endif
+                                </p>
                             </div>
+                            
+                            @if($exam->start_time)
+                            <div class="info-item mb-3">
+                                <label class="text-dark font-weight-bold text-sm">Start Time:</label>
+                                <p class="text-sm mb-0">{{ \Carbon\Carbon::parse($exam->start_time)->format('M d, Y H:i') }}</p>
+                            </div>
+                            @endif
+                            
+                            @if($exam->end_time)
+                            <div class="info-item mb-3">
+                                <label class="text-dark font-weight-bold text-sm">End Time:</label>
+                                <p class="text-sm mb-0">{{ \Carbon\Carbon::parse($exam->end_time)->format('M d, Y H:i') }}</p>
+                            </div>
+                            @endif
+                            
+                            @if($exam->price)
+                            <div class="info-item mb-3">
+                                <label class="text-dark font-weight-bold text-sm">Price:</label>
+                                <p class="text-sm mb-0">${{ number_format($exam->price, 2) }}</p>
+                            </div>
+                            @endif
+                            
+                            @if($exam->access_code)
+                            <div class="info-item mb-3">
+                                <label class="text-dark font-weight-bold text-sm">Access Code:</label>
+                                <p class="text-sm mb-0">
+                                    <span class="badge bg-info">Protected</span>
+                                    <small class="text-muted">({{ $exam->access_code }})</small>
+                                </p>
+                            </div>
+                            @endif
                         </div>
-                        <!-- Highest Mark -->
-                        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                            <div class="card">
-                                <div class="card-header p-3 pt-2">
-                                    <div class="icon icon-lg icon-shape bg-gradient-primary shadow-primary text-center border-radius-xl mt-n4 position-absolute">
-                                        <i class="material-icons opacity-10">trending_up</i>
-                                    </div>
-                                    <div class="text-end pt-1">
-                                        <p class="text-sm mb-0 text-capitalize">Highest Mark</p>
-                                        <h4 class="mb-0">{{ $highestMark }}</h4>
-                                    </div>
-                                </div>
-                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Question & Grade Settings -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <h6><i class="material-icons me-2">quiz</i>Question Settings</h6>
+                </div>
+                <div class="card-body">
+                    @if($exam->number_of_questions)
+                    <div class="info-item mb-3">
+                        <label class="text-dark font-weight-bold text-sm">Total Questions:</label>
+                        <p class="text-sm mb-0">{{ $exam->number_of_questions }}</p>
+                    </div>
+                    @endif
+                    
+                    @if($exam->passing_grade)
+                    <div class="info-item mb-3">
+                        <label class="text-dark font-weight-bold text-sm">Passing Grade:</label>
+                        <p class="text-sm mb-0">{{ $exam->passing_grade }}%</p>
+                    </div>
+                    @endif
+                    
+                    <div class="info-item mb-3">
+                        <label class="text-dark font-weight-bold text-sm">Question Options:</label>
+                        <div class="mt-2">
+                            @if($exam->randomize_questions)
+                                <span class="badge bg-info me-1">Randomized</span>
+                            @endif
+                            @if($exam->pagination)
+                                <span class="badge bg-info me-1">Paginated</span>
+                            @endif
+                            @if(!$exam->randomize_questions && !$exam->pagination)
+                                <span class="text-muted">None</span>
+                            @endif
                         </div>
-                        <!-- Lowest Mark -->
-                        <div class="col-xl-3 col-sm-6">
-                            <div class="card">
-                                <div class="card-header p-3 pt-2">
-                                    <div class="icon icon-lg icon-shape bg-gradient-warning shadow-warning text-center border-radius-xl mt-n4 position-absolute">
-                                        <i class="material-icons opacity-10">trending_down</i>
-                                    </div>
-                                    <div class="text-end pt-1">
-                                        <p class="text-sm mb-0 text-capitalize">Lowest Mark</p>
-                                        <h4 class="mb-0">{{ $lowestMark }}</h4>
-                                    </div>
-                                </div>
-                            </div>
+                    </div>
+                    
+                    <div class="info-item mb-3">
+                        <label class="text-dark font-weight-bold text-sm">Result Display:</label>
+                        <div class="mt-2">
+                            @if($exam->review_questions)
+                                <span class="badge bg-success me-1">Show Results</span>
+                            @endif
+                            @if($exam->show_answers)
+                                <span class="badge bg-success me-1">Show Answers</span>
+                            @endif
+                            @if(!$exam->review_questions && !$exam->show_answers)
+                                <span class="text-muted">Hidden</span>
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <div class="info-item mb-3">
+                        <label class="text-dark font-weight-bold text-sm">Retakes:</label>
+                        <p class="text-sm mb-0">
+                            @if($exam->retake_allowed)
+                                @if($exam->number_retake == 0)
+                                    Unlimited
+                                @else
+                                    {{ $exam->number_retake }} allowed
+                                @endif
+                            @else
+                                Not allowed
+                            @endif
+                        </p>
+                    </div>
+                    
+                    <div class="info-item mb-3">
+                        <label class="text-dark font-weight-bold text-sm">Additional Features:</label>
+                        <div class="mt-2">
+                            @if($exam->allow_rating)
+                                <span class="badge bg-warning">Rating Enabled</span>
+                            @endif
+                            @if($exam->ip_restrictions)
+                                <span class="badge bg-danger">IP Restricted</span>
+                            @endif
+                            @if(!$exam->allow_rating && !$exam->ip_restrictions)
+                                <span class="text-muted">None</span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -90,27 +312,41 @@ Exams | Admin Panel
     <div class="row mt-4">
         <div class="col-12">
             <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="material-icons me-2">assignment_turned_in</i>Student Results</h6>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="material-icons">file_download</i> Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-action="csv">CSV</a></li>
+                            <li><a class="dropdown-item" href="#" data-action="excel">Excel</a></li>
+                            <li><a class="dropdown-item" href="#" data-action="pdf">PDF</a></li>
+                        </ul>
+                    </div>
+                </div>
                 <div class="card-body px-0 pb-2">
                     @if ($message = Session::get('success'))
-                        <div class="alert alert-success alert-dismissible text-white">
+                        <div class="alert alert-success alert-dismissible text-white mx-4">
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                             <span>{{ $message }}</span>
                         </div>
                     @endif
-                    <div class="table-title-div">
-                        <h5><i class="material-icons me-2">assignment</i> Results</h5>
-                    </div>
+                    
+                    @if($studentExams->count() > 0)
                     <div class="table-responsive">
                         <table class="table" id="examresulttable">
                             <thead>
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Student Code</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Name</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Start Date</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Completed Date</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Score(%)</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Email</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Started</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Completed</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Duration</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Score (%)</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Grade</th>
                                     <th class="not-export-col text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Action</th>
                                 </tr>
@@ -119,31 +355,69 @@ Exams | Admin Panel
                                 @foreach ($studentExams as $studentExam)
                                     @php
                                         $result = $studentExam->examResult;
-                                        $status = $result && $result->score > $exam->passing_grade ? 'Pass' : ($result ? 'Fail' : 'Not Graded');
+                                        $status = $result && $result->score >= $exam->passing_grade ? 'Pass' : ($result ? 'Fail' : 'Not Graded');
                                         $statusClass = $result
-                                            ? ($result->score > $exam->passing_grade ? 'bg-success' : 'bg-danger')
+                                            ? ($result->score >= $exam->passing_grade ? 'bg-success' : 'bg-danger')
                                             : 'bg-secondary';
+                                        
+                                        // Calculate duration
+                                        $duration = 'N/A';
+                                        if ($studentExam->started_at && $studentExam->completed_at) {
+                                            $diff = $studentExam->started_at->diff($studentExam->completed_at);
+                                            $duration = $diff->format('%H:%I:%S');
+                                        }
                                     @endphp
                                     <tr>
-                                        <td>{{ $studentExam->student->student_code }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar avatar-sm me-3">
+                                                    <div class="avatar-title bg-gradient-primary rounded-circle text-white">
+                                                        {{ strtoupper(substr($studentExam->student->name, 0, 1)) }}
+                                                    </div>
+                                                </div>
+                                                {{ $studentExam->student->student_code }}
+                                            </div>
+                                        </td>
                                         <td>{{ $studentExam->student->name }}</td>
+                                        <td>{{ $studentExam->student->email ?? 'N/A' }}</td>
                                         <td>
-                                            {{ $studentExam->started_at->format('Y-m-d H:i') }}
+                                            <span class="text-xs">{{ $studentExam->started_at->format('M d, Y') }}</span><br>
+                                            <span class="text-xs text-muted">{{ $studentExam->started_at->format('H:i') }}</span>
                                         </td>
                                         <td>
-                                            {{ $studentExam->completed_at->format('Y-m-d H:i') }}
+                                            @if($studentExam->completed_at)
+                                                <span class="text-xs">{{ $studentExam->completed_at->format('M d, Y') }}</span><br>
+                                                <span class="text-xs text-muted">{{ $studentExam->completed_at->format('H:i') }}</span>
+                                            @else
+                                                <span class="badge bg-warning">In Progress</span>
+                                            @endif
                                         </td>
-                                        <td>{{ $result ? $result->score : 'N/A' }}</td>
+                                        <td>
+                                            <span class="text-xs font-weight-bold">{{ $duration }}</span>
+                                        </td>
+                                        <td>
+                                            @if($result)
+                                                <div class="d-flex align-items-center">
+                                                    <span class="me-2 font-weight-bold">{{ number_format($result->score, 1) }}%</span>
+                                                    <div class="progress" style="width: 60px; height: 6px;">
+                                                        <div class="progress-bar bg-gradient-{{ $result->score >= $exam->passing_grade ? 'success' : 'danger' }}" 
+                                                             style="width: {{ $result->score }}%"></div>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <span class="badge {{ $statusClass }}">{{ $status }}</span>
                                         </td>
                                         <td>
                                             @if($result)
-                                                <a href="{{ route('results.view', $result->id) }}" class="btn btn-primary btn-sm">
-                                                    <i class="material-icons">remove_red_eye</i> View
+                                                <a href="{{ route('results.view', $result->id) }}" class="btn btn-primary btn-sm" title="View Results">
+                                                    <i class="material-icons">visibility</i>
                                                 </a>
                                             @else
-                                                <span class="text-muted">No Result</span>
+                                                <span class="text-muted text-xs">No Result</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -151,50 +425,201 @@ Exams | Admin Panel
                             </tbody>
                         </table>
                     </div>
+                    @else
+                    <div class="text-center py-5">
+                        <div class="icon icon-lg icon-shape bg-gradient-secondary shadow text-center border-radius-xl mb-3 mx-auto" style="width: 80px; height: 80px;">
+                            <i class="material-icons opacity-10" style="font-size: 2rem;">assignment</i>
+                        </div>
+                        <h5 class="text-muted">No Student Attempts Yet</h5>
+                        <p class="text-sm text-muted">Students haven't taken this exam yet. Results will appear here once they start attempting.</p>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
-    @endsection
+</div>
 
+<style>
+.info-item label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #67748e;
+    margin-bottom: 0.25rem;
+}
 
-    @section('scripts')
-    <script>
-        $(document).ready(function () {
-            $('#examresulttable').DataTable({
-                columnDefs: [
-                    {
-                        orderable: false,
-                        targets: -1 // Make the Action column unsortable
-                    },
-                    {
-                        targets: 0,
-                        width: '150px' 
-                    },
-                    {
-                        targets: 1,
-                        width: '200px' 
-                    },
-                    {
-                        targets: 2,
-                        width: '250px' 
-                    },
-                    {
-                        targets: 3,
-                        width: '100px' 
-                    },
-                    {
-                        targets: 4,
-                        width: '100px' 
-                    },
-                    {
-                        targets: -1,
-                        width: '150px'
-                    }
-                ],
-                order: [[1, 'asc']], // Order by Name ascending
-                // Add other DataTables options if needed
-            });
-        });
-    </script>
-    @endsection
+.info-item p {
+    color: #344767;
+    font-weight: 500;
+}
+
+.avatar-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.progress {
+    border-radius: 3px;
+}
+
+.card-header.actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+}
+
+.actions_item .btn {
+    margin-left: 0.5rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .card-header.actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .actions_item {
+        width: 100%;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .actions_item .btn {
+        margin-left: 0;
+        flex: 1;
+        min-width: auto;
+    }
+}
+</style>
+@endsection
+
+@section('scripts')
+<script>
+$(document).ready(function () {
+    const table = $('#examresulttable').DataTable({
+        columnDefs: [
+            {
+                orderable: false,
+                targets: -1 // Make the Action column unsortable
+            },
+            {
+                targets: 0,
+                width: '120px' 
+            },
+            {
+                targets: 1,
+                width: '150px' 
+            },
+            {
+                targets: 2,
+                width: '150px' 
+            },
+            {
+                targets: [3, 4],
+                width: '100px' 
+            },
+            {
+                targets: 5,
+                width: '80px' 
+            },
+            {
+                targets: 6,
+                width: '100px' 
+            },
+            {
+                targets: 7,
+                width: '80px' 
+            },
+            {
+                targets: -1,
+                width: '80px'
+            }
+        ],
+        order: [[3, 'desc']], // Order by Started date descending
+        pageLength: 25,
+        responsive: true,
+        language: {
+            search: "Search students:",
+            lengthMenu: "Show _MENU_ students per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ student attempts",
+            infoEmpty: "No student attempts found",
+            emptyTable: "No students have attempted this exam yet"
+        },
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'csvHtml5',
+                text: 'CSV',
+                className: 'd-none',
+                exportOptions: {
+                    columns: ':visible:not(.not-export-col)'
+                },
+                filename: 'exam_results_{{ $exam->exam_code }}_' + new Date().toISOString().split('T')[0]
+            },
+            {
+                extend: 'excelHtml5',
+                text: 'Excel',
+                className: 'd-none',
+                exportOptions: {
+                    columns: ':visible:not(.not-export-col)'
+                },
+                filename: 'exam_results_{{ $exam->exam_code }}_' + new Date().toISOString().split('T')[0]
+            },
+            {
+                extend: 'pdfHtml5',
+                text: 'PDF',
+                className: 'd-none',
+                exportOptions: {
+                    columns: ':visible:not(.not-export-col)'
+                },
+                filename: 'exam_results_{{ $exam->exam_code }}_' + new Date().toISOString().split('T')[0],
+                customize: function(doc) {
+                    doc.title = '{{ $exam->title }} - Results Report';
+                    doc.styles.title = {
+                        fontSize: 16,
+                        bold: true,
+                        alignment: 'center',
+                        margin: [0, 0, 0, 20]
+                    };
+                }
+            }
+        ]
+    });
+
+    // Handle export dropdown clicks
+    $('.dropdown-item[data-action]').on('click', function(e) {
+        e.preventDefault();
+        const action = $(this).data('action');
+        
+        switch(action) {
+            case 'csv':
+                table.button('.buttons-csv').trigger();
+                break;
+            case 'excel':
+                table.button('.buttons-excel').trigger();
+                break;
+            case 'pdf':
+                table.button('.buttons-pdf').trigger();
+                break;
+        }
+    });
+
+    // Auto-refresh data every 30 seconds for live updates
+    setInterval(function() {
+        table.ajax.reload(null, false);
+    }, 30000);
+});
+</script>
+@endsection

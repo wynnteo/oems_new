@@ -31,166 +31,343 @@ Edit Exam | Admin Panel
                         </ul>
                     </div>
                     @endif
+
                     <form action="{{ route('exams.update', $exam->id) }}" method="POST">
                         @csrf
                         @method('PUT')
-
-                        <div class="row">
+                        
+                        <!-- Basic Information Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-body text-xs font-weight-bolder">Basic Information</h6>
+                                <hr class="horizontal dark mt-0 mb-2">
+                            </div>
+                            
                             <!-- Course -->
-                            <div class="col-xs-12 col-sm-12 col-md-12">
+                            <div class="col-md-6 mb-3">
                                 <div class="form-group">
-                                    <strong>Course:</strong>
-                                    <select name="course_id" class="form-control">
+                                    <label class="form-control-label"><strong>Course: <span class="text-danger">*</span></strong></label>
+                                    <select name="course_id" class="form-control @error('course_id') is-invalid @enderror" required>
+                                        <option value="">Select a course</option>
                                         @foreach ($courses as $course)
-                                            <option value="{{ $course->id }}" {{ $course->id == old('course_id', $exam->course_id) ? 'selected' : '' }}>
+                                            <option value="{{ $course->id }}" {{ old('course_id', $exam->course_id) == $course->id ? 'selected' : '' }}>
                                                 {{ $course->title }}
                                             </option>
                                         @endforeach
                                     </select>
-                                </div>
-                            </div>
-
-                            <!-- Title -->
-                            <div class="col-xs-9 col-sm-9 col-md-9">
-                                <div class="form-group">
-                                    <strong>Title:</strong>
-                                    <input type="text" name="title" class="form-control" placeholder="Exam Title"
-                                        value="{{ old('title', $exam->title) }}">
+                                    @error('course_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
                             <!-- Exam Code -->
-                            <div class="col-xs-3 col-sm-3 col-md-3">
+                            <div class="col-md-6 mb-3">
                                 <div class="form-group">
-                                    <strong>Exam Code:</strong>
-                                    <input type="text" name="exam_code" class="form-control" placeholder="Exam Code"
-                                    value="{{ old('exam_code', $exam->exam_code) }}">
+                                    <label class="form-control-label"><strong>Exam Code: <span class="text-danger">*</span></strong></label>
+                                    <input type="text" name="exam_code" class="form-control @error('exam_code') is-invalid @enderror" 
+                                           placeholder="Enter unique exam code" value="{{ old('exam_code', $exam->exam_code) }}" required>
+                                    <small class="form-text text-muted">Must be unique identifier for the exam</small>
+                                    @error('exam_code')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- Title -->
+                            <div class="col-md-12 mb-3">
+                                <div class="form-group">
+                                    <label class="form-control-label"><strong>Exam Title: <span class="text-danger">*</span></strong></label>
+                                    <input type="text" name="title" class="form-control @error('title') is-invalid @enderror" 
+                                           placeholder="Enter exam title" value="{{ old('title', $exam->title) }}" required>
+                                    @error('title')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
                             <!-- Description -->
-                            <div class="col-xs-12 col-sm-12 col-md-12">
+                            <div class="col-md-12 mb-3">
                                 <div class="form-group">
-                                    <strong>Description:</strong>
-                                    <textarea class="form-control" name="description" placeholder="">{{ old('description', $exam->description) }}</textarea>
+                                    <label class="form-control-label"><strong>Description:</strong></label>
+                                    <textarea class="form-control @error('description') is-invalid @enderror" name="description" 
+                                              rows="3" placeholder="Enter exam description (optional)">{{ old('description', $exam->description) }}</textarea>
+                                    @error('description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Timing & Schedule Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-body text-xs font-weight-bolder">Timing & Schedule</h6>
+                                <hr class="horizontal dark mt-0 mb-2">
+                            </div>
+
+                            <!-- Duration -->
+                            <div class="col-md-4 mb-3">
+                                <div class="form-group">
+                                    <label class="form-control-label"><strong>Duration:</strong></label>
+                                    <input type="number" name="duration" class="form-control @error('duration') is-invalid @enderror" 
+                                           placeholder="0" value="{{ old('duration', $exam->duration) }}" min="0">
+                                    <small class="form-text text-muted">Set 0 to disable time limit</small>
+                                    @error('duration')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
-                            <!-- Duration, Duration Unit, and Start Time -->
-                            <div class="col-xs-12 col-sm-12 col-md-6">
+                            <!-- Duration Unit -->
+                            <div class="col-md-4 mb-3">
                                 <div class="form-group">
-                                    <strong>Exam Duration:</strong>
-                                    <input type="number" name="duration" class="form-control" placeholder="Duration"
-                                        value="{{ old('duration', $exam->duration) }}">
-                                    <small><i>Set zero to disable time limit.</i></small>
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6">
-                                <div class="form-group">
-                                    <strong>Duration Unit:</strong>
-                                    <select name="duration_unit" class="form-control">
+                                    <label class="form-control-label"><strong>Duration Unit: <span class="text-danger">*</span></strong></label>
+                                    <select name="duration_unit" class="form-control @error('duration_unit') is-invalid @enderror" required>
                                         <option value="minutes" {{ old('duration_unit', $exam->duration_unit) == 'minutes' ? 'selected' : '' }}>Minutes</option>
                                         <option value="hours" {{ old('duration_unit', $exam->duration_unit) == 'hours' ? 'selected' : '' }}>Hours</option>
                                     </select>
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6">
-                                <div class="form-group">
-                                    <strong>Exam Date Time:</strong>
-                                    <input type="datetime-local" name="start_time" class="form-control"
-                                        value="{{ old('start_time', $exam->start_time) }}">
-                                    
+                                    @error('duration_unit')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
+                            <!-- Price -->
+                            <div class="col-md-4 mb-3">
+                                <div class="form-group">
+                                    <label class="form-control-label"><strong>Price:</strong></label>
+                                    <input type="number" step="0.01" name="price" class="form-control @error('price') is-invalid @enderror" 
+                                           placeholder="0.00" value="{{ old('price', $exam->price ?? '') }}" min="0">
+                                    <small class="form-text text-muted">Leave empty for free exam</small>
+                                    @error('price')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- Start Time -->
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-control-label"><strong>Start Date & Time:</strong></label>
+                                    <input type="datetime-local" name="start_time" class="form-control @error('start_time') is-invalid @enderror"
+                                           value="{{ old('start_time', $exam->start_time ? \Carbon\Carbon::parse($exam->start_time)->format('Y-m-d\TH:i') : '') }}">
+                                    <small class="form-text text-muted">When the exam becomes available</small>
+                                    @error('start_time')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- End Time -->
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label class="form-control-label"><strong>End Date & Time:</strong></label>
+                                    <input type="datetime-local" name="end_time" class="form-control @error('end_time') is-invalid @enderror"
+                                           value="{{ old('end_time', $exam->end_time ? \Carbon\Carbon::parse($exam->end_time)->format('Y-m-d\TH:i') : '') }}">
+                                    <small class="form-text text-muted">When the exam becomes unavailable (optional)</small>
+                                    @error('end_time')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Question Settings Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-body text-xs font-weight-bolder">Question Settings</h6>
+                                <hr class="horizontal dark mt-0 mb-2">
+                            </div>
+
                             <!-- Number of Questions -->
-                            <div class="col-xs-12 col-sm-12 col-md-6">
+                            <div class="col-md-6 mb-3">
                                 <div class="form-group">
-                                    <strong>Number of Questions:</strong>
-                                    <input type="number" name="number_of_questions" class="form-control"
-                                        placeholder="Number of Questions" value="{{ old('number_of_questions', $exam->number_of_questions) }}">
+                                    <label class="form-control-label"><strong>Number of Questions:</strong></label>
+                                    <input type="number" name="number_of_questions" class="form-control @error('number_of_questions') is-invalid @enderror"
+                                           placeholder="Total questions in exam" value="{{ old('number_of_questions', $exam->number_of_questions) }}" min="1">
+                                    <small class="form-text text-muted">Total number of questions to display</small>
+                                    @error('number_of_questions')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6">
+
+                            <!-- Passing Grade -->
+                            <div class="col-md-6 mb-3">
                                 <div class="form-group">
-                                    <strong>Randomize Question Order:</strong>
-                                    <input type="checkbox" name="randomize_questions" {{ old('randomize_questions', $exam->randomize_questions) ? 'checked' : '' }}>
-                                    <br/>
-                                    <small class="form-text text-muted"><i>Randomize the question order for each student.</i></small>
+                                    <label class="form-control-label"><strong>Passing Grade (%):</strong></label>
+                                    <input type="number" step="0.01" name="passing_grade" class="form-control @error('passing_grade') is-invalid @enderror"
+                                           placeholder="Minimum percentage to pass" value="{{ old('passing_grade', $exam->passing_grade) }}" min="0" max="100">
+                                    <small class="form-text text-muted">Percentage required to pass the exam</small>
+                                    @error('passing_grade')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6">
+
+                            <!-- Question Options -->
+                            <div class="col-md-6 mb-3">
                                 <div class="form-group">
-                                    <strong>Re-attempt Exam:</strong>
-                                    <input type="checkbox" name="retake_allowed" {{ old('retake_allowed', $exam->retake_allowed) ? 'checked' : '' }}>
-                                    <br/>
-                                    <small class="form-text text-muted"><i>Allow students to retake the exam if needed.</i></small>
+                                    <label class="form-control-label"><strong>Question Options:</strong></label>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" name="randomize_questions" 
+                                               id="randomize_questions" {{ old('randomize_questions', $exam->randomize_questions) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="randomize_questions">
+                                            Randomize Question Order
+                                        </label>
+                                        <small class="form-text text-muted d-block">Shuffle questions for each student</small>
+                                    </div>
+                                    
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" name="pagination" 
+                                               id="pagination" {{ old('pagination', $exam->pagination ?? false) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="pagination">
+                                            Enable Pagination
+                                        </label>
+                                        <small class="form-text text-muted d-block">Show one question per page</small>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6">
+
+                            <!-- Result Display Options -->
+                            <div class="col-md-6 mb-3">
                                 <div class="form-group">
-                                    <strong>Number of Retakes:</strong>
-                                    <input type="number" name="number_retake" class="form-control"
-                                        placeholder="Number of Retakes" value="{{ old('number_retake', $exam->number_retake) }}">
-                                    <small class="form-text text-muted"><i>Specify the maximum number of times a student can retake the exam.</i></small>
+                                    <label class="form-control-label"><strong>Result Display:</strong></label>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" name="review_questions" 
+                                               id="review_questions" {{ old('review_questions', $exam->review_questions) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="review_questions">
+                                            Show Results on Completion
+                                        </label>
+                                        <small class="form-text text-muted d-block">Display results after exam completion</small>
+                                    </div>
+                                    
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" name="show_answers" 
+                                               id="show_answers" {{ old('show_answers', $exam->show_answers) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="show_answers">
+                                            Show Correct Answers
+                                        </label>
+                                        <small class="form-text text-muted d-block">Display correct answers with results</small>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6">
+                        </div>
+
+                        <!-- Retake Settings Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-body text-xs font-weight-bolder">Retake Settings</h6>
+                                <hr class="horizontal dark mt-0 mb-2">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
                                 <div class="form-group">
-                                    <strong>Passing Percentage:</strong>
-                                    <input type="number" step='0.01' name="passing_grade" class="form-control"
-                                        placeholder="Passing Grade" value="{{ old('passing_grade', $exam->passing_grade) }}">
-                                    <small class="form-text text-muted"><i>Enter the percentage or grade required to pass the exam.</i></small>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="retake_allowed" 
+                                               id="retake_allowed" {{ old('retake_allowed', $exam->retake_allowed) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="retake_allowed">
+                                            <strong>Allow Retakes</strong>
+                                        </label>
+                                        <small class="form-text text-muted d-block">Enable students to retake the exam</small>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6">
+
+                            <div class="col-md-6 mb-3">
                                 <div class="form-group">
-                                    <strong>Show Result On Completion:</strong>
-                                    <input type="checkbox" name="review_questions" {{ old('review_questions', $exam->review_questions) ? 'checked' : '' }}>
-                                    <br/>
-                                    <small class="form-text text-muted"><i>The exam results will be displayed to the students at the end of the exam.</i></small>
+                                    <label class="form-control-label"><strong>Number of Retakes:</strong></label>
+                                    <input type="number" name="number_retake" class="form-control @error('number_retake') is-invalid @enderror"
+                                           placeholder="Maximum retakes allowed" value="{{ old('number_retake', $exam->number_retake) }}" min="0">
+                                    <small class="form-text text-muted">0 = unlimited retakes</small>
+                                    @error('number_retake')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6">
-                                <div class="form-group">
-                                    <strong>Show Answers:</strong>
-                                    <input type="checkbox" name="show_answers" {{ old('show_answers', $exam->show_answers) ? 'checked' : '' }}>
-                                    <br/>
-                                    <small class="form-text text-muted"><i>The correct answers will be displayed to the students at the end of the exam.</i></small>
-                                </div>
+                        </div>
+
+                        <!-- Security & Access Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-body text-xs font-weight-bolder">Security & Access</h6>
+                                <hr class="horizontal dark mt-0 mb-2">
                             </div>
+
                             <!-- Status -->
-                            <div class="col-xs-12 col-sm-12 col-md-6">
+                            <div class="col-md-4 mb-3">
                                 <div class="form-group">
-                                    <strong>Status:</strong>
-                                    <select name="status" class="form-control">
+                                    <label class="form-control-label"><strong>Status: <span class="text-danger">*</span></strong></label>
+                                    <select name="status" class="form-control @error('status') is-invalid @enderror" required>
                                         <option value="available" {{ old('status', $exam->status) == 'available' ? 'selected' : '' }}>Available</option>
                                         <option value="not_available" {{ old('status', $exam->status) == 'not_available' ? 'selected' : '' }}>Not Available</option>
                                     </select>
+                                    @error('status')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
                             <!-- Access Code -->
-                            <div class="col-xs-12 col-sm-12 col-md-6">
+                            <div class="col-md-4 mb-3">
                                 <div class="form-group">
-                                    <strong>Access Code:</strong>
-                                    <input type="text" name="access_code" class="form-control" placeholder="Access Code"
-                                        value="{{ old('access_code', $exam->access_code) }}">
+                                    <label class="form-control-label"><strong>Access Code:</strong></label>
+                                    <input type="text" name="access_code" class="form-control @error('access_code') is-invalid @enderror" 
+                                           placeholder="Enter access code" value="{{ old('access_code', $exam->access_code) }}">
+                                    <small class="form-text text-muted">Optional password for exam access</small>
+                                    @error('access_code')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
 
-                            <div class="col-xs-12 col-sm-12 col-md-6">
+                            <!-- IP Restrictions -->
+                            <div class="col-md-4 mb-3">
                                 <div class="form-group">
-                                    <strong>Allow Rating:</strong>
-                                    <input type="checkbox" name="allow_rating" {{ old('allow_rating', $exam->allow_rating) ? 'checked' : '' }}>
-                                    <br/>
-                                    <small class="form-text text-muted"><i>Enable students to rate the exam after completion.</i></small>
+                                    <label class="form-control-label"><strong>Security Options:</strong></label>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" name="ip_restrictions" 
+                                               id="ip_restrictions" {{ old('ip_restrictions', $exam->ip_restrictions ?? false) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="ip_restrictions">
+                                            Enable IP Restrictions
+                                        </label>
+                                        <small class="form-text text-muted d-block">Restrict access by IP address</small>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Submit Button -->
-                            <div class="col-xs-12 col-sm-12 col-md-12">
-                                <button type="submit" class="btn btn-primary">Update Exam</button>
+                        <!-- Additional Features Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-uppercase text-body text-xs font-weight-bolder">Additional Features</h6>
+                                <hr class="horizontal dark mt-0 mb-2">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allow_rating" 
+                                               id="allow_rating" {{ old('allow_rating', $exam->allow_rating) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="allow_rating">
+                                            <strong>Allow Student Ratings</strong>
+                                        </label>
+                                        <small class="form-text text-muted d-block">Enable students to rate the exam after completion</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn bg-gradient-dark btn-lg px-5">
+                                    <i class="material-icons">update</i> Update Exam
+                                </button>
+                                <a href="{{ route('exams.index') }}" class="btn btn-outline-secondary btn-lg px-5 ms-3">
+                                    <i class="material-icons">cancel</i> Cancel
+                                </a>
                             </div>
                         </div>
                     </form>
@@ -199,4 +376,45 @@ Edit Exam | Admin Panel
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle retake number input based on retake allowed checkbox
+        const retakeAllowedCheckbox = document.getElementById('retake_allowed');
+        const numberRetakeInput = document.querySelector('input[name="number_retake"]');
+        
+        function toggleRetakeInput() {
+            if (retakeAllowedCheckbox.checked) {
+                numberRetakeInput.removeAttribute('disabled');
+                numberRetakeInput.parentElement.style.opacity = '1';
+            } else {
+                numberRetakeInput.setAttribute('disabled', 'disabled');
+                numberRetakeInput.parentElement.style.opacity = '0.5';
+                numberRetakeInput.value = '0';
+            }
+        }
+        
+        retakeAllowedCheckbox.addEventListener('change', toggleRetakeInput);
+        toggleRetakeInput(); // Initial call
+        
+        // Validate end time is after start time
+        const startTimeInput = document.querySelector('input[name="start_time"]');
+        const endTimeInput = document.querySelector('input[name="end_time"]');
+        
+        function validateEndTime() {
+            if (startTimeInput.value && endTimeInput.value) {
+                if (new Date(endTimeInput.value) <= new Date(startTimeInput.value)) {
+                    endTimeInput.setCustomValidity('End time must be after start time');
+                } else {
+                    endTimeInput.setCustomValidity('');
+                }
+            }
+        }
+        
+        startTimeInput.addEventListener('change', validateEndTime);
+        endTimeInput.addEventListener('change', validateEndTime);
+    });
+</script>
 @endsection

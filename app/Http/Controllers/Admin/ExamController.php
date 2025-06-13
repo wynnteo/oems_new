@@ -156,4 +156,13 @@ class ExamController extends Controller
         $exam->delete();
         return redirect()->route('exams.index')->with('success', 'Exam deleted successfully.');
     }
+
+    public function toggleStatus(Request $request, $id)
+    {
+        $exam = Exam::findOrFail($id);
+        $exam->status = $request->status;
+        $exam->save();
+        
+        return response()->json(['success' => true]);
+    }
 }
