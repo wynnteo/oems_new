@@ -129,7 +129,12 @@ Edit Question | Admin Panel
                             </div>
 
                             <div class="col-xs-12 col-sm-12 col-md-12 text-center">
-                                <button type="submit" class="btn bg-gradient-dark">Update</button>
+                                <button type="submit" class="btn bg-gradient-dark btn-lg px-5">
+                                    <i class="material-icons">update</i> Update Question
+                                </button>
+                                <a href="{{ route('questions.index') }}" class="btn btn-outline-secondary btn-lg px-5 ms-3">
+                                    <i class="material-icons">cancel</i> Cancel
+                                </a>
                             </div>
                         </div>
                     </form>

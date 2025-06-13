@@ -190,8 +190,12 @@ Courses | Admin Panel
                             </div>
                             
                             <div class="col-xs-12 col-sm-12 col-md-12 text-center pt-3">
-                                <button type="submit" class="btn bg-gradient-dark">Update Course</button>
-                                <a href="{{ route('courses.index') }}" class="btn btn-secondary ml-2">Cancel</a>
+                                <button type="submit" class="btn bg-gradient-dark btn-lg px-5">
+                                    <i class="material-icons">update</i> Update Course
+                                </button>
+                                <a href="{{ route('courses.index') }}" class="btn btn-outline-secondary btn-lg px-5 ms-3">
+                                    <i class="material-icons">cancel</i> Cancel
+                                </a>
                             </div>
                         </div>
                     </form>
