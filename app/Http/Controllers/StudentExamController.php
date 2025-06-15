@@ -17,7 +17,7 @@ class StudentExamController extends Controller
     public function index()
     {
         // Get the currently authenticated student (replace with Auth::user() if authentication is set up)
-        $student = Student::find(2);
+        $student = Student::find(1);
         if (!$student) {
             return abort(404, 'Student not found');
         }
@@ -65,7 +65,7 @@ class StudentExamController extends Controller
     {
         $exam = Exam::findOrFail($examId);
         //$student = Auth::user();
-        $student = Student::find(2);
+        $student = Student::find(1);
         $sessionKey = Str::uuid();
 
         if (!$student->courses->contains($exam->course_id)) {
@@ -105,7 +105,7 @@ class StudentExamController extends Controller
                 'session_key' => $sessionKey,
                 'started_at' => now('UTC'),
                 'progress' => json_encode($progress), 
-                'current_question_id' => $selectedQuestions->first()->id,
+                'current_question_id' => 0,
                 'ip_address' => $request->ip(),
             ]);
 
@@ -121,12 +121,12 @@ class StudentExamController extends Controller
     {
         $exam = Exam::findOrFail($code);
         //$student = Auth::user();
-        $student = Student::find(2);
+        $student = Student::find(1);
 
         $studentExam = StudentExams::where('exam_id', $exam->id)
             ->where('student_id', $student->id)
             ->where('session_key', $session_key)
-            ->selectRaw("*, CONVERT_TZ(started_at, '+08:00', '+00:00') as started_at_utc")
+            //->selectRaw("*, CONVERT_TZ(started_at, '+08:00', '+00:00') as started_at_utc")
             ->firstOrFail();
 
         $progress = json_decode($studentExam->progress, true);
@@ -157,7 +157,7 @@ class StudentExamController extends Controller
 
         $duration = $exam->duration;
         $durationUnit = $exam->duration_unit;
-        $startedAt = $studentExam->started_at_utc;
+        $startedAt = $studentExam->started_at;
 
         if ($durationUnit == 'hours') {
             $durationInMinutes = $duration * 60;
@@ -184,7 +184,7 @@ class StudentExamController extends Controller
         ]);
 
         //$student = Auth::user();
-        $student = Student::find(2);
+        $student = Student::find(1);
         $studentExam = StudentExams::where('exam_id', $examId)
                             ->where('student_id', $student->id)
                             ->where('session_key', $request->session_key)
@@ -322,6 +322,27 @@ class StudentExamController extends Controller
             'showReview' => true,
             'review' => $studentExamResult->review,
         ]);
+    }
+
+    public function submitFeedback(Request $request, $code, $session_key)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'feedback' => 'nullable|string|max:1000',
+        ]);
+
+        $student = Student::find(2);
+        $studentExam = StudentExams::where('exam_id', $code)
+            ->where('student_id', $student->id)
+            ->where('session_key', $session_key)
+            ->firstOrFail();
+
+        $studentExam->update([
+            'rating' => $request->rating,
+            'feedback' => $request->feedback,
+        ]);
+
+        return redirect()->back()->with('success', 'Thank you for your feedback!');
     }
 
     private function generateReview($progress, $studentExam)
