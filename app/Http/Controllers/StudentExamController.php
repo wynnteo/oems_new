@@ -17,7 +17,7 @@ class StudentExamController extends Controller
     public function index()
     {
         // Get the currently authenticated student (replace with Auth::user() if authentication is set up)
-        $student = Student::find(1);
+        $student = Student::find(2);
         if (!$student) {
             return abort(404, 'Student not found');
         }
@@ -65,7 +65,7 @@ class StudentExamController extends Controller
     {
         $exam = Exam::findOrFail($examId);
         //$student = Auth::user();
-        $student = Student::find(1);
+        $student = Student::find(2);
         $sessionKey = Str::uuid();
 
         if (!$student->courses->contains($exam->course_id)) {
@@ -73,10 +73,10 @@ class StudentExamController extends Controller
         }
 
         if ($exam->status !== 'available') {
-            return redirect()->back()->withErrors('This exam is not active.');
+            return redirect()->back()->withErrors('This Exam is Inactive.');
         }
         if (now()->lt($exam->start_time)) {
-            return redirect()->back()->withErrors('This exam is not yet available.');
+            return redirect()->back()->withErrors('This Exam is Unavailable.');
         }
 
         $studentExam = StudentExams::where('exam_id', $exam->id)
@@ -103,9 +103,10 @@ class StudentExamController extends Controller
                 'exam_id' => $exam->id,
                 'student_id' => $student->id,
                 'session_key' => $sessionKey,
-                'started_at' => now(),
+                'started_at' => now('UTC'),
                 'progress' => json_encode($progress), 
                 'current_question_id' => $selectedQuestions->first()->id,
+                'ip_address' => $request->ip(),
             ]);
 
             return redirect()->route('exam.page', ['code' => $exam->id, 'session_key' => $sessionKey])
@@ -120,7 +121,7 @@ class StudentExamController extends Controller
     {
         $exam = Exam::findOrFail($code);
         //$student = Auth::user();
-        $student = Student::find(1);
+        $student = Student::find(2);
 
         $studentExam = StudentExams::where('exam_id', $exam->id)
             ->where('student_id', $student->id)
@@ -137,7 +138,6 @@ class StudentExamController extends Controller
             $questionIndex = (int) $questionIndex;
 
             if ($questionIndex >= 0 && $questionIndex < count($questionIds)) {
-                
                 $currentIndex = $questionIndex;
                 $studentExam->current_question_id = $currentIndex;
                 $studentExam->save();
@@ -168,8 +168,8 @@ class StudentExamController extends Controller
         $currentTime = now();
         $endTime = $startedAt->copy()->addMinutes($durationInMinutes);
         $timeLeftInSeconds = $currentTime->diffInSeconds($endTime, false); 
-        $timeLeftInSeconds = $timeLeftInSeconds > 0 ? $timeLeftInSeconds : 0;
-
+        $timeLeftInSeconds = $timeLeftInSeconds > 0 ? $timeLeftInSeconds : 0;   
+        echo $currentIndex;
         return view('student.exam.page', compact('exam', 'timeLeftInSeconds', 'questions', 'currentIndex', 'progress', 'currentQuestion', 'previousQuestion', 'nextQuestion', 'session_key'));
     }
 
@@ -184,7 +184,7 @@ class StudentExamController extends Controller
         ]);
 
         //$student = Auth::user();
-        $student = Student::find(1);
+        $student = Student::find(2);
         $studentExam = StudentExams::where('exam_id', $examId)
                             ->where('student_id', $student->id)
                             ->where('session_key', $request->session_key)

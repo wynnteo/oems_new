@@ -157,8 +157,8 @@ Exam Result | Admin Panel
                                             Question {{ $loop->iteration }}
                                         </h6>
                                         <div class="question_text">
-                                            @if($question['question_type'] != 'fill_in_the_blank_text')
-                                                @if($question['question_type'] == 'fill_in_the_blank_choice')
+                                            @if($question['question_type'] != 'fill_in_the_blank_with_text')
+                                                @if($question['question_type'] == 'fill_in_the_blank_with_choice')
                                                     @php
                                                         $textWithBlanks = str_replace('[]', '_________', $question['question_text']);
                                                     @endphp
@@ -176,11 +176,14 @@ Exam Result | Admin Panel
                                     </div>
                                     <form>
                                         <div class="options_panel">
-                                            @if($question['question_type'] == 'single_choice' || $question['question_type'] == 'fill_in_the_blank_choice')
+                                            @php
+                                                $studentAnswer = is_array($question['student_answer']) ? $question['student_answer'] : [];
+                                            @endphp
+                                            @if($question['question_type'] == 'single_choice' || $question['question_type'] == 'fill_in_the_blankwith_choice')
                                                 @foreach($question['options'] as $option)
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="radio" name="answer[]" id="option{{ $loop->index }}" value="{{ $option }}"
-                                                            {{ in_array($option, $question['student_answer']) ? 'checked' : '' }}>
+                                                            {{ in_array($option, $studentAnswer) ? 'checked' : '' }}>
                                                         <label class="form-check-label" for="option{{ $loop->index }}">
                                                             {{ $option }}
                                                         </label>
@@ -191,7 +194,7 @@ Exam Result | Admin Panel
                                                 @foreach($question['options'] as $option)
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox" name="answer[]" id="option{{ $loop->index }}" value="{{ $option }}"
-                                                            {{ in_array($option, $question['student_answer']) ? 'checked' : '' }}>
+                                                            {{ in_array($option, $studentAnswer) ? 'checked' : '' }}>
                                                         <label class="form-check-label" for="option{{ $loop->index }}">
                                                             {{ $option }}
                                                         </label>
@@ -200,8 +203,7 @@ Exam Result | Admin Panel
                                             
                                             @elseif($question['question_type'] == 'true_false')
                                                 @php
-                                                    $studentAnswer = $question['student_answer'];
-                                                    print_r($studentAnswer[0]);
+                                                    $studentAnswer = is_array($question['student_answer']) ? $question['student_answer'] : [];
                                                 @endphp
                                                 <div class="form-check">
                                                     <input class="form-check-input" type="radio" name="answer[]" id="true" value="true" {{ in_array('true', $studentAnswer) ? 'checked' : '' }}>
@@ -212,12 +214,12 @@ Exam Result | Admin Panel
                                                     <label class="form-check-label" for="false">False</label>
                                                 </div>
                                             
-                                            @elseif($question['question_type'] == 'fill_in_the_blank_text')
+                                            @elseif($question['question_type'] == 'fill_in_the_blank_with_text')
                                                 <p>
                                                     @foreach(explode('[]', $question['question_text']) as $index => $segment)
                                                         {!! $segment !!}
                                                         @if ($index < count(explode('[]', $question['question_text'])) - 1)
-                                                            <input type="text" name="answer[]" class="form-control d-inline-block w-auto" value="{{ $question['student_answer'][$index] ?? '' }}">
+                                                            <input type="text" name="answer[]" class="form-control d-inline-block w-auto" value="{{ $studentAnswer[$index] ?? '' }}">
                                                         @endif
                                                     @endforeach
                                                 </p>

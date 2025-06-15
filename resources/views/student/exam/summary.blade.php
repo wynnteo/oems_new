@@ -67,11 +67,15 @@
                         </div>
                         <form>
                             <div class="options_panel">
+                                @php
+                                    $studentAnswer = is_array($question['student_answer']) ? $question['student_answer'] : [];
+                                @endphp
                                 @if($question['question_type'] == 'single_choice' || $question['question_type'] == 'fill_in_the_blank_with_choice')
                                     @foreach($question['options'] as $option)
+                                    
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="answer[]" id="option{{ $loop->index }}" value="{{ $option }}"
-                                                {{ in_array($option, $question['student_answer']) ? 'checked' : '' }}>
+                                                {{ in_array($option, $studentAnswer) ? 'checked' : '' }}>
                                             <label class="form-check-label" for="option{{ $loop->index }}">
                                                 {{ $option }}
                                             </label>
@@ -82,7 +86,7 @@
                                     @foreach($question['options'] as $option)
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="answer[]" id="option{{ $loop->index }}" value="{{ $option }}"
-                                                {{ in_array($option, $question['student_answer']) ? 'checked' : '' }}>
+                                                {{ in_array($option, $studentAnswer) ? 'checked' : '' }}>
                                             <label class="form-check-label" for="option{{ $loop->index }}">
                                                 {{ $option }}
                                             </label>
@@ -91,8 +95,7 @@
                                 
                                 @elseif($question['question_type'] == 'true_false')
                                     @php
-                                        $studentAnswer = $question['student_answer'];
-                                        print_r($studentAnswer[0]);
+                                        $studentAnswer = is_array($question['student_answer']) ? $question['student_answer'] : [];
                                     @endphp
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="answer[]" id="true" value="true" {{ in_array('true', $studentAnswer) ? 'checked' : '' }}>
