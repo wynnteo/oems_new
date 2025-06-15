@@ -3,9 +3,49 @@
 @section('title', 'Exam Summary')
 
 @section('content')
+<style>
+    .rating-stars {
+        font-size: 2rem;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    .rating-stars.active,
+    .rating-stars:hover {
+        color: #ffc107;
+    }
+    
+    .feedback-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+</style>
 <div class="container py-4">
     <h3>{{ $exam->title }} - {{ $exam->exam_code }}</h3>
     
+    <!-- Student Details Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-user me-2"></i>Exam Details</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Student Name:</strong> {{ $student->name }}</p>
+                    <p><strong>Student Code:</strong> {{ $student->student_code?? 'N/A' }}</p>
+                    <p><strong>Email:</strong> {{ $student->email }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Exam Started:</strong> {{ $studentExam->started_at->format('M d, Y h:i A') }}</p>
+                    <p><strong>Exam Completed:</strong> {{ $studentExam->completed_at->format('M d, Y h:i A') }}</p>
+                    <p><strong>Duration:</strong> {{ $studentExam->started_at->diffInMinutes($studentExam->completed_at) }} minutes</p>
+                </div>
+            </div>
+        </div>
+    </div>
      @if ($passFailStatus === 'Failed')
         <div class="alert alert-light text-center" role="alert">
             <i class="fa-solid fa-exclamation-triangle" style="color: orange; font-size:60px;"></i>
@@ -58,8 +98,6 @@
                                     @endif
                                 @endif
                             </div>
-                            <p>{{ $question['description'] }}</p>
-
                             @if($question['image_name'])
                                 <img src="{{ asset('storage/' . $question['image_name']) }}" alt="Question Image" class="img-fluid mb-3">
                             @endif
@@ -68,10 +106,13 @@
                         <div class="options_panel">
                             @if($question['question_type'] == 'single_choice' || $question['question_type'] == 'fill_in_the_blank_with_choice')
                                 @foreach($question['options'] as $option)
+                                @php
+                                        $isStudentAnswer = is_array($question['student_answer']) && in_array($option, $question['student_answer']);
+                                    @endphp
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="answer[]" id="option{{ $loop->index }}" value="{{ $option }}"
-                                            {{ in_array($option, $question['student_answer']) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="option{{ $loop->index }}">
+                                        <input class="form-check-input" type="radio" name="answer_{{ $question['question_id'] }}" id="option{{ $loop->parent->iteration }}_{{ $loop->index }}" value="{{ $option }}"
+                                            {{ $isStudentAnswer ? 'checked' : '' }} disabled>
+                                        <label class="form-check-label" for="option{{ $loop->parent->iteration }}_{{ $loop->index }}">
                                             {{ $option }}
                                         </label>
                                     </div>
@@ -81,7 +122,7 @@
                                 @foreach($question['options'] as $option)
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="answer[]" id="option{{ $loop->index }}" value="{{ $option }}"
-                                            {{ in_array($option, $question['student_answer']) ? 'checked' : '' }}>
+                                            {{ in_array($option, $question['student_answer']) ? 'checked' : '' }} disabled>
                                         <label class="form-check-label" for="option{{ $loop->index }}">
                                             {{ $option }}
                                         </label>
@@ -190,6 +231,47 @@
 
 @section('scripts')
 <script>
-    // Optional: JavaScript for any dynamic behavior
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.rating-stars');
+    const ratingInput = document.getElementById('rating-input');
+    let currentRating = 0;
+
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            currentRating = parseInt(this.dataset.rating);
+            ratingInput.value = currentRating;
+            updateStars();
+        });
+
+        star.addEventListener('mouseover', function() {
+            const hoverRating = parseInt(this.dataset.rating);
+            highlightStars(hoverRating);
+        });
+    });
+
+    document.querySelector('.rating-container').addEventListener('mouseleave', function() {
+        updateStars();
+    });
+
+    function updateStars() {
+        stars.forEach((star, index) => {
+            if (index < currentRating) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+
+    function highlightStars(rating) {
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.style.color = '#ffc107';
+            } else {
+                star.style.color = '#ddd';
+            }
+        });
+    }
+});
 </script>
 @endsection

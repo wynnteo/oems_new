@@ -215,7 +215,7 @@ class StudentExamController extends Controller
                 if ($question->question_type === 'fill_in_the_blank_text') {
                     $isCorrect = $this->checkFillInTheBlankAnswer($entry['student_answer'], $correctAnswer);
                 } else {
-                    $isCorrect = $this->checkAnswer($entry['student_answer'], $correctAnswer, $options);
+                    $isCorrect = $this->checkAnswer($entry['student_answer'], $correctAnswer, $options, $question->question_type);
                 }
                 $entry['result'] = $isCorrect ? 'correct' : 'incorrect';
                 $entry['correct_answer'] = $correctAnswer;
@@ -228,7 +228,7 @@ class StudentExamController extends Controller
             $passPercentage = ($totalCorrect / $totalQuestions) * 100;
             $studentPassed = $passPercentage >= $passMark;
             $studentExam->status = 'COMPLETED';
-            $studentExam->completed_at = now();
+            $studentExam->completed_at = now('UTC');
 
             StudentExamResults::create([
                 'student_exam_id' => $studentExam->id,
@@ -256,13 +256,30 @@ class StudentExamController extends Controller
                          ->with('success', 'Answer saved successfully!');
     }
 
-    private function checkAnswer($studentAnswer, $correctAnswer, $options)
+    private function checkAnswer($studentAnswer, $correctAnswer, $options, $questionType)
     {
-        if (is_array($studentAnswer)) {
+        // Handle true/false questions
+        if ($questionType === 'true_false') {
+            if (!$studentAnswer || empty($studentAnswer)) {
+                return false;
+            }
+            
+            $studentAnswerValue = strtolower(trim($studentAnswer[0]));
+            $correctAnswerValue = strtolower(trim($correctAnswer[0]));
+            
+            return $studentAnswerValue === $correctAnswerValue;
+        }
+
+        // Handle other question types with options
+        if (is_array($studentAnswer) && !empty($options)) {
             $studentAnswerIndexes = array_map(function($answer) use ($options) {
                 return array_search($answer, $options);
             }, $studentAnswer);
 
+            // Remove false values (not found options)
+            $studentAnswerIndexes = array_filter($studentAnswerIndexes, function($index) {
+                return $index !== false;
+            });
 
             sort($studentAnswerIndexes);
             sort($correctAnswer);
@@ -313,6 +330,8 @@ class StudentExamController extends Controller
 
         return view('student.exam.summary', [
             'exam' => $exam,
+            'student' => $student,
+            'studentExam' => $studentExam,
             'examStatus' => $studentExam->status,
             'totalQuestions' => ($studentExamResult->total_correct + $studentExamResult->total_incorrect),
             'correctAnswers' => $studentExamResult->total_correct,
@@ -331,7 +350,7 @@ class StudentExamController extends Controller
             'feedback' => 'nullable|string|max:1000',
         ]);
 
-        $student = Student::find(2);
+        $student = Student::find(1);
         $studentExam = StudentExams::where('exam_id', $code)
             ->where('student_id', $student->id)
             ->where('session_key', $session_key)
