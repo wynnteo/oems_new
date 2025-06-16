@@ -211,91 +211,177 @@
 
     <!-- Completed Exams Section -->
     <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Completed Exams</h5>
+        <div class="card-header pb-0">
+            <div class="row">
+                <div class="col-lg-6 col-7">
+                    <h6>Completed Exams</h6>
+                    <p class="text-sm mb-0">
+                        <i class="fa fa-check text-success" aria-hidden="true"></i>
+                        <span class="font-weight-bold ms-1">{{ $completedExams->count() }} exams completed</span>
+                    </p>
+                </div>
+                <div class="col-lg-6 col-5 my-auto text-end">
+                    <div class="dropdown float-lg-end pe-4">
+                        <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-ellipsis-v text-secondary"></i>
+                        </a>
+                        <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5" aria-labelledby="dropdownTable">
+                            <li><a class="dropdown-item border-radius-md" href="#">Export Results</a></li>
+                            <li><a class="dropdown-item border-radius-md" href="#">Print Summary</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
+        <div class="card-body px-0 pb-2">
             @if($completedExams->isEmpty())
-                <div class="alert alert-info" role="alert">
-                    No completed exams found.
+                <div class="text-center py-4">
+                    <i class="material-icons text-secondary" style="font-size: 48px;">assignment_turned_in</i>
+                    <h6 class="mt-3">No Completed Exams</h6>
+                    <p class="text-secondary">Your completed exams and results will appear here.</p>
                 </div>
             @else
-                <table class="table table-striped" id="cexamtable">
-                    <thead>
-                        <tr>
-                            <th style="width:150px">Exam Code</th>
-                            <th>Title</th>
-                            <th style="width:150px">Start At</th>
-                            <th style="width:150px">Completed At</th>
-                            <th>Score</th>
-                            <th>Grade</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($completedExams as $index => $exam)
-
-                        @php
-                            $result = $exam->examResult;
-                            $status = $result && $result->score > $exam->exam->passing_grade ? 'Pass' : ($result ? 'Fail' : 'Not Graded');
-                            $statusClass = $result
-                                ? ($result->score > $exam->exam->passing_grade ? 'bg-success' : 'bg-danger')
-                                : 'bg-secondary';
-                        @endphp
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0" id="completedExamsTable">
+                        <thead>
                             <tr>
-                                <td>{{ $exam->exam->exam_code }}</td>
-                                <td>{{ $exam->exam->title }}</td>
-                                <td>{{ $exam->started_at }}</td>
-                                <td>{{ $exam->completed_at }}</td>
-                                <td>{{ $exam->score }}</td>
-                                <td><span class="badge {{ $statusClass }}">{{ $status }}</span></td>
-                                <td>
-                                    @if($result)
-                                        <a href="" class="btn btn-primary btn-sm">
-                                            <i class="material-icons">remove_red_eye</i> View
-                                        </a>
-                                    @else
-                                        <span class="text-muted">No Result</span>
-                                    @endif
-                                </td>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Exam</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Completed</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Score</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Grade</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach($completedExams as $exam)
+                                @php
+                                    $result = $exam->examResult;
+                                    $passed = $result && $result->score >= $exam->exam->passing_grade;
+                                    $status = $result ? ($passed ? 'Passed' : 'Failed') : 'Pending';
+                                    $statusClass = $result ? ($passed ? 'bg-gradient-success' : 'bg-gradient-danger') : 'bg-gradient-secondary';
+                                    $iconClass = $passed ? 'bg-gradient-success' : 'bg-gradient-danger';
+                                @endphp
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-2 py-1">
+                                            <div>
+                                                <div class="avatar avatar-sm icon icon-shape {{ $iconClass }} shadow text-center border-radius-md">
+                                                    <i class="material-icons opacity-10 text-sm">{{ $passed ? 'check_circle' : 'cancel' }}</i>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-column justify-content-center ms-3">
+                                                <h6 class="mb-0 text-sm">{{ $exam->exam->title }}</h6>
+                                                <p class="text-xs text-secondary mb-0">{{ $exam->exam->exam_code }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ \Carbon\Carbon::parse($exam->completed_at)->format('M d, Y') }}</p>
+                                        <p class="text-xs text-secondary mb-0">{{ \Carbon\Carbon::parse($exam->completed_at)->format('g:i A') }}</p>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <span class="text-secondary text-xs font-weight-bold">
+                                            {{ $result ? $result->score : ($exam->score ?? 'N/A') }}
+                                            @if($result || $exam->score)
+                                                / {{ $exam->exam->total_marks ?? 100 }}
+                                            @endif
+                                        </span>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        @if($result || $exam->score)
+                                            @php
+                                                $percentage = $result 
+                                                    ? ($result->score / ($exam->exam->total_marks ?? 100)) * 100
+                                                    : ($exam->score / ($exam->exam->total_marks ?? 100)) * 100;
+                                            @endphp
+                                            <span class="text-xs font-weight-bold">{{ number_format($percentage, 1) }}%</span>
+                                        @else
+                                            <span class="text-xs text-secondary">N/A</span>
+                                        @endif
+                                    </td>
+                                    <td class="align-middle text-center text-sm">
+                                        <span class="badge badge-sm {{ $statusClass }}">{{ $status }}</span>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        @if($result)
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <a href="#" class="btn btn-info btn-sm me-1" title="View Result">
+                                                    <i class="material-icons text-sm">visibility</i>
+                                                </a>
+                                                <a href="#" class="btn btn-outline-primary btn-sm" title="Download Certificate">
+                                                    <i class="material-icons text-sm">download</i>
+                                                </a>
+                                            </div>
+                                        @else
+                                            <span class="text-secondary text-xs">No Result</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @endif
         </div>
     </div>
 </div>
 @endsection
 
-
 @section('scripts')
-    <script>
-        $(document).ready(function () {
-            $('#examtable').DataTable({
-                columnDefs: [
+<script>
+    $(document).ready(function () {
+        // Initialize DataTables for both tables
+        $('#upcomingExamsTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+            lengthChange: false,
+            searching: true,
+            ordering: true,
+            info: true,
+            autoWidth: false,
+            columnDefs: [
                 {
-                    targets: 0,
-                    width: '100px' 
+                    targets: [2, 3, 4], // Duration, Status, Actions columns
+                    orderable: false
                 },
                 {
-                    targets: -1,
-                    width: '100px'
-                }]
-            });
-
-            $('#cexamtable').DataTable({
-                columnDefs: [
-                {
-                    targets: 0,
-                    width: '100px' 
-                },
-                {
-                    targets: -1,
-                    width: '100px'
-                }]
-            });
-            
+                    targets: 4, // Actions column
+                    width: '150px'
+                }
+            ],
+            language: {
+                search: "Search exams:",
+                emptyTable: "No upcoming exams found",
+                zeroRecords: "No matching exams found"
+            }
         });
-    </script>
-    @endsection
+
+        $('#completedExamsTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+            lengthChange: false,
+            searching: true,
+            ordering: true,
+            info: true,
+            autoWidth: false,
+            order: [[1, 'desc']], // Sort by completion date descending
+            columnDefs: [
+                {
+                    targets: [2, 3, 4, 5], // Score, Grade, Status, Actions columns
+                    orderable: false
+                },
+                {
+                    targets: 5, // Actions column
+                    width: '150px'
+                }
+            ],
+            language: {
+                search: "Search completed exams:",
+                emptyTable: "No completed exams found",
+                zeroRecords: "No matching exams found"
+            }
+        });
+    });
+</script>
+@endsection
