@@ -623,10 +623,11 @@
                                 if ($isAnswered) $classes[] = 'answered';
                                 if ($isReviewed) $classes[] = 'reviewed';
                             @endphp
-                            <a href="{{ route('exam.page', ['code' => $exam->id, 'session_key' => $session_key, 'question_index' => $index]) }}" 
-                               class="{{ implode(' ', $classes) }}"
-                               title="Question {{ $index + 1 }}{{ $isAnswered ? ' - Answered' : '' }}{{ $isReviewed ? ' - Marked for Review' : '' }}">
-                                {{ $index + 1 }}
+                            <a href="#" 
+                                class="{{ implode(' ', $classes) }} question-nav-btn"
+                                data-question-index="{{ $index }}"
+                                title="Question {{ $index + 1 }}{{ $isAnswered ? ' - Answered' : '' }}{{ $isReviewed ? ' - Marked for Review' : '' }}">
+                                    {{ $index + 1 }}
                             </a>
                         @endforeach
                     </div>
@@ -683,5 +684,65 @@
             e.preventDefault();
         }
     });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const questionNavBtns = document.querySelectorAll('.question-nav-btn');
+    
+    questionNavBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetIndex = this.dataset.questionIndex;
+            
+            // Create a form to save current answer and navigate
+            const form = document.createElement('form');
+            form.method = 'GET';
+            form.action = '{{ route("exam.page", ["code" => $exam->id, "session_key" => $session_key]) }}';
+            
+            // Add current question data
+            const currentQuestionId = document.querySelector('input[name="question_id"]').value;
+            const currentAnswers = [];
+            
+            // Collect current answers
+            const checkedInputs = document.querySelectorAll('input[name="answer[]"]:checked, input[name="answer[]"][type="text"]');
+            checkedInputs.forEach(input => {
+                if (input.type === 'text' && input.value.trim()) {
+                    currentAnswers.push(input.value);
+                } else if (input.checked) {
+                    currentAnswers.push(input.value);
+                }
+            });
+            
+            const markReviewCheckbox = document.querySelector('input[name="question_marked_review"]');
+
+            // Add hidden inputs
+            const inputs = [
+                { name: 'question_index', value: targetIndex },
+                { name: 'save_current_answer', value: '1' },
+                { name: 'current_question_id', value: currentQuestionId },
+                { name: 'current_marked_review', value: markReviewCheckbox?.checked ? '1' : '0' }
+            ];
+            console.log(inputs);
+            // Add current answers
+            currentAnswers.forEach((answer, index) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'current_answer[]';
+                input.value = answer;
+                form.appendChild(input);
+            });
+            
+            inputs.forEach(inputData => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = inputData.name;
+                input.value = inputData.value;
+                form.appendChild(input);
+            });
+            
+            document.body.appendChild(form);
+            form.submit();
+        });
+    });
+});
 </script>
 @endsection

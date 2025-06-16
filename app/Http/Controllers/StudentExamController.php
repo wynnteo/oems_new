@@ -130,6 +130,11 @@ class StudentExamController extends Controller
             //->selectRaw("*, CONVERT_TZ(started_at, '+08:00', '+00:00') as started_at_utc")
             ->firstOrFail();
 
+        // Save current answers if coming from question grid navigation
+        if ($request->has('save_current_answer')) {
+            $this->saveCurrentAnswer($request, $studentExam);
+        }
+
         $progress = json_decode($studentExam->progress, true);
         $questionIds = collect($progress)->pluck('question_id');
         $questions = Question::whereIn('id', $questionIds)->get();
@@ -255,6 +260,25 @@ class StudentExamController extends Controller
 
         return redirect()->route($redirectRoute, ['code' => $examId, 'session_key' => $request->session_key])
                          ->with('success', 'Answer saved successfully!');
+    }
+
+    private function saveCurrentAnswer(Request $request, $studentExam)
+    {
+        if (!$request->has('current_question_id') || !$request->has('current_answer')) {
+            return;
+        }
+
+        $progress = json_decode($studentExam->progress, true) ?? [];
+        $progressIndex = collect($progress)->search(function ($item) use ($request) {
+            return $item['question_id'] == $request->current_question_id;
+        });
+
+        if ($progressIndex !== false) {
+            $progress[$progressIndex]['student_answer'] = $request->input('current_answer');
+            $progress[$progressIndex]['question_marked_review'] = $request->input('current_marked_review') === '1';
+            $studentExam->progress = json_encode($progress);
+            $studentExam->save();
+        }
     }
 
     private function checkAnswer($studentAnswer, $correctAnswer, $options, $questionType)
