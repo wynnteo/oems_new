@@ -1,113 +1,214 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\StudentController;
-use App\Http\Controllers\Admin\CourseController;
-use App\Http\Controllers\Admin\ExamController;
-use App\Http\Controllers\Admin\QuestionController;
-use App\Http\Controllers\Admin\StudentExamsController;
 use App\Http\Controllers\ExamRegistrationController;
-use App\Http\Controllers\ExamScheduleController;
-use App\Http\Controllers\StudentDashboardController;
-use App\Http\Controllers\StudentCourseController;
-use App\Http\Controllers\StudentExamController;
 use App\Http\Controllers\EWalletController;
 use App\Http\Controllers\PayPalController;
 use App\Http\Controllers\StripeController;
+use App\Http\Controllers\StudentExamController;
 
+// Admin Controllers
+use App\Http\Controllers\Admin\{
+    DashboardController,
+    StudentController,
+    CourseController,
+    ExamController,
+    QuestionController,
+    StudentExamsController
+};
+
+// Student Controllers
+use App\Http\Controllers\{
+    ExamScheduleController,
+    StudentDashboardController,
+    StudentCourseController
+};
+
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
 
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-
-Route::get('/admin/courses/search', [CourseController::class, 'search'])->name('courses.search');
-Route::patch('/admin/courses/{course}/toggle-status', [CourseController::class, 'toggleStatus'])->name('courses.toggle-status');
-Route::patch('/admin/courses/{course}/toggle-featured', [CourseController::class, 'toggleFeatured'])->name('courses.toggle-featured');
-Route::resource('/admin/courses', CourseController::class);
-
-Route::resource('/admin/students', StudentController::class);
-Route::post('/admin/students/{student}/enroll', [StudentController::class, 'enroll'])->name('students.enroll');
-Route::get('/admin/students/{student}/unenroll/{enrollment}', [StudentController::class, 'unenroll'])->name('students.unenroll');
-
-Route::patch('/admin/exams/{exam}/toggle-status', [ExamController::class, 'toggleStatus']);
-Route::resource('/admin/exams', ExamController::class);
-
-Route::get('/admin/questions/{id}/duplicate', [QuestionController::class, 'duplicate'])->name('questions.duplicate');
-Route::patch('/admin/questions/{question}/toggle-status', [QuestionController::class, 'toggleStatus'])->name('questions.toggle-status');
-Route::resource('/admin/questions', QuestionController::class);
-Route::get('/admin/questions/create/{examId?}', [QuestionController::class, 'create'])->name('questions.create');
-Route::post('admin/questions/import', [QuestionController::class, 'import'])->name('questions.import');
-
-Route::get('/admin/results/view/{id}', [StudentExamsController::class, 'view'])->name('results.view');
-
-// Route::middleware(['auth'])->group(function () {
-    Route::get('/student/ewallet', [EWalletController::class, 'index'])->name('student.ewallet.index');
-
-    Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
-    Route::get('/student/courses', [StudentDashboardController::class, 'courses'])->name('student.courses');
-    Route::get('/student/course/{id}/details', [StudentDashboardController::class, 'showCourseDetails'])->name('student.courses.show');
-    Route::get('/student/exams', [StudentDashboardController::class, 'exams'])->name('student.exams');
-    Route::get('/student/profile', [StudentDashboardController::class, 'profile'])->name('student.profile');
-    Route::put('/student/profile', [StudentDashboardController::class, 'updateProfile'])->name('student.profile.update');
-
-    Route::prefix('/student/exams')->name('student.exams.')->group(function () {
-        Route::get('/schedule', [ExamScheduleController::class, 'index'])
-            ->name('schedule');
-        Route::get('/{exam}/show', [ExamScheduleController::class, 'showExamDetails'])
-            ->name('show');
-
-        Route::get('/{exam}/details', [ExamScheduleController::class, 'getExamDetails'])
-            ->name('details');
-        Route::get('/{exam}/full-details', [ExamScheduleController::class, 'getFullExamDetails'])
-            ->name('full-details');
-
-        Route::get('/{exam}/reschedule', [ExamScheduleController::class, 'showRescheduleForm'])
-            ->name('reschedule.show');
-        Route::post('/{exam}/reschedule', [ExamScheduleController::class, 'rescheduleExam'])
-        ->name('reschedule.process');
-
-        Route::post('/{exam}/schedule', [ExamScheduleController::class, 'scheduleExam'])
-            ->name('schedule-exam');
-        Route::post('/{exam}/cancel', [ExamScheduleController::class, 'cancelExamRegistration'])
-            ->name('cancel-registration');
-
-        Route::get('/scheduled', [ExamScheduleController::class, 'getScheduledExams'])
-            ->name('scheduled');
-        Route::get('/{exam}/availability', [ExamScheduleController::class, 'checkExamAvailability'])
-            ->name('check-availability');
+/*
+|--------------------------------------------------------------------------
+| Authentication Required Routes
+|--------------------------------------------------------------------------
+*/
+//Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // Profile Management
+    Route::controller(ProfileController::class)->prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', 'edit')->name('edit');
+        Route::patch('/', 'update')->name('update');
+        Route::delete('/', 'destroy')->name('destroy');
     });
 
-    Route::post('/stripe/create-payment-intent', [StripeController::class, 'createPaymentIntent'])->name('stripe.create');
-    Route::get('/stripe/payment-success', [StripeController::class, 'handleTransaction'])->name('payment.success');
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Routes
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+        
+        // Admin Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        
+        // Course Management
+        Route::controller(CourseController::class)->prefix('courses')->name('courses.')->group(function () {
+            Route::get('/search', 'search')->name('search');
+            Route::patch('/{course}/toggle-status', 'toggleStatus')->name('toggle-status');
+            Route::patch('/{course}/toggle-featured', 'toggleFeatured')->name('toggle-featured');
+        });
+        Route::resource('courses', CourseController::class)->names([
+            'index' => 'courses.index',
+            'create' => 'courses.create',
+            'store' => 'courses.store',
+            'show' => 'courses.show',
+            'edit' => 'courses.edit',
+            'update' => 'courses.update',
+            'destroy' => 'courses.destroy',
+        ]);
 
-    Route::post('/paypal/create', [PayPalController::class, 'createOrder'])->name('paypal.create');
-    Route::get('/paypal/return', [PayPalController::class, 'captureOrder'])->name('paypal.return');
-    Route::get('/paypal/cancel', function () {
-        return redirect()->route('student.ewallet.index')->with('error', 'Payment cancelled.');
-    })->name('paypal.cancel');
+        // Student Management
+        Route::controller(StudentController::class)->prefix('students')->name('students.')->group(function () {
+            Route::post('/{student}/enroll', 'enroll')->name('enroll');
+            Route::delete('/{student}/unenroll/{enrollment}', 'unenroll')->name('unenroll');
+        });
+        Route::resource('students', StudentController::class)->names([
+            'index' => 'students.index',
+            'create' => 'students.create',
+            'store' => 'students.store',
+            'show' => 'students.show',
+            'edit' => 'students.edit',
+            'update' => 'students.update',
+            'destroy' => 'students.destroy',
+        ]);
 
-    Route::get('/exam/{examId}', [StudentExamController::class, 'show'])->name('student.exam.show');
-    Route::post('/exam/{examId}/start', [StudentExamController::class, 'start'])->name('student.exam.start');
-    Route::get('/exam/{code}/{session_key}', [StudentExamController::class, 'showExamPage'])->name('exam.page');
-    Route::post('/exam/{code}/page/{session_key}', [StudentExamController::class, 'showExamPage'])->name('exam.page.post');
-    Route::post('/exam/{code}/feedback/{session_key}', [StudentExamController::class, 'submitFeedback'])->name('exam.feedback');
-    Route::get('/exam/summary/{code}/{session_key}', [StudentExamController::class, 'showAfterExamCompleted'])->name('exam.summary');
-    Route::post('/exam/{examId}/submit-answer', [StudentExamController::class, 'submitAnswer'])
-        ->name('student.exam.submit_answer');
+        // Exam Management
+        Route::controller(ExamController::class)->prefix('exams')->name('exams.')->group(function () {
+            Route::patch('/{exam}/toggle-status', 'toggleStatus')->name('toggle-status');
+        });
+        Route::resource('exams', ExamController::class)->names([
+            'index' => 'exams.index',
+            'create' => 'exams.create',
+            'store' => 'exams.store',
+            'show' => 'exams.show',
+            'edit' => 'exams.edit',
+            'update' => 'exams.update',
+            'destroy' => 'exams.destroy',
+        ]);
 
-// });
+        // Question Management
+        Route::controller(QuestionController::class)->prefix('questions')->name('questions.')->group(function () {
+            Route::get('/create/{examId?}', 'create')->name('create');
+            Route::post('/import', 'import')->name('import');
+            Route::get('/{id}/duplicate', 'duplicate')->name('duplicate');
+            Route::patch('/{question}/toggle-status', 'toggleStatus')->name('toggle-status');
+        });
+        Route::resource('questions', QuestionController::class)->names([
+            'index' => 'questions.index',
+            'store' => 'questions.store',
+            'show' => 'questions.show',
+            'edit' => 'questions.edit',
+            'update' => 'questions.update',
+            'destroy' => 'questions.destroy',
+        ]);
 
-require __DIR__.'/auth.php';
+        // Results Management
+        Route::controller(StudentExamsController::class)->prefix('results')->name('results.')->group(function () {
+            Route::get('/view/{id}', 'view')->name('view');
+        });
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Student Routes
+    |--------------------------------------------------------------------------
+    */
+    // Route::middleware(['role:student'])->prefix('student')->name('student.')->group(function () {
+    Route::prefix('student')->name('student.')->group(function () {
+        // Student Dashboard & Profile
+        Route::controller(StudentDashboardController::class)->group(function () {
+            Route::get('/dashboard', 'index')->name('dashboard');
+            Route::get('/courses', 'courses')->name('courses');
+            Route::get('/course/{id}/details', 'showCourseDetails')->name('courses.show');
+            Route::get('/exams', 'exams')->name('exams');
+            Route::get('/profile', 'profile')->name('profile');
+            Route::put('/profile', 'updateProfile')->name('profile.update');
+        });
+
+        // E-Wallet Management
+        Route::get('/ewallet', [EWalletController::class, 'index'])->name('ewallet.index');
+
+        // Exam Scheduling
+        Route::controller(ExamScheduleController::class)->prefix('exams')->name('exams.')->group(function () {
+            Route::get('/schedule', 'index')->name('schedule');
+            Route::get('/scheduled', 'getScheduledExams')->name('scheduled');
+            
+            // Individual Exam Actions
+            Route::prefix('/{exam}')->group(function () {
+                Route::get('/show', 'showExamDetails')->name('show');
+                Route::get('/details', 'getExamDetails')->name('details');
+                Route::get('/full-details', 'getFullExamDetails')->name('full-details');
+                Route::get('/availability', 'checkExamAvailability')->name('check-availability');
+                
+                // Scheduling Actions
+                Route::post('/schedule', 'scheduleExam')->name('schedule-exam');
+                Route::post('/cancel', 'cancelExamRegistration')->name('cancel-registration');
+                
+                // Rescheduling
+                Route::get('/reschedule', 'showRescheduleForm')->name('reschedule.show');
+                Route::post('/reschedule', 'rescheduleExam')->name('reschedule.process');
+            });
+        });
+
+        // Exam Taking
+        Route::controller(StudentExamController::class)->prefix('exam')->name('exam.')->group(function () {
+            Route::get('/{examId}', 'show')->name('show');
+            Route::post('/{examId}/start', 'start')->name('start');
+            Route::post('/{examId}/submit-answer', 'submitAnswer')->name('submit_answer');
+            
+            // Exam Session Routes
+            Route::get('/{code}/{session_key}', 'showExamPage')->name('page');
+            Route::post('/{code}/page/{session_key}', 'showExamPage')->name('page.post');
+            Route::post('/{code}/feedback/{session_key}', 'submitFeedback')->name('feedback');
+            Route::get('/summary/{code}/{session_key}', 'showAfterExamCompleted')->name('summary');
+        });
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Payment Routes
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('payments')->name('payments.')->group(function () {
+        
+        // Stripe Payment Routes
+        Route::controller(StripeController::class)->prefix('stripe')->name('stripe.')->group(function () {
+            Route::post('/create-payment-intent', 'createPaymentIntent')->name('create');
+            Route::get('/payment-success', 'handleTransaction')->name('success');
+        });
+
+        // PayPal Payment Routes
+        Route::controller(PayPalController::class)->prefix('paypal')->name('paypal.')->group(function () {
+            Route::post('/create', 'createOrder')->name('create');
+            Route::get('/return', 'captureOrder')->name('return');
+            Route::get('/cancel', function () {
+                return redirect()->route('student.ewallet.index')->with('error', 'Payment cancelled.');
+            })->name('cancel');
+        });
+    });
+//});
+
+/*
+|--------------------------------------------------------------------------
+| Authentication Routes
+|--------------------------------------------------------------------------
+*/
+require __DIR__ . '/auth.php';

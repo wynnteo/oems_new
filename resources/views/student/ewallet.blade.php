@@ -1,282 +1,238 @@
 @extends('layouts.studentmaster')
 
-@section('title')
-    eWallet | Student Portal
-@endsection
-<style>
-form {
-  min-width: 500px;
-  align-self: center;
-  box-shadow: 0px 0px 0px 0.5px rgba(50, 50, 93, 0.1),
-    0px 2px 5px 0px rgba(50, 50, 93, 0.1), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.07);
-  border-radius: 7px;
-  padding: 40px;
-}
+@section('title', 'E-Wallet | Student Portal')
 
-.hidden {
-  display: none;
-}
-
-#payment-message {
-  color: rgb(105, 115, 134);
-  font-size: 16px;
-  line-height: 20px;
-  padding-top: 12px;
-  text-align: center;
-}
-
-#payment-element {
-  margin-bottom: 24px;
-}
-
-/* Buttons and links */
-button {
-  background: #5469d4;
-  font-family: Arial, sans-serif;
-  color: #ffffff;
-  border-radius: 4px;
-  border: 0;
-  padding: 12px 16px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  display: block;
-  transition: all 0.2s ease;
-  box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
-  width: 100%;
-}
-button:hover {
-  filter: contrast(115%);
-}
-button:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-/* spinner/processing state, errors */
-.spinner,
-.spinner:before,
-.spinner:after {
-  border-radius: 50%;
-}
-.spinner {
-  color: #ffffff;
-  font-size: 22px;
-  text-indent: -99999px;
-  margin: 0px auto;
-  position: relative;
-  width: 20px;
-  height: 20px;
-  box-shadow: inset 0 0 0 2px;
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  transform: translateZ(0);
-}
-.spinner:before,
-.spinner:after {
-  position: absolute;
-  content: "";
-}
-.spinner:before {
-  width: 10.4px;
-  height: 20.4px;
-  background: #5469d4;
-  border-radius: 20.4px 0 0 20.4px;
-  top: -0.2px;
-  left: -0.2px;
-  -webkit-transform-origin: 10.4px 10.2px;
-  transform-origin: 10.4px 10.2px;
-  -webkit-animation: loading 2s infinite ease 1.5s;
-  animation: loading 2s infinite ease 1.5s;
-}
-.spinner:after {
-  width: 10.4px;
-  height: 10.2px;
-  background: #5469d4;
-  border-radius: 0 10.2px 10.2px 0;
-  top: -0.1px;
-  left: 10.2px;
-  -webkit-transform-origin: 0px 10.2px;
-  transform-origin: 0px 10.2px;
-  -webkit-animation: loading 2s infinite ease;
-  animation: loading 2s infinite ease;
-}
-
-@-webkit-keyframes loading {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@keyframes loading {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-
-@media only screen and (max-width: 600px) {
-  form {
-    width: 80vw;
-    min-width: initial;
-  }
-}
-
-.amount-selection {
-    display: flex;
-    margin-bottom: 2rem;
-}
-
-.amount-button {
-    background-color: white;
-    border: 1px solid #344768;
-    color: #344768;
-    padding: 15px 32px; 
-    text-align: center;
-    text-decoration: none; 
-    display: inline-block;
-    font-size: 16px; 
-    margin: 4px 2px;
-    cursor: pointer; 
-    border-radius: 12px; 
-    transition-duration: 0.4s;
-}
-
-.amount-button:hover {
-    background-color: white; /* White background on hover */
-    color: black; /* Black text on hover */
-    border: 2px solid #4CAF50; /* Green border */
-}
-</style>
 @section('content')
 <div class="container-fluid py-4">
     <div class="row">
-        <!-- Balance Section -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">eWallet Balance</h5>
-                </div>
-                <div class="card-body">
-                    <h3 class="text-center">${{ number_format($balance, 2) }}</h3>
-                    <p class="text-center text-muted">Current balance in your eWallet.</p>
+        <!-- Balance Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-wallet fa-3x text-primary mb-3"></i>
+                    <h2 class="text-primary mb-2">${{ number_format($wallet->balance, 2) }}</h2>
+                    <p class="text-muted">Available Balance</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ route('student.ewallet.topup') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Top Up Wallet
+                        </a>
+                        <a href="{{ route('student.ewallet.exam-store') }}" class="btn btn-outline-success">
+                            <i class="fas fa-shopping-cart me-2"></i>Buy Exams
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Top-Up Section -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Top Up eWallet</h5>
+        <!-- Quick Stats -->
+        <div class="col-md-8 mb-4">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-arrow-up text-success fa-2x mb-2"></i>
+                            <h5 class="text-success">
+                                ${{ number_format($transactions->where('type', 'credit')->sum('amount'), 2) }}
+                            </h5>
+                            <small class="text-muted">Total Top-ups</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-arrow-down text-danger fa-2x mb-2"></i>
+                            <h5 class="text-danger">
+                                ${{ number_format($transactions->where('type', 'debit')->sum('amount'), 2) }}
+                            </h5>
+                            <small class="text-muted">Total Spent</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-alt text-info fa-2x mb-2"></i>
+                            <h5 class="text-info">{{ $transactions->where('type', 'debit')->where('exam_id', '!=', null)->count() }}</h5>
+                            <small class="text-muted">Exams Purchased</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Transaction History</h5>
                 </div>
                 <div class="card-body">
-                    <div class="amount-selection mb-4">
-                        <button class="amount-button" data-amount="10">$10</button>
-                        <button class="amount-button" data-amount="50">$50</button>
-                        <button class="amount-button" data-amount="100">$100</button>
-                        <button class="amount-button" data-amount="150">$150</button>
-                        <button class="amount-button" data-amount="200">$200</button>
-                    </div>
-                    <form id="payment-form">
-                        @csrf
-                        <div id="payment-element">
-                            <!-- Stripe Elements will be inserted here -->
+                    @if($transactions->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Amount</th>
+                                        <th>Balance After</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($transactions as $transaction)
+                                        <tr>
+                                            <td>{{ $transaction->created_at->format('M d, Y H:i') }}</td>
+                                            <td>
+                                                {{ $transaction->description }}
+                                                @if($transaction->exam)
+                                                    <br><small class="text-muted">{{ $transaction->exam->title }}</small>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($transaction->type === 'credit')
+                                                    <span class="badge bg-success">Top-up</span>
+                                                @else
+                                                    <span class="badge bg-danger">Purchase</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($transaction->type === 'credit')
+                                                    <span class="text-success">+${{ number_format($transaction->amount, 2) }}</span>
+                                                @else
+                                                    <span class="text-danger">-${{ number_format($transaction->amount, 2) }}</span>
+                                                @endif
+                                            </td>
+                                            <td>${{ number_format($transaction->balance_after, 2) }}</td>
+                                            <td>
+                                                @switch($transaction->status)
+                                                    @case('completed')
+                                                        <span class="badge bg-success">Completed</span>
+                                                        @break
+                                                    @case('pending')
+                                                        <span class="badge bg-warning">Pending</span>
+                                                        @break
+                                                    @case('failed')
+                                                        <span class="badge bg-danger">Failed</span>
+                                                        @break
+                                                @endswitch
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                        <button id="submit" type="submit" class="btn btn-primary">
-                            <div class="spinner hidden" id="spinner"></div>
-                            <span id="button-text">Pay now</span>
-                        </button>
-                        <div id="payment-message" class="hidden"></div>
-                    </form>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No transactions yet. Start by topping up your wallet!</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection 
+@endsection
+
+{{-- resources/views/student/ewallet/topup.blade.php --}}
+@extends('layouts.studentmaster')
+
+@section('title', 'Top Up Wallet | Student Portal')
+
+@section('content')
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Current Balance -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <h4 class="text-muted mb-2">Current Balance</h4>
+                    <h2 class="text-primary">${{ number_format($wallet->balance, 2) }}</h2>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Top Up Your Wallet</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Amount Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Select Amount</label>
+                        <div class="row g-2">
+                            @foreach([10, 25, 50, 100, 200, 500] as $amount)
+                                <div class="col-4 col-md-2">
+                                    <button class="btn btn-outline-primary w-100 amount-btn" data-amount="{{ $amount }}">
+                                        ${{ $amount }}
+                                    </button>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="mt-3">
+                            <label for="custom-amount" class="form-label">Or enter custom amount:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="custom-amount" 
+                                       placeholder="0.00" min="1" max="1000" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method Tabs -->
+                    <ul class="nav nav-pills nav-justified mb-4" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="stripe-tab" data-bs-toggle="pill" 
+                                    data-bs-target="#stripe-panel" type="button">
+                                <i class="fab fa-cc-stripe me-2"></i>Credit Card
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="paypal-tab" data-bs-toggle="pill" 
+                                    data-bs-target="#paypal-panel" type="button">
+                                <i class="fab fa-paypal me-2"></i>PayPal
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Payment Panels -->
+                    <div class="tab-content">
+                        <!-- Stripe Panel -->
+                        <div class="tab-pane fade show active" id="stripe-panel">
+                            <form id="stripe-payment-form">
+                                @csrf
+                                <div id="card-element" class="mb-3">
+                                    <!-- Stripe Elements will be inserted here -->
+                                </div>
+                                <div id="card-errors" class="text-danger mb-3"></div>
+                                <button type="submit" id="stripe-submit" class="btn btn-primary w-100" disabled>
+                                    <span id="stripe-button-text">
+                                        <i class="fas fa-lock me-2"></i>Pay with Credit Card
+                                    </span>
+                                    <div class="spinner-border spinner-border-sm ms-2 d-none" id="stripe-spinner"></div>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- PayPal Panel -->
+                        <div class="tab-pane fade" id="paypal-panel">
+                            <div id="paypal-button-container" class="text-center">
+                                <p class="text-muted mb-3">Select an amount above to enable PayPal payment</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
 
 @section('scripts')
 <script src="https://js.stripe.com/v3/"></script>
-<script>
-    var stripe = Stripe('{{ config('services.stripe.key') }}');
-    let elements;
-    let selectedAmount = 0;
-
-    document.querySelectorAll('.amount-button').forEach(button => {
-        button.addEventListener('click', async function() {
-            selectedAmount = this.getAttribute('data-amount');
-            await createPaymentIntent(selectedAmount);
-        });
-    });
-
-    async function createPaymentIntent(amount) {
-        const response = await fetch("/stripe/create-payment-intent", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ amount: amount }),
-        });
-
-        const { clientSecret } = await response.json();
-
-        if (!elements) {
-            elements = stripe.elements({ clientSecret });
-        } else {
-            elements.update({ clientSecret });
-        }
-
-        const paymentElement = elements.create("payment", {
-            layout: "tabs",
-        });
-        paymentElement.mount("#payment-element");
-    }
-
-    document.querySelector("#payment-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        setLoading(true);
-
-        const { error } = await stripe.confirmPayment({
-            elements,
-            confirmParams: {
-                return_url: "http://localhost:8000/stripe/payment-success",
-                receipt_email: "wynnnnyw@hotmail.com"
-            },
-        });
-
-        if (error) {
-            showMessage(error.message);
-        } else {
-            showMessage("Payment processing...");
-        }
-
-        setLoading(false);
-    });
-
-    function showMessage(messageText) {
-        const messageContainer = document.querySelector("#payment-message");
-        messageContainer.classList.remove("hidden");
-        messageContainer.textContent = messageText;
-        setTimeout(() => {
-            messageContainer.classList.add("hidden");
-            messageContainer.textContent = "";
-        }, 4000);
-    }
-
-    function setLoading(isLoading) {
-        document.querySelector("#submit").disabled = isLoading;
-        document.querySelector("#spinner").classList.toggle("hidden", !isLoading);
-        document.querySelector("#button-text").classList.toggle("hidden", isLoading);
-    }
-</script>
 @endsection

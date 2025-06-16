@@ -3,19 +3,24 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use PayPalCheckoutSdk\Core\PayPalHttpClient;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Core\LiveEnvironment;
-use PayPalCheckoutSdk\Payments\OrdersCreateRequest;
-use PayPalCheckoutSdk\Payments\OrdersCaptureRequest;
+use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
+use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
 use App\Models\Transaction;
+use App\Services\WalletService;
 
 class PayPalController extends Controller
 {
     private $client;
+    protected $walletService;
 
-    public function __construct()
+    public function __construct(WalletService $walletService)
     {
+        $this->walletService = $walletService;
+        
         $environment = config('services.paypal.mode') === 'live'
             ? new LiveEnvironment(config('services.paypal.client_id'), config('services.paypal.client_secret'))
             : new SandboxEnvironment(config('services.paypal.client_id'), config('services.paypal.client_secret'));
@@ -26,24 +31,39 @@ class PayPalController extends Controller
     public function createOrder(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:0.01',
+            'amount' => 'required|numeric|min:1|max:1000',
         ]);
 
+        $user = Auth::user();
         $amount = $request->amount;
+        $transactionId = uniqid('paypal_', true);
+
+        // Create pending transaction
+        Transaction::create([
+            'user_id' => $user->id,
+            'type' => 'credit',
+            'amount' => $amount,
+            'transaction_id' => $transactionId,
+            'payment_method' => 'paypal',
+            'status' => 'pending',
+            'description' => 'Wallet top-up via PayPal',
+            'currency' => 'USD'
+        ]);
 
         $orderRequest = new OrdersCreateRequest();
         $orderRequest->prefer('return=representation');
         $orderRequest->body = [
             'intent' => 'CAPTURE',
             'purchase_units' => [[
+                'custom_id' => $transactionId,
                 'amount' => [
                     'currency_code' => 'USD',
-                    'value' => $amount,
+                    'value' => number_format($amount, 2, '.', ''),
                 ]
             ]],
             'application_context' => [
-                'return_url' => route('paypal.return'),
-                'cancel_url' => route('paypal.cancel')
+                'return_url' => route('payments.paypal.return'),
+                'cancel_url' => route('payments.paypal.cancel')
             ]
         ];
 
@@ -57,39 +77,52 @@ class PayPalController extends Controller
 
     public function captureOrder(Request $request)
     {
-        $orderId = $request->orderId;
+        $orderId = $request->query('token');
+        
+        if (!$orderId) {
+            return redirect()->route('student.ewallet.index')
+                ->with('error', 'Invalid PayPal order ID');
+        }
 
         $captureRequest = new OrdersCaptureRequest($orderId);
         $captureRequest->prefer('return=representation');
 
         try {
             $response = $this->client->execute($captureRequest);
-            $amount = $response->result->purchase_units[0]->amount->value;
-            $transactionId = $response->result->id;
-
-            // Record the transaction
-            $this->handleTransaction($amount, 'paypal', $transactionId);
-
-            return redirect()->route('ewallet.index')->with('success', 'eWallet topped up successfully!');
+            $result = $response->result;
+            
+            if ($result->status === 'COMPLETED') {
+                $transactionId = $result->purchase_units[0]->custom_id;
+                $amount = floatval($result->purchase_units[0]->amount->value);
+                
+                $transaction = Transaction::where('transaction_id', $transactionId)->first();
+                
+                if ($transaction) {
+                    $this->walletService->topUpWallet(
+                        $transaction->user,
+                        $amount,
+                        'PayPal',
+                        $transactionId,
+                        $result->toArray()
+                    );
+                    
+                    return redirect()->route('student.ewallet.index')
+                        ->with('success', 'Wallet topped up successfully via PayPal!');
+                }
+            }
+            
+            return redirect()->route('student.ewallet.index')
+                ->with('error', 'Payment was not completed');
+                
         } catch (\Exception $e) {
-            return redirect()->route('ewallet.index')->withErrors('Error: ' . $e->getMessage());
+            return redirect()->route('student.ewallet.index')
+                ->with('error', 'PayPal payment failed: ' . $e->getMessage());
         }
     }
 
-    private function handleTransaction($amount, $gateway, $transactionId)
+    public function cancel()
     {
-        // Logic to update the student's balance and record the transaction
-        // Example transaction record creation
-        Transaction::create([
-            'student_id' => auth()->id(),
-            'amount' => $amount,
-            'transaction_id' => $transactionId,
-            'gateway' => $gateway,
-            'status' => 'completed',
-            'transaction_date' => now(),
-            'description' => 'eWallet top-up via PayPal',
-            'gateway_response' => json_encode([]), // Replace with actual response data
-            'currency' => 'USD',
-        ]);
+        return redirect()->route('student.ewallet.index')
+            ->with('warning', 'PayPal payment was cancelled');
     }
 }
