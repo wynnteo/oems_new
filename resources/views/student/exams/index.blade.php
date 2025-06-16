@@ -131,7 +131,7 @@
                     <i class="material-icons text-secondary" style="font-size: 48px;">event_available</i>
                     <h6 class="mt-3">No Upcoming Exams</h6>
                     <p class="text-secondary">Schedule your next exam to continue your learning journey.</p>
-                    <a href="#" class="btn btn-primary btn-sm">Schedule an Exam</a>
+                    <a href="{{route("student.exams.schedule")}}" class="btn btn-primary btn-sm">Schedule an Exam</a>
                 </div>
             @else
                 <div class="table-responsive p-0">

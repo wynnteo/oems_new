@@ -122,4 +122,29 @@ class Exam extends Model
     {
         return $this->studentExams->count();
     }
+
+    public function isRegistrationOpen(): bool
+    {
+        $startTime = Carbon::parse($this->start_time);
+        $registrationDeadline = $startTime->subHours(2);
+        
+        return now()->isBefore($registrationDeadline) && 
+               $this->status === 'active' && 
+               !$this->isFull();
+    }
+
+    public function registrations()
+    {
+        return $this->hasMany(ExamRegistration::class);
+    }
+
+    /**
+     * Get the students registered for this exam
+     */
+    public function registeredStudents()
+    {
+        return $this->belongsToMany(User::class, 'exam_registrations', 'exam_id', 'student_id')
+                    ->wherePivot('status', 'registered')
+                    ->withPivot(['registered_at', 'status']);
+    }
 }

@@ -8,7 +8,8 @@ use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\ExamController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\StudentExamsController;
-
+use App\Http\Controllers\ExamRegistrationController;
+use App\Http\Controllers\ExamScheduleController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\StudentCourseController;
 use App\Http\Controllers\StudentExamController;
@@ -53,17 +54,30 @@ Route::post('admin/questions/import', [QuestionController::class, 'import'])->na
 Route::get('/admin/results/view/{id}', [StudentExamsController::class, 'view'])->name('results.view');
 
 // Route::middleware(['auth'])->group(function () {
-    // Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
-    // Route::get('/student/courses', [StudentCourseController::class, 'index'])->name('student.courses.index');
     Route::get('/student/ewallet', [EWalletController::class, 'index'])->name('student.ewallet.index');
-    // Route::get('/student/exams', [StudentExamController::class, 'index'])->name('student.exams.index');
-    // Route::get('/student/profile', [StudentExamController::class, 'index'])->name('student.profile');
 
     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
     Route::get('/student/courses', [StudentDashboardController::class, 'courses'])->name('student.courses');
     Route::get('/student/exams', [StudentDashboardController::class, 'exams'])->name('student.exams');
     Route::get('/student/profile', [StudentDashboardController::class, 'profile'])->name('student.profile');
     Route::put('/student/profile', [StudentDashboardController::class, 'updateProfile'])->name('student.profile.update');
+
+    Route::prefix('/student/exams')->name('student.exams.')->group(function () {
+        Route::get('/schedule', [ExamScheduleController::class, 'index'])
+            ->name('schedule');
+        Route::get('/{exam}/details', [ExamScheduleController::class, 'getExamDetails'])
+            ->name('details');
+        Route::get('/{exam}/full-details', [ExamScheduleController::class, 'getFullExamDetails'])
+            ->name('full-details');
+        Route::post('/{exam}/schedule', [ExamScheduleController::class, 'scheduleExam'])
+            ->name('schedule-exam');
+        Route::post('/{exam}/cancel', [ExamScheduleController::class, 'cancelExamRegistration'])
+            ->name('cancel-registration');
+        Route::get('/scheduled', [ExamScheduleController::class, 'getScheduledExams'])
+            ->name('scheduled');
+        Route::get('/{exam}/availability', [ExamScheduleController::class, 'checkExamAvailability'])
+            ->name('check-availability');
+    });
 
     Route::post('/stripe/create-payment-intent', [StripeController::class, 'createPaymentIntent'])->name('stripe.create');
     Route::get('/stripe/payment-success', [StripeController::class, 'handleTransaction'])->name('payment.success');

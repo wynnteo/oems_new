@@ -11,7 +11,7 @@
             <p class="text-sm mb-0">Choose from available exam sessions for your enrolled courses</p>
         </div>
         <div class="col-lg-4 text-end">
-            <a href="{{ route('student.exams.index') }}" class="btn btn-outline-primary">
+            <a href="{{ route('student.exams') }}" class="btn btn-outline-primary">
                 <i class="material-icons me-2">arrow_back</i>
                 Back to My Exams
             </a>
