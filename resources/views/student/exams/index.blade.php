@@ -11,7 +11,7 @@
             <p class="text-sm mb-0">Track your exam schedules and results</p>
         </div>
         <div class="col-lg-4 text-end">
-            <a href="#" class="btn btn-primary">
+            <a href="{{route("student.exams.schedule")}}" class="btn btn-primary">
                 <i class="material-icons me-2">add</i>
                 Schedule New Exam
             </a>
@@ -119,9 +119,9 @@
                     </p>
                 </div>
                 <div class="col-lg-6 col-5 my-auto text-end">
-                    <a class="btn btn-outline-primary btn-sm mb-0" href="#">
+                    <!-- <a class="btn btn-outline-primary btn-sm mb-0" href="{{route("student.exams.schedule")}}">
                         <i class="material-icons me-1">add</i> Schedule Exam
-                    </a>
+                    </a> -->
                 </div>
             </div>
         </div>
@@ -189,7 +189,7 @@
                                             </a>
                                         @elseif($examTime->isFuture())
                                             <div class="d-flex align-items-center justify-content-center">
-                                                <a href="#" class="btn btn-info btn-sm me-1" title="Exam Details">
+                                                <a href="{{ route('student.exams.show', $exam->exam->id) }}" class="btn btn-info btn-sm me-1" title="Exam Details">
                                                     <i class="material-icons text-sm">info</i>
                                                 </a>
                                                 <a href="#" class="btn btn-warning btn-sm" title="Reschedule">

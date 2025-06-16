@@ -65,14 +65,22 @@ Route::get('/admin/results/view/{id}', [StudentExamsController::class, 'view'])-
     Route::prefix('/student/exams')->name('student.exams.')->group(function () {
         Route::get('/schedule', [ExamScheduleController::class, 'index'])
             ->name('schedule');
+        Route::get('/{exam}/show', [ExamScheduleController::class, 'showExamDetails'])
+            ->name('show');
+
         Route::get('/{exam}/details', [ExamScheduleController::class, 'getExamDetails'])
             ->name('details');
         Route::get('/{exam}/full-details', [ExamScheduleController::class, 'getFullExamDetails'])
             ->name('full-details');
+
+        Route::get('/{exam}/reschedule', [ExamScheduleController::class, 'showRescheduleForm'])
+            ->name('reschedule');
+            
         Route::post('/{exam}/schedule', [ExamScheduleController::class, 'scheduleExam'])
             ->name('schedule-exam');
         Route::post('/{exam}/cancel', [ExamScheduleController::class, 'cancelExamRegistration'])
             ->name('cancel-registration');
+
         Route::get('/scheduled', [ExamScheduleController::class, 'getScheduledExams'])
             ->name('scheduled');
         Route::get('/{exam}/availability', [ExamScheduleController::class, 'checkExamAvailability'])

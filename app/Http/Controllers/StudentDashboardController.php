@@ -10,6 +10,7 @@ use App\Models\Student;
 use App\Models\Enrolment;
 use App\Models\StudentExams;
 use App\Models\StudentExamResults;
+use App\Models\ExamRegistration;
 use Carbon\Carbon;
 
 class StudentDashboardController extends Controller
@@ -21,17 +22,22 @@ class StudentDashboardController extends Controller
         // Get dashboard statistics
         $enrolledCoursesCount = $student->enrollments()->count();
         $totalExamsCount = $student->studentExams()->count();
-        $completedExamsCount = $student->studentExams()->where('status', 'completed')->count();
-        $pendingExamsCount = $student->studentExams()->where('status', 'registered')->count();
+        $completedExamsCount = $student->studentExams()->where('status', 'COMPLETED')->count();
+        $pendingExamsCount = ExamRegistration::where('student_id', $student->id)->where('status', 'registered')->count();
         
         // Get upcoming exams (next 5)
-        $upcomingExams = $student->studentExams()
-            ->with(['exam', 'examResult'])
-            ->join('exams', 'student_exams.exam_id', '=', 'exams.id')
+        $upcomingExams = ExamRegistration::where('student_id', $student->id)
+            ->where('exam_registrations.status', 'registered')
+            ->with(['exam.course'])
+            ->whereHas('exam', function($query) {
+                $query->where('start_time', '>', now());
+            })
+            ->join('exams', 'exam_registrations.exam_id', '=', 'exams.id')
             ->orderBy('exams.start_time', 'asc')
+            ->select('exam_registrations.*')
             ->take(5)
             ->get();
-        
+                
         // Get recent wallet activities (if you have a wallet system)
         $recentActivities = collect([
             [
@@ -82,9 +88,12 @@ class StudentDashboardController extends Controller
         $student = Student::find(1);
 
         // Get registered/upcoming exams
-        $registeredExams = $student->studentExams()
-            ->with(['exam', 'examResult'])
+        $registeredExams = ExamRegistration::where('student_id', $student->id)
             ->where('status', 'registered')
+            ->with(['exam.course'])
+            ->whereHas('exam', function($query) {
+                $query->where('start_time', '>', now());
+            })
             ->get();
         
         // Get completed exams

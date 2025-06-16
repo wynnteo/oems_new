@@ -192,10 +192,14 @@ class ExamScheduleController extends Controller
     }
 
     /**
-     * Cancel exam registration
+     * Cancel exam registration with reason
      */
-    public function cancelExamRegistration($examId)
+    public function cancelExamRegistration(Request $request, $examId)
     {
+        $request->validate([
+            'cancellation_reason' => 'nullable|string|max:500'
+        ]);
+
         try {
             $student = Auth::user();
             $student = Student::find(1);
@@ -210,7 +214,7 @@ class ExamScheduleController extends Controller
                 return response()->json(['success' => false, 'message' => 'You are not registered for this exam'], 400);
             }
 
-            // Check if cancellation is still allowed (e.g., not within 24 hours of exam)
+            // Check if cancellation is still allowed (24 hours before exam)
             $startTime = Carbon::parse($exam->start_time);
             $cancellationDeadline = $startTime->copy()->subHours(24);
 
@@ -218,8 +222,12 @@ class ExamScheduleController extends Controller
                 return response()->json(['success' => false, 'message' => 'Cancellation deadline has passed (24 hours before exam)'], 400);
             }
 
-            // Delete registration
-            $registration->delete();
+            // Update registration with cancellation info
+            $registration->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => $request->cancellation_reason,
+                'cancelled_at' => now()
+            ]);
 
             return response()->json([
                 'success' => true, 
@@ -405,4 +413,171 @@ class ExamScheduleController extends Controller
             ], 500);
         }
     }
+    /**
+     * Show exam details page
+     */
+    public function showExamDetails($examId)
+    {
+        $student = Auth::user();
+        $student = Student::find(1);
+        
+        $exam = Exam::with(['course', 'registrations' => function($query) use ($student) {
+            $query->where('student_id', $student->id);
+        }])->findOrFail($examId);
+
+        // Check if student is enrolled in the course
+        $isEnrolled = Enrolment::where('student_id', $student->id)
+            ->where('course_id', $exam->course_id)
+            ->exists();
+
+        if (!$isEnrolled) {
+            return redirect()->route('student.exams')->with('error', 'You are not enrolled in this course');
+        }
+
+        // Check if student is registered
+        $registration = ExamRegistration::where('exam_id', $examId)
+            ->where('student_id', $student->id)
+            ->first();
+
+        // Get registration statistics
+        $totalRegistrations = ExamRegistration::where('exam_id', $examId)->count();
+        $capacity = $exam->capacity ?? 50;
+
+        return view('student.exams.details', compact('exam', 'registration', 'totalRegistrations', 'capacity'));
+    }
+
+    /**
+     * Process exam reschedule
+     */
+    public function rescheduleExam(Request $request, $examId)
+    {
+        $request->validate([
+            'new_exam_id' => 'required|exists:exams,id',
+            'reason' => 'nullable|string|max:500'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $student = Auth::user();
+            $student = Student::find(1);
+            
+            $currentExam = Exam::findOrFail($examId);
+            $newExam = Exam::findOrFail($request->new_exam_id);
+
+            // Validate reschedule conditions
+            $validationResult = $this->validateReschedule($student, $currentExam, $newExam);
+            if ($validationResult !== true) {
+                return redirect()->back()->with('error', $validationResult);
+            }
+
+            // Update registration
+            $registration = ExamRegistration::where('exam_id', $examId)
+                ->where('student_id', $student->id)
+                ->first();
+
+            $registration->update([
+                'exam_id' => $request->new_exam_id,
+                'reschedule_reason' => $request->reason,
+                'rescheduled_at' => now()
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('student.exams')->with('success', 'Exam rescheduled successfully!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'An error occurred while rescheduling the exam');
+        }
+    }
+
+    /**
+     * Validate reschedule conditions
+     */
+    private function validateReschedule($student, $currentExam, $newExam)
+    {
+        // Check if new exam is for the same course
+        if ($currentExam->course_id !== $newExam->course_id) {
+            return 'Can only reschedule to exams of the same course';
+        }
+
+        // Check if new exam is available
+        if ($newExam->status !== 'available') {
+            return 'Selected exam is not available';
+        }
+
+        // Check capacity
+        $capacity = $newExam->capacity ?? 50;
+        $currentRegistrations = ExamRegistration::where('exam_id', $newExam->id)->count();
+
+        if ($currentRegistrations >= $capacity) {
+            return 'Selected exam session is full';
+        }
+
+        // Check for schedule conflicts
+        $conflictingExam = ExamRegistration::where('student_id', $student->id)
+            ->where('exam_id', '!=', $currentExam->id)
+            ->where('status', 'registered')
+            ->whereHas('exam', function($query) use ($newExam) {
+                $query->where(function($q) use ($newExam) {
+                    $q->whereBetween('start_time', [$newExam->start_time, $newExam->end_time])
+                      ->orWhereBetween('end_time', [$newExam->start_time, $newExam->end_time])
+                      ->orWhere(function($innerQ) use ($newExam) {
+                          $innerQ->where('start_time', '<=', $newExam->start_time)
+                                 ->where('end_time', '>=', $newExam->end_time);
+                      });
+                });
+            })
+            ->exists();
+
+        if ($conflictingExam) {
+            return 'You have a conflicting exam scheduled at the same time';
+        }
+
+        return true;
+    }
+
+    /**
+     * Show reschedule form
+     */
+    public function showRescheduleForm($examId)
+    {
+        $student = Auth::user();
+        $student = Student::find(1);
+        
+        $exam = Exam::with('course')->findOrFail($examId);
+        
+        // Check if student is registered
+        $registration = ExamRegistration::where('exam_id', $examId)
+            ->where('student_id', $student->id)
+            ->where('status', 'registered')
+            ->first();
+
+        if (!$registration) {
+            return redirect()->route('student.exams')->with('error', 'You are not registered for this exam');
+        }
+
+        // Check if reschedule is allowed (not within 48 hours)
+        $startTime = Carbon::parse($exam->start_time);
+        $rescheduleDeadline = $startTime->copy()->subHours(48);
+
+        if (now()->isAfter($rescheduleDeadline)) {
+            return redirect()->route('student.exams')->with('error', 'Reschedule deadline has passed (48 hours before exam)');
+        }
+
+        // Get alternative exam dates for the same course
+        $alternativeExams = Exam::where('course_id', $exam->course_id)
+            ->where('id', '!=', $examId)
+            ->where('status', 'available')
+            ->where('start_time', '>', now()->addHours(48))
+            ->whereDoesntHave('registrations', function($query) use ($student) {
+                $query->where('student_id', $student->id);
+            })
+            ->orderBy('start_time')
+            ->get();
+
+        return view('student.exams.reschedule', compact('exam', 'registration', 'alternativeExams'));
+    }
+
 }

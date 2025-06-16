@@ -11,6 +11,7 @@ use App\Models\Rating;
 use App\Models\Question;
 use App\Models\StudentExams;
 use App\Models\StudentExamResults;
+use App\Models\ExamRegistration;
 use Carbon\Carbon;
 
 class StudentExamController extends Controller
@@ -47,8 +48,13 @@ class StudentExamController extends Controller
         $student = Student::find(1);
         $error = null;
 
-        if (!$student->courses->contains($exam->course_id)) {
-            $error = 'You are not enrolled in the course for this exam.';
+        $examRegistration = ExamRegistration::where('exam_id', $exam->id)
+            ->where('student_id', $student->id)
+            ->where('status', 'registered')
+            ->first();
+
+        if (!$examRegistration) {
+            $error = 'You are not registered for this exam.';
         }
 
         if ($exam->status !== 'available') {
@@ -65,12 +71,21 @@ class StudentExamController extends Controller
     public function start(Request $request, $examId)
     {
         $exam = Exam::findOrFail($examId);
-        //$student = Auth::user();
+        $student = Auth::user();
         $student = Student::find(1);
         $sessionKey = Str::uuid();
 
-        if (!$student->courses->contains($exam->course_id)) {
-            return redirect()->back()->withErrors('You are not enrolled in the course for this exam.');
+        $examRegistration = ExamRegistration::where('exam_id', $exam->id)
+            ->where('student_id', $student->id)
+            ->where('status', 'registered')
+            ->first();
+
+        if (!$examRegistration) {
+            return redirect()->back()->withErrors('You are not registered for this exam.');
+        }
+
+        if (!$examRegistration->canStartExam()) {
+            return redirect()->back()->withErrors('You cannot start this exam at this time.');
         }
 
         if ($exam->status !== 'available') {
@@ -100,11 +115,14 @@ class StudentExamController extends Controller
                 ];
             });
 
+            $sa = now('UTC');
+
+            $examRegistration->markAsStarted($sa);
             $studentExam = StudentExams::create([
                 'exam_id' => $exam->id,
                 'student_id' => $student->id,
                 'session_key' => $sessionKey,
-                'started_at' => now('UTC'),
+                'started_at' => $sa,
                 'progress' => json_encode($progress), 
                 'current_question_id' => 0,
                 'ip_address' => $request->ip(),
@@ -231,10 +249,19 @@ class StudentExamController extends Controller
                 }
             }
 
+            $sa = now('UTC');
             $passPercentage = ($totalCorrect / $totalQuestions) * 100;
             $studentPassed = $passPercentage >= $passMark;
             $studentExam->status = 'COMPLETED';
-            $studentExam->completed_at = now('UTC');
+            $studentExam->completed_at = $sa;
+
+            $examRegistration = ExamRegistration::where('exam_id', $examId)
+                ->where('student_id', $student->id)
+                ->first();
+
+            if ($examRegistration) {
+                $examRegistration->markAsCompleted($sa);
+            }
 
             StudentExamResults::create([
                 'student_exam_id' => $studentExam->id,

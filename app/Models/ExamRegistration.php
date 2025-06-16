@@ -149,22 +149,22 @@ class ExamRegistration extends Model
     /**
      * Mark registration as started
      */
-    public function markAsStarted(): void
+    public function markAsStarted($startedAt): void
     {
         $this->update([
             'status' => 'started',
-            'started_at' => now()
+            'started_at' => $startedAt
         ]);
     }
 
     /**
      * Mark registration as completed
      */
-    public function markAsCompleted(): void
+    public function markAsCompleted($endAt): void
     {
         $this->update([
             'status' => 'completed',
-            'completed_at' => now()
+            'completed_at' => $endAt
         ]);
     }
 
