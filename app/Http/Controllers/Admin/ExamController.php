@@ -14,7 +14,7 @@ class ExamController extends Controller
 {
     public function index()
     {
-        $exams = Exam::all();
+        $exams = Exam::with('ratings')->get();
         return view('admin.exams.index', compact('exams'));
     }
 
@@ -153,6 +153,10 @@ class ExamController extends Controller
                 'total_questions' => $totalQuestions
             ]);
 
+            $ratings = $exam->ratings()->with('student')->get();
+            $totalRatings = $ratings->count();
+            $averageRating = $totalRatings > 0 ? round($ratings->avg('rating'), 1) : null;
+
             // Pass all data to the view
             return view('admin.exams.show', compact(
                 'exam', 
@@ -166,7 +170,10 @@ class ExamController extends Controller
                 'completedAttempts',
                 'inProgressAttempts',
                 'totalQuestions',
-                'studentExams'
+                'studentExams',
+                'ratings', 
+                'totalRatings',  
+                'averageRating'
             ));
 
         } catch (\Exception $e) {

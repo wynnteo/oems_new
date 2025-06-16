@@ -231,7 +231,8 @@ Exams | Admin Panel
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Schedule</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Duration</th>
                                     <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Status</th>
-                                    <!-- <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Submissions</th> -->
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Rating</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Submissions</th>
                                     <th class="not-export-col text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Actions</th>
                                 </tr>
                             </thead>
@@ -279,7 +280,43 @@ Exams | Admin Panel
                                             <span class="status-badge badge badge-sm bg-gradient-danger">Unavailable</span>
                                         @endif
                                     </td>
-    
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if($row->rating_count > 0)
+                                                <div class="me-2">
+                                                    @for($i = 1; $i <= 5; $i++)
+                                                        @if($i <= floor($row->average_rating))
+                                                            <i class="material-icons text-warning" style="font-size: 16px;">star</i>
+                                                        @elseif($i - 0.5 <= $row->average_rating)
+                                                            <i class="material-icons text-warning" style="font-size: 16px;">star_half</i>
+                                                        @else
+                                                            <i class="material-icons text-muted" style="font-size: 16px;">star_border</i>
+                                                        @endif
+                                                    @endfor
+                                                </div>
+                                                <div>
+                                                    <span class="text-sm font-weight-bold">{{ $row->average_rating }}</span>
+                                                    <span class="text-xs text-secondary">({{ $row->rating_count }})</span>
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-muted">No ratings</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <span class="text-sm font-weight-bold">{{ $row->submissions_count }}</span>
+                                            <span class="text-xs text-secondary">/ {{ $row->total_attempts }}</span>
+                                            <br>
+                                            <small class="text-muted">
+                                                @if($row->total_attempts > 0)
+                                                    {{ round(($row->submissions_count / $row->total_attempts) * 100) }}% completed
+                                                @else
+                                                    No attempts
+                                                @endif
+                                            </small>
+                                        </div>
+                                    </td>
                                     <td class="not-export-col">
                                         <div class="dropdown float-lg-end pe-4" id="exam-{{ $row->id }}-dropdown">
                                             <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown" aria-expanded="false">
@@ -331,7 +368,11 @@ $(document).ready(function () {
             targets: 1, width: '120px'
         }, {
             targets: 2, width: '120px'
-        }],
+        }, {
+            targets: 7, width: '150px'
+        },{
+             targets: 8, width: '120px'
+    }],
         order: [[2, 'asc']], // Order by exam code
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         pageLength: 25,

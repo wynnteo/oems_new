@@ -190,17 +190,22 @@
             </div>
         </div>
         
-        <!-- Completion Rate -->
+        <!-- Average Rating -->
         <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
             <div class="card">
                 <div class="card-header p-3 pt-2">
-                    <div class="icon icon-lg icon-shape bg-gradient-success shadow-success text-center border-radius-xl mt-n4 position-absolute">
-                        <i class="material-icons opacity-10">done_all</i>
+                    <div class="icon icon-lg icon-shape bg-gradient-warning shadow-warning text-center border-radius-xl mt-n4 position-absolute">
+                        <i class="material-icons opacity-10">star</i>
                     </div>
                     <div class="text-end pt-1">
-                        <p class="text-sm mb-0 text-capitalize">Completion Rate</p>
+                        <p class="text-sm mb-0 text-capitalize">Avg Rating</p>
                         <h4 class="mb-0">
-                            {{ $totalAttempts > 0 ? round(($completedAttempts / $totalAttempts) * 100, 1) : 0 }}%
+                            @if($averageRating)
+                                {{ $averageRating }}/5
+                                <i class="material-icons text-warning" style="font-size: 1rem;">star</i>
+                            @else
+                                N/A
+                            @endif
                         </h4>
                     </div>
                 </div>
@@ -282,6 +287,16 @@
                                     {{ ucfirst(str_replace('_', ' ', $exam->status)) }}
                                 </span>
                             </div>
+
+                            @if($exam->access_code)
+                            <div class="info-item mb-3">
+                                <label class="text-dark font-weight-bold text-sm">Access Code:</label>
+                                <p class="text-sm mb-0">
+                                    <span class="badge bg-info">Protected</span>
+                                    <small class="text-muted">({{ $exam->access_code }})</small>
+                                </p>
+                            </div>
+                            @endif
                         </div>
                         
                         <!-- Timing & Settings -->
@@ -320,15 +335,7 @@
                             </div>
                             @endif
                             
-                            @if($exam->access_code)
-                            <div class="info-item mb-3">
-                                <label class="text-dark font-weight-bold text-sm">Access Code:</label>
-                                <p class="text-sm mb-0">
-                                    <span class="badge bg-info">Protected</span>
-                                    <small class="text-muted">({{ $exam->access_code }})</small>
-                                </p>
-                            </div>
-                            @endif
+                            
                         </div>
                     </div>
                 </div>
@@ -419,6 +426,73 @@
             </div>
         </div>
     </div>
+
+    <!-- Ratings & Feedback Table -->
+    @if($exam->allow_rating && $ratings->count() > 0)
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="material-icons me-2">star_rate</i>Student Ratings & Feedback</h6>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    <div class="table-responsive">
+                        <table class="table" id="ratingstable">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Student</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Rating</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Feedback</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($ratings as $rating)
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar avatar-sm me-3">
+                                                    <div class="avatar-title bg-gradient-info rounded-circle text-white">
+                                                        {{ strtoupper(substr($rating->student->name, 0, 1)) }}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0 text-sm">{{ $rating->student->name }}</h6>
+                                                    <p class="text-xs text-muted mb-0">{{ $rating->student->student_code }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    <i class="material-icons text-{{ $i <= $rating->rating ? 'warning' : 'muted' }}" style="font-size: 1.2rem;">
+                                                        {{ $i <= $rating->rating ? 'star' : 'star_border' }}
+                                                    </i>
+                                                @endfor
+                                                <span class="ms-2 text-sm font-weight-bold">{{ $rating->rating }}/5</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if($rating->feedback)
+                                                <p class="text-sm mb-0" style="max-width: 300px;">{!! $rating->feedback !!}</p>
+                                            @else
+                                                <span class="text-muted text-xs">No feedback provided</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="text-xs">{{ $rating->created_at->format('M d, Y') }}</span><br>
+                                            <span class="text-xs text-muted">{{ $rating->created_at->format('H:i') }}</span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Student Results Table -->
     <div class="row mt-4">
@@ -708,6 +782,18 @@ $(document).ready(function () {
                 }
             }
         ]
+    });
+
+    $('#ratingstable').DataTable({
+        order: [[3, 'desc']], // Order by date descending
+        pageLength: 10,
+        responsive: true,
+        language: {
+            search: "Search ratings:",
+            lengthMenu: "Show _MENU_ ratings per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ ratings",
+            emptyTable: "No ratings available for this exam"
+        }
     });
 
     // Handle export dropdown clicks

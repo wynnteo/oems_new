@@ -97,4 +97,29 @@ class Exam extends Model
             return $formatted;
         }
     }
+
+    public function getAverageRatingAttribute()
+    {
+        return $this->ratings->count() > 0 ? round($this->ratings->avg('rating'), 1) : 0;
+    }
+
+    public function getRatingCountAttribute()
+    {
+        return $this->ratings->count();
+    }
+
+    public function getSubmissionsCountAttribute()
+    {
+        return $this->studentExams()
+                    ->where(function($query) {
+                        $query->whereNotNull('completed_at')
+                            ->orWhere('status', 'COMPLETED');
+                    })
+                    ->count();
+    }
+
+    public function getTotalAttemptsAttribute()
+    {
+        return $this->studentExams->count();
+    }
 }
