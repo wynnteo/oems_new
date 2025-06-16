@@ -36,7 +36,7 @@ class EWalletController extends Controller
         $user = User::find(1);
         $wallet = $this->walletService->getOrCreateWallet($user);
 
-        return view('student.ewallet.topup', compact('wallet'));
+        return view('student.topup', compact('wallet'));
     }
 
     public function examStore()

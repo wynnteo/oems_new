@@ -145,7 +145,8 @@ Route::get('/', function () {
 
         // E-Wallet Management
         Route::get('/ewallet', [EWalletController::class, 'index'])->name('ewallet.index');
-
+        Route::get('/ewallet/topup', [EWalletController::class, 'topup'])->name('ewallet.topup');
+        
         // Exam Scheduling
         Route::controller(ExamScheduleController::class)->prefix('exams')->name('exams.')->group(function () {
             Route::get('/schedule', 'index')->name('schedule');
@@ -191,7 +192,7 @@ Route::get('/', function () {
         
         // Stripe Payment Routes
         Route::controller(StripeController::class)->prefix('stripe')->name('stripe.')->group(function () {
-            Route::post('/create-payment-intent', 'createPaymentIntent')->name('create-intent');
+            Route::post('/create-intent', 'createPaymentIntent')->name('create-intent');
             Route::get('/payment-success', 'handleTransaction')->name('success');
         });
 
