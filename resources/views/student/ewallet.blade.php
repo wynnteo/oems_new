@@ -139,100 +139,262 @@
 </div>
 @endsection
 
-{{-- resources/views/student/ewallet/topup.blade.php --}}
-@extends('layouts.studentmaster')
-
-@section('title', 'Top Up Wallet | Student Portal')
-
-@section('content')
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <!-- Current Balance -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body text-center">
-                    <h4 class="text-muted mb-2">Current Balance</h4>
-                    <h2 class="text-primary">${{ number_format($wallet->balance, 2) }}</h2>
-                </div>
-            </div>
-
-            <!-- Payment Methods -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Top Up Your Wallet</h5>
-                </div>
-                <div class="card-body">
-                    <!-- Amount Selection -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Select Amount</label>
-                        <div class="row g-2">
-                            @foreach([10, 25, 50, 100, 200, 500] as $amount)
-                                <div class="col-4 col-md-2">
-                                    <button class="btn btn-outline-primary w-100 amount-btn" data-amount="{{ $amount }}">
-                                        ${{ $amount }}
-                                    </button>
-                                </div>
-                            @endforeach
-                        </div>
-                        <div class="mt-3">
-                            <label for="custom-amount" class="form-label">Or enter custom amount:</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" class="form-control" id="custom-amount" 
-                                       placeholder="0.00" min="1" max="1000" step="0.01">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Payment Method Tabs -->
-                    <ul class="nav nav-pills nav-justified mb-4" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="stripe-tab" data-bs-toggle="pill" 
-                                    data-bs-target="#stripe-panel" type="button">
-                                <i class="fab fa-cc-stripe me-2"></i>Credit Card
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="paypal-tab" data-bs-toggle="pill" 
-                                    data-bs-target="#paypal-panel" type="button">
-                                <i class="fab fa-paypal me-2"></i>PayPal
-                            </button>
-                        </li>
-                    </ul>
-
-                    <!-- Payment Panels -->
-                    <div class="tab-content">
-                        <!-- Stripe Panel -->
-                        <div class="tab-pane fade show active" id="stripe-panel">
-                            <form id="stripe-payment-form">
-                                @csrf
-                                <div id="card-element" class="mb-3">
-                                    <!-- Stripe Elements will be inserted here -->
-                                </div>
-                                <div id="card-errors" class="text-danger mb-3"></div>
-                                <button type="submit" id="stripe-submit" class="btn btn-primary w-100" disabled>
-                                    <span id="stripe-button-text">
-                                        <i class="fas fa-lock me-2"></i>Pay with Credit Card
-                                    </span>
-                                    <div class="spinner-border spinner-border-sm ms-2 d-none" id="stripe-spinner"></div>
-                                </button>
-                            </form>
-                        </div>
-
-                        <!-- PayPal Panel -->
-                        <div class="tab-pane fade" id="paypal-panel">
-                            <div id="paypal-button-container" class="text-center">
-                                <p class="text-muted mb-3">Select an amount above to enable PayPal payment</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
 
 @section('scripts')
 <script src="https://js.stripe.com/v3/"></script>
+<script src="https://www.paypal.com/sdk/js?client-id={{ config('services.paypal.client_id') }}&currency=USD"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let selectedAmount = 0;
+    let stripe, elements, card;
+    let paypalButtonsRendered = false;
+
+    // Initialize Stripe
+    initializeStripe();
+
+    // Amount selection handlers
+    const amountButtons = document.querySelectorAll('.amount-btn');
+    const customAmountInput = document.getElementById('custom-amount');
+
+    amountButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const amount = parseFloat(this.dataset.amount);
+            selectAmount(amount);
+            
+            // Update button states
+            amountButtons.forEach(btn => btn.classList.remove('btn-primary'));
+            amountButtons.forEach(btn => btn.classList.add('btn-outline-primary'));
+            this.classList.remove('btn-outline-primary');
+            this.classList.add('btn-primary');
+            
+            // Clear custom input
+            customAmountInput.value = '';
+        });
+    });
+
+    customAmountInput.addEventListener('input', function() {
+        const amount = parseFloat(this.value);
+        if (amount && amount >= 1 && amount <= 1000) {
+            selectAmount(amount);
+            
+            // Clear preset button selections
+            amountButtons.forEach(btn => btn.classList.remove('btn-primary'));
+            amountButtons.forEach(btn => btn.classList.add('btn-outline-primary'));
+        } else {
+            selectAmount(0);
+        }
+    });
+
+    function selectAmount(amount) {
+        selectedAmount = amount;
+        
+        // Enable/disable payment buttons
+        const stripeSubmit = document.getElementById('stripe-submit');
+        if (amount > 0) {
+            stripeSubmit.disabled = false;
+            stripeSubmit.querySelector('#stripe-button-text').innerHTML = 
+                `<i class="fas fa-lock me-2"></i>Pay $${amount.toFixed(2)} with Credit Card`;
+            
+            // Render PayPal buttons if not already rendered
+            if (!paypalButtonsRendered) {
+                renderPayPalButtons();
+            }
+        } else {
+            stripeSubmit.disabled = true;
+            stripeSubmit.querySelector('#stripe-button-text').innerHTML = 
+                '<i class="fas fa-lock me-2"></i>Pay with Credit Card';
+        }
+    }
+
+    function initializeStripe() {
+        stripe = Stripe('{{ config("services.stripe.key") }}');
+        elements = stripe.elements();
+        
+        // Create card element
+        card = elements.create('card', {
+            style: {
+                base: {
+                    fontSize: '16px',
+                    color: '#424770',
+                    '::placeholder': {
+                        color: '#aab7c4',
+                    },
+                },
+            },
+        });
+
+        card.mount('#card-element');
+
+        // Handle real-time validation errors from the card Element
+        card.on('change', function(event) {
+            const displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        // Handle form submission
+        const form = document.getElementById('stripe-payment-form');
+        form.addEventListener('submit', handleStripeSubmit);
+    }
+
+    async function handleStripeSubmit(event) {
+        event.preventDefault();
+
+        if (selectedAmount <= 0) {
+            showAlert('Please select an amount to top up.', 'warning');
+            return;
+        }
+
+        const submitButton = document.getElementById('stripe-submit');
+        const buttonText = document.getElementById('stripe-button-text');
+        const spinner = document.getElementById('stripe-spinner');
+
+        // Disable submit button and show loading
+        submitButton.disabled = true;
+        buttonText.classList.add('d-none');
+        spinner.classList.remove('d-none');
+
+        try {
+            // Create payment intent
+            const response = await fetch('{{ route("payments.stripe.create-intent") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    amount: selectedAmount
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.error) {
+                throw new Error(result.error);
+            }
+
+            // Confirm payment with Stripe
+            const {error} = await stripe.confirmCardPayment(result.client_secret, {
+                payment_method: {
+                    card: card,
+                    billing_details: {
+                        
+                        name: 'Alice Smith',
+                        email: 'alice@example.com'
+                    }
+                }
+            });
+
+            if (error) {
+                throw new Error(error.message);
+            } else {
+                // Payment succeeded, redirect to success page
+                window.location.href = '{{ route("payments.stripe.success") }}?payment_intent=' + result.payment_intent_id;
+            }
+
+        } catch (error) {
+            showAlert('Payment failed: ' + error.message, 'danger');
+            console.error('Stripe payment error:', error);
+        } finally {
+            // Re-enable submit button
+            submitButton.disabled = false;
+            buttonText.classList.remove('d-none');
+            spinner.classList.add('d-none');
+        }
+    }
+
+    function renderPayPalButtons() {
+        const container = document.getElementById('paypal-button-container');
+        container.innerHTML = ''; // Clear existing content
+
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                if (selectedAmount <= 0) {
+                    showAlert('Please select an amount to top up.', 'warning');
+                    return Promise.reject('No amount selected');
+                }
+
+                return fetch('{{ route("payments.paypal.create") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        amount: selectedAmount
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    return data.id;
+                })
+                .catch(error => {
+                    showAlert('PayPal order creation failed: ' + error.message, 'danger');
+                    throw error;
+                });
+            },
+
+            onApprove: function(data, actions) {
+                // Redirect to capture route
+                window.location.href = '{{ route("payments.paypal.return") }}?token=' + data.orderID;
+            },
+
+            onError: function(err) {
+                showAlert('PayPal payment error: ' + err.message, 'danger');
+                console.error('PayPal error:', err);
+            },
+
+            onCancel: function(data) {
+                showAlert('PayPal payment was cancelled.', 'warning');
+            },
+
+            style: {
+                layout: 'vertical',
+                color: 'blue',
+                shape: 'rect',
+                label: 'paypal'
+            }
+        }).render('#paypal-button-container');
+
+        paypalButtonsRendered = true;
+    }
+
+    function showAlert(message, type = 'info') {
+        // Create alert element
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        // Insert at top of container
+        const container = document.querySelector('.container-fluid');
+        container.insertBefore(alertDiv, container.firstChild);
+
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            const alert = bootstrap.Alert.getOrCreateInstance(alertDiv);
+            alert.close();
+        }, 5000);
+    }
+
+    // Tab switching handler
+    const tabs = document.querySelectorAll('[data-bs-toggle="pill"]');
+    tabs.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(event) {
+            if (event.target.id === 'paypal-tab' && !paypalButtonsRendered && selectedAmount > 0) {
+                renderPayPalButtons();
+            }
+        });
+    });
+});
+</script>
 @endsection

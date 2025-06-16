@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('transaction_id')->unique(); // Transaction ID from Stripe or PayPal
             $table->decimal('amount', 10, 2);
-            $table->enum('type', ['topup', 'payment']);
+            $table->enum('type', ['credit', 'debit']);
             $table->json('gateway_response')->nullable();
             $table->string('payment_method');
             $table->enum('status', ['completed', 'pending', 'failed']); // Transaction status

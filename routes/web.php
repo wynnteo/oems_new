@@ -191,7 +191,7 @@ Route::get('/', function () {
         
         // Stripe Payment Routes
         Route::controller(StripeController::class)->prefix('stripe')->name('stripe.')->group(function () {
-            Route::post('/create-payment-intent', 'createPaymentIntent')->name('create');
+            Route::post('/create-payment-intent', 'createPaymentIntent')->name('create-intent');
             Route::get('/payment-success', 'handleTransaction')->name('success');
         });
 

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\WalletService;
 use App\Services\PaymentService;
 use App\Models\Exam;
+use App\Models\User;
 
 class EWalletController extends Controller
 {
@@ -22,15 +23,17 @@ class EWalletController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $user = User::find(1);
         $wallet = $this->walletService->getOrCreateWallet($user);
         $transactions = $this->walletService->getTransactionHistory($user, 20);
 
-        return view('student.ewallet.index', compact('wallet', 'transactions'));
+        return view('student.ewallet', compact('wallet', 'transactions'));
     }
 
     public function topUp()
     {
         $user = Auth::user();
+        $user = User::find(1);
         $wallet = $this->walletService->getOrCreateWallet($user);
 
         return view('student.ewallet.topup', compact('wallet'));
@@ -39,6 +42,7 @@ class EWalletController extends Controller
     public function examStore()
     {
         $user = Auth::user();
+        $user = User::find(1);
         $wallet = $this->walletService->getOrCreateWallet($user);
         
         // Get available exams that user hasn't purchased
@@ -59,6 +63,7 @@ class EWalletController extends Controller
 
         try {
             $user = Auth::user();
+            $user = User::find(1);
             $exam = Exam::findOrFail($request->exam_id);
             
             $wallet = $this->walletService->purchaseExam($user, $exam);

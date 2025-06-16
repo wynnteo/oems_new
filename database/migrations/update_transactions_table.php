@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::table('transactions', function (Blueprint $table) {
             $table->foreignId('wallet_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('exam_id')->nullable()->constrained()->onDelete('set null');
-            $table->enum('type', ['credit', 'debit'])->after('user_id');
             $table->decimal('balance_after', 10, 2)->nullable()->after('amount');
             $table->string('currency', 3)->default('USD')->after('description');
             $table->index(['user_id', 'type']);
