@@ -382,7 +382,7 @@ class StudentExamController extends Controller
             ->firstOrFail();
 
         $existingRating = Rating::where('student_id', $student->id)
-            ->where('student_exam_id', $studentExam->id)
+            ->where('exam_id', $code)
             ->exists();
 
         if ($existingRating) {

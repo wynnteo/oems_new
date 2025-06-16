@@ -367,15 +367,20 @@
                 <div class="card-body p-0">
                     <div class="question-text">
                         <i class="fas fa-clipboard-question me-2 text-primary"></i>
-                        @if($currentQuestion->question_type != 'fill_in_the_blank_with_text')
-                            @if($currentQuestion->question_type == 'fill_in_the_blank_with_choice')
-                                @php
-                                    $textWithBlanks = str_replace('[]', '_________', $currentQuestion->question_text);
-                                @endphp
-                                {!! $textWithBlanks !!}
-                            @else
-                                {!! $currentQuestion->question_text !!}
-                            @endif
+                        @if($currentQuestion->question_type == 'fill_in_the_blank_with_text')
+                            @foreach(explode('[]', $currentQuestion->question_text) as $index => $segment)
+                                {!! $segment !!}
+                                @if ($index < count(explode('[]', $currentQuestion->question_text)) - 1)
+                                    <span class="text-primary fw-bold">_________</span>
+                                @endif
+                            @endforeach
+                        @elseif($currentQuestion->question_type == 'fill_in_the_blank_with_choice')
+                            @php
+                                $textWithBlanks = str_replace('[]', '_________', $currentQuestion->question_text);
+                            @endphp
+                            {!! $textWithBlanks !!}
+                        @else
+                            {!! $currentQuestion->question_text !!}
                         @endif
                     </div>
 
@@ -468,19 +473,22 @@
                                 </div>
                         
                             @elseif($currentQuestion->question_type == 'fill_in_the_blank_with_text')
-                                <div class="question-text">
-                                    <i class="fas fa-edit me-2 text-primary"></i>
-                                    @foreach(explode('[]', $currentQuestion->question_text) as $index => $segment)
-                                        {!! $segment !!}
-                                        @if ($index < count(explode('[]', $currentQuestion->question_text)) - 1)
-                                            <input type="text" 
-                                                   name="answer[]" 
-                                                   class="fill-blank-input" 
-                                                   value="{{ $studentAnswer[$index] ?? '' }}"
-                                                   placeholder="Enter answer...">
+                                @php
+                                    $segments = explode('[]', $currentQuestion->question_text);
+                                    $totalInputs = count($segments) - 1;
+                                @endphp
+                                @foreach ($segments as $index => $segment)
+                                    @if ($index < $totalInputs)
+                                        <input type="text" 
+                                            name="answer[]" 
+                                            class="fill-blank-input" 
+                                            value="{{ $studentAnswer[$index] ?? '' }}"
+                                            placeholder="Enter answer...">
+                                        @if ($index < $totalInputs - 1)
+                                            ,
                                         @endif
-                                    @endforeach
-                                </div>
+                                    @endif
+                                @endforeach
                             @endif
                         </div>
                     
@@ -507,7 +515,25 @@
                             </button>
                             
                             <div class="text-center">
-                                @if(!$nextQuestion)
+                                @php
+                                    $allAnswered = true;
+                                    foreach($progress as $item) {
+                                        $hasAnswer = false;
+                                        if (!empty($item['student_answer'])) {
+                                            if (is_array($item['student_answer'])) {
+                                                $hasAnswer = !empty(array_filter($item['student_answer']));
+                                            } else {
+                                                $hasAnswer = !empty($item['student_answer']);
+                                            }
+                                        }
+                                        if (!$hasAnswer) {
+                                            $allAnswered = false;
+                                            break;
+                                        }
+                                    }
+                                @endphp
+                                
+                                @if($allAnswered)
                                     <button type="submit" 
                                             class="btn btn-success btn-nav" 
                                             name="action" 
@@ -695,9 +721,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Create a form to save current answer and navigate
             const form = document.createElement('form');
-            form.method = 'GET';
-            form.action = '{{ route("exam.page", ["code" => $exam->id, "session_key" => $session_key]) }}';
+            form.method = 'POST';
+            form.action = '{{ route("exam.page.post", ["code" => $exam->id, "session_key" => $session_key]) }}';
             
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            form.appendChild(csrfToken);
+
             // Add current question data
             const currentQuestionId = document.querySelector('input[name="question_id"]').value;
             const currentAnswers = [];
