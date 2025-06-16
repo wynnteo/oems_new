@@ -317,7 +317,7 @@ Students | Admin Panel
                                             <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5" aria-labelledby="dropdownTable">
                                                 <li><a class="dropdown-item border-radius-md" href="{{ route('exams.show', $row->exam->id) }}"> <i class="material-icons">remove_red_eye</i> View Exam</a></li>
                                                 @if($result)
-                                                    <li><a class="dropdown-item border-radius-md" href="#"> <i class="material-icons">assessment</i> View Result</a></li>
+                                                    <li><a class="dropdown-item border-radius-md" href="{{ route('results.view', $result->id) }}"> <i class="material-icons">assessment</i> View Result</a></li>
                                                 @endif
                                             </ul>
                                         </div>

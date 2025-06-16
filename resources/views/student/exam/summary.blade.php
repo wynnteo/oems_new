@@ -22,7 +22,7 @@
         padding: 20px;
         margin-top: 30px;
     }
-</style>
+</style> 
 <div class="container py-4">
     <h3>{{ $exam->title }} - {{ $exam->exam_code }}</h3>
     @if(session('success'))
@@ -177,42 +177,42 @@
                             @endif
                         </div>
                         <!-- Correct Answer -->
-                            @if($question['result'] !== 'correct')
-                                <div class="correct-answer">
-                                    <strong><i class="fas fa-check-circle text-success me-1"></i>Correct Answer:</strong>
-                                    @if(is_array($question['correct_answer']))
-                                        @if($question['question_type'] == 'fill_in_the_blank_with_text')
-                                            <!-- For fill in the blank, show correct answers in context -->
-                                            <div class="mt-2">
-                                                @foreach(explode('[]', $question['question_text']) as $index => $segment)
-                                                    {!! $segment !!}
-                                                    @if ($index < count(explode('[]', $question['question_text'])) - 1)
-                                                        @php
-                                                            $correctAnswers = is_array($question['correct_answer'][$index]) 
-                                                                ? $question['correct_answer'][$index] 
-                                                                : [$question['correct_answer'][$index]];
-                                                        @endphp
-                                                        <strong class="text-success">[{{ implode(' / ', $correctAnswers) }}]</strong>
-                                                    @endif
-                                                @endforeach
-                                            </div>
-                                        @elseif(in_array($question['question_type'], ['single_choice', 'multiple_choice', 'fill_in_the_blank_with_choice']))
-                                            <!-- For multiple choice, show option letters and text -->
-                                            <ul class="mb-0 mt-2">
-                                                @foreach($question['correct_answer'] as $correctIndex)
-                                                    @if(isset($question['options'][$correctIndex]))
-                                                        <li>{{ chr(65 + $correctIndex) }}. {{ $question['options'][$correctIndex] }}</li>
-                                                    @endif
-                                                @endforeach
-                                            </ul>
-                                        @else
-                                            <span class="ms-2">{{ implode(', ', $question['correct_answer']) }}</span>
-                                        @endif
+                        @if($question['result'] !== 'correct')
+                            <div class="correct-answer">
+                                <strong><i class="fas fa-check-circle text-success me-1"></i>Correct Answer:</strong>
+                                @if(is_array($question['correct_answer']))
+                                    @if($question['question_type'] == 'fill_in_the_blank_with_text')
+                                        <!-- For fill in the blank, show correct answers in context -->
+                                        <div class="mt-2">
+                                            @foreach(explode('[]', $question['question_text']) as $index => $segment)
+                                                {!! $segment !!}
+                                                @if ($index < count(explode('[]', $question['question_text'])) - 1)
+                                                    @php
+                                                        $correctAnswers = is_array($question['correct_answer'][$index]) 
+                                                            ? $question['correct_answer'][$index] 
+                                                            : [$question['correct_answer'][$index]];
+                                                    @endphp
+                                                    <strong class="text-success">[{{ implode(' / ', $correctAnswers) }}]</strong>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    @elseif(in_array($question['question_type'], ['single_choice', 'multiple_choice', 'fill_in_the_blank_with_choice']))
+                                        <!-- For multiple choice, show option letters and text -->
+                                        <ul class="mb-0 mt-2">
+                                            @foreach($question['correct_answer'] as $correctIndex)
+                                                @if(isset($question['options'][$correctIndex]))
+                                                    <li>{{ chr(65 + $correctIndex) }}. {{ $question['options'][$correctIndex] }}</li>
+                                                @endif
+                                            @endforeach
+                                        </ul>
                                     @else
-                                        <span class="ms-2">{{ $question['correct_answer'] }}</span>
+                                        <span class="ms-2">{{ implode(', ', $question['correct_answer']) }}</span>
                                     @endif
-                                </div>
-                            @endif
+                                @else
+                                    <span class="ms-2">{{ $question['correct_answer'] }}</span>
+                                @endif
+                            </div>
+                        @endif
                     </div>
                 @endforeach
 

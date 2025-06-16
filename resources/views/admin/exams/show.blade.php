@@ -288,15 +288,7 @@
                                 </span>
                             </div>
 
-                            @if($exam->access_code)
-                            <div class="info-item mb-3">
-                                <label class="text-dark font-weight-bold text-sm">Access Code:</label>
-                                <p class="text-sm mb-0">
-                                    <span class="badge bg-info">Protected</span>
-                                    <small class="text-muted">({{ $exam->access_code }})</small>
-                                </p>
-                            </div>
-                            @endif
+                            
                         </div>
                         
                         <!-- Timing & Settings -->
@@ -743,45 +735,33 @@ $(document).ready(function () {
             infoEmpty: "No student attempts found",
             emptyTable: "No students have attempted this exam yet"
         },
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'csvHtml5',
-                text: 'CSV',
-                className: 'd-none',
-                exportOptions: {
-                    columns: ':visible:not(.not-export-col)'
-                },
-                filename: 'exam_results_{{ $exam->exam_code }}_' + new Date().toISOString().split('T')[0]
-            },
-            {
-                extend: 'excelHtml5',
-                text: 'Excel',
-                className: 'd-none',
-                exportOptions: {
-                    columns: ':visible:not(.not-export-col)'
-                },
-                filename: 'exam_results_{{ $exam->exam_code }}_' + new Date().toISOString().split('T')[0]
-            },
-            {
-                extend: 'pdfHtml5',
-                text: 'PDF',
-                className: 'd-none',
-                exportOptions: {
-                    columns: ':visible:not(.not-export-col)'
-                },
-                filename: 'exam_results_{{ $exam->exam_code }}_' + new Date().toISOString().split('T')[0],
-                customize: function(doc) {
-                    doc.title = '{{ $exam->title }} - Results Report';
-                    doc.styles.title = {
-                        fontSize: 16,
-                        bold: true,
-                        alignment: 'center',
-                        margin: [0, 0, 0, 20]
-                    };
-                }
+        layout: {
+            top1Start: {
+                buttons: [{
+                    text: 'CSV', extend: 'csvHtml5',
+                    exportOptions: { columns: ':visible:not(.not-export-col)' }
+                }, {
+                    text: 'Excel', extend: 'excelHtml5',
+                    exportOptions: { columns: ':visible:not(.not-export-col)' }
+                }, {
+                    text: 'PDF', extend: 'pdfHtml5',
+                    pageSize: 'A4',
+                    exportOptions: { columns: ':visible:not(.not-export-col)' },
+                    customize: function(doc) {
+                        doc.title = 'Student Result | OEMS';
+                        doc.styles.title = { fontSize: 14, bold: true, color: 'black', alignment: 'center' };
+                        doc.content.forEach(function (item) {
+                            if (item.table) {
+                                item.table.widths = Array(item.table.body[0].length).fill('*');
+                            }
+                        });
+                    }
+                }, {
+                    text: 'Print', extend: 'print',
+                    exportOptions: { columns: ':visible:not(.not-export-col)' }
+                }]
             }
-        ]
+        }
     });
 
     $('#ratingstable').DataTable({
