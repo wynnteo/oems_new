@@ -10,12 +10,6 @@
             <h5 class="mb-0">My Enrolled Courses</h5>
             <p class="text-sm mb-0">Manage your enrolled courses and track your progress</p>
         </div>
-        <div class="col-lg-4 text-end">
-            <a href="#" class="btn btn-primary">
-                <i class="material-icons me-2">add</i>
-                Browse More Courses
-            </a>
-        </div>
     </div>
 
     <!-- Statistics Cards -->

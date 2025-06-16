@@ -184,7 +184,7 @@
             </div>
 
             <!-- Account Settings -->
-            <div class="card mt-4">
+            <!-- <div class="card mt-4">
                 <div class="card-header">
                     <h6 class="mb-0">Account Settings</h6>
                 </div>
@@ -210,7 +210,7 @@
                         </a>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </div>

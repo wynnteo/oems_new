@@ -51,6 +51,7 @@ class ExamScheduleController extends Controller
             $exam->registrations_count = ExamRegistration::where('exam_id', $exam->id)->count();
             $exam->is_registered = ExamRegistration::where('exam_id', $exam->id)
                 ->where('student_id', $student->id)
+                ->where('status', 'registered')
                 ->exists();
             return $exam;
         });
@@ -195,7 +196,7 @@ class ExamScheduleController extends Controller
     /**
      * Cancel exam registration with reason
      */
-    public function cancelExamRegistration(Request $request, $examId)
+    public function cancelExamRegistration(Request $request, $examId) 
     {
         $request->validate([
             'cancellation_reason' => 'nullable|string|max:500'
@@ -209,6 +210,7 @@ class ExamScheduleController extends Controller
             // Check if registration exists
             $registration = ExamRegistration::where('exam_id', $examId)
                 ->where('student_id', $student->id)
+                ->where('status', 'registered')
                 ->first();
 
             if (!$registration) {
@@ -438,13 +440,13 @@ class ExamScheduleController extends Controller
         // Check if student is registered
         $registration = ExamRegistration::where('exam_id', $examId)
             ->where('student_id', $student->id)
+            ->where('status', 'registered')
             ->first();
 
         // Get registration statistics
         $totalRegistrations = ExamRegistration::where('exam_id', $examId)->count();
-        $capacity = $exam->capacity ?? 50;
 
-        return view('student.exams.details', compact('exam', 'registration', 'totalRegistrations', 'capacity'));
+        return view('student.exams.details', compact('exam', 'registration', 'totalRegistrations'));
     }
 
     /**

@@ -203,30 +203,6 @@
                 </div>
             </div>
 
-            <!-- Capacity Info -->
-            <!-- <div class="card mb-4">
-                <div class="card-header pb-0">
-                    <h6>Capacity</h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-sm">Registered</span>
-                        <span class="text-sm font-weight-bold">{{ $totalRegistrations }} / {{ $capacity }}</span>
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar bg-gradient-info" role="progressbar" 
-                             style="width: {{ ($totalRegistrations / $capacity) * 100 }}%"
-                             aria-valuenow="{{ $totalRegistrations }}" 
-                             aria-valuemin="0" 
-                             aria-valuemax="{{ $capacity }}">
-                        </div>
-                    </div>
-                    @if($totalRegistrations >= $capacity)
-                        <small class="text-danger">This exam is full</small>
-                    @endif
-                </div>
-            </div> -->
-
             <!-- Important Notes -->
             <div class="card">
                 <div class="card-header pb-0">
@@ -275,8 +251,8 @@
                     
                     <div class="form-group">
                         <label for="cancellation_reason" class="form-label">Reason for Cancellation (Optional)</label>
-                        <textarea class="form-control" id="cancellation_reason" name="cancellation_reason" rows="3" 
-                                  placeholder="Please provide a reason for cancellation..."></textarea>
+                        <input type="text" class="form-control" id="cancellation_reason" name="cancellation_reason" 
+                               placeholder="Please provide a reason for cancellation...">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -317,7 +293,7 @@
     // Handle cancellation
     document.getElementById('cancelForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
+    
         const formData = new FormData(this);
         
         fetch(`/student/exams/{{ $exam->id }}/cancel`, {
@@ -330,6 +306,7 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                alert(data.message);
                 location.reload();
             } else {
                 alert(data.message);
