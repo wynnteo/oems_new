@@ -18,7 +18,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white  {{ Request::is('student/profile/*') || Request::is('student/profile') ? 'active' : '' }} " href="{{ route('student.exams.index') }}">
+          <a class="nav-link text-white  {{ Request::is('student/profile/*') || Request::is('student/profile') ? 'active' : '' }} " href="{{ route('student.profile') }}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">person</i>
             </div>
@@ -26,7 +26,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white {{ Request::is('student/courses/*') || Request::is('student/courses') ? 'active' : '' }} " href="{{ route('student.courses.index') }}">
+          <a class="nav-link text-white {{ Request::is('student/courses/*') || Request::is('student/courses') ? 'active' : '' }} " href="{{ route('student.courses') }}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">book</i>
             </div>
@@ -34,7 +34,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white  {{ Request::is('student/exams/*') || Request::is('student/exams') ? 'active' : '' }} " href="{{ route('student.exams.index') }}">
+          <a class="nav-link text-white  {{ Request::is('student/exams/*') || Request::is('student/exams') ? 'active' : '' }} " href="{{ route('student.exams') }}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">assignment</i>
             </div>

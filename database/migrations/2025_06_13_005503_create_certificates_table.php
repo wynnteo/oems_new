@@ -24,6 +24,9 @@ return new class extends Migration
             $table->json('certificate_data'); // Student name, course, score, date etc
             $table->decimal('score', 5, 2)->nullable();
             $table->timestamp('issued_at')->nullable();
+            $table->enum('status', ['generated', 'revoked'])->default('generated');
+            $table->string('verification_code', 10)->unique();
+            $table->string('file_path')->nullable();
             $table->index(['student_id', 'issued_at']);
         });
     }
