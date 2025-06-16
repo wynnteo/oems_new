@@ -58,6 +58,7 @@ Route::get('/admin/results/view/{id}', [StudentExamsController::class, 'view'])-
 
     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
     Route::get('/student/courses', [StudentDashboardController::class, 'courses'])->name('student.courses');
+    Route::get('/student/course/{id}/details', [StudentDashboardController::class, 'showCourseDetails'])->name('student.courses.show');
     Route::get('/student/exams', [StudentDashboardController::class, 'exams'])->name('student.exams');
     Route::get('/student/profile', [StudentDashboardController::class, 'profile'])->name('student.profile');
     Route::put('/student/profile', [StudentDashboardController::class, 'updateProfile'])->name('student.profile.update');

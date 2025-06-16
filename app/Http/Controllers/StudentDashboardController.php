@@ -81,6 +81,22 @@ class StudentDashboardController extends Controller
         
         return view('student.courses.index', compact('enrollments'));
     }
+
+    public function showCourseDetails($id)
+    {
+        //$student = auth()->user()->student;
+        $student = Student::find(1);
+        // Get the enrollment record to ensure student is enrolled
+        $enrollment = $student->enrollments()->where('course_id', $id)->firstOrFail();
+        
+        $course = $enrollment->course;
+        
+        // Get exams for this course
+        $courseExams = $course->exams()->get();
+        
+        return view('student.courses.show', compact('course', 'enrollment', 'courseExams', 'student'));
+    }
+
     
     public function exams()
     {

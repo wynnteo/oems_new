@@ -184,9 +184,12 @@
                                     </td>
                                     <td class="align-middle text-center">
                                         @if($canTake)
-                                            <a href="#" class="btn btn-success btn-sm">
-                                                <i class="material-icons text-sm">play_arrow</i> Start Exam
-                                            </a>
+                                            <form action="{{ route('student.exam.start', $exam->exam->id) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you ready to start the exam? Once started, the timer will begin.')">
+                                                    <i class="material-icons text-sm">play_arrow</i> Start Exam
+                                                </button>
+                                            </form>
                                         @elseif($examTime->isFuture())
                                             <div class="d-flex align-items-center justify-content-center">
                                                 <a href="{{ route('student.exams.show', $exam->exam->id) }}" class="btn btn-info btn-sm me-1" title="Exam Details">

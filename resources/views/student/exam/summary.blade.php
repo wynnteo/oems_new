@@ -76,7 +76,7 @@
             <h2 class="alert-heading">Keep Trying</h2>
             <div class="mb-4"></div>
             <p>Unfortunately, you failed the exam this time.</p>
-            <h5>You scored {{ $correctAnswers }} / {{ $totalQuestions }}</h5>
+            <h5>{{ $correctAnswers }} of {{ $totalQuestions }} questions answered correctly</h5>
             <h4>{{ number_format($score, 1) }}%</h4>
         </div>
     @else

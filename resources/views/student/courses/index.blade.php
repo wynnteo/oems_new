@@ -145,7 +145,7 @@
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Course</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Enrolled Date</th>
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Progress</th>
+                                        <!-- <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Progress</th> -->
                                         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
                                     </tr>
                                 </thead>
@@ -187,7 +187,7 @@
                                                     {{ ucfirst($enrollment->status ?? 'Active') }}
                                                 </span>
                                             </td>
-                                            <td class="align-middle text-center">
+                                            <!-- <td class="align-middle text-center">
                                                 @php
                                                     $progress = rand(20, 100); // This should come from actual progress calculation
                                                 @endphp
@@ -206,13 +206,13 @@
                                                              style="width: {{ $progress }}%"></div>
                                                     </div>
                                                 </div>
-                                            </td>
+                                            </td> -->
                                             <td class="align-middle text-center">
                                                 <div class="d-flex align-items-center justify-content-center">
-                                                    <a href="#" class="btn btn-primary btn-sm me-1" title="Continue Learning">
+                                                    <!-- <a href="#" class="btn btn-primary btn-sm me-1" title="Continue Learning">
                                                         <i class="material-icons text-sm">play_arrow</i>
-                                                    </a>
-                                                    <a href="#" class="btn btn-info btn-sm me-1" title="Course Details">
+                                                    </a> -->
+                                                    <a href="{{ route('student.courses.show', $enrollment->course->id) }}" class="btn btn-info btn-sm me-1" title="Course Details">
                                                         <i class="material-icons text-sm">visibility</i>
                                                     </a>
                                                     <div class="dropdown">
@@ -222,8 +222,6 @@
                                                         <ul class="dropdown-menu">
                                                             <li><a class="dropdown-item" href="#">Download Materials</a></li>
                                                             <li><a class="dropdown-item" href="#">View Certificate</a></li>
-                                                            <li><hr class="dropdown-divider"></li>
-                                                            <li><a class="dropdown-item text-danger" href="#">Unenroll Course</a></li>
                                                         </ul>
                                                     </div>
                                                 </div>
@@ -249,8 +247,8 @@
             pageLength: 10,
             order: [[2, 'desc']], // Order by enrollment date
             columnDefs: [
-                { targets: [0, 3, 4, 5], orderable: false },
-                { targets: [4, 5], searchable: false }
+                { targets: [0, 3, 4], orderable: false },
+                { targets: [4], searchable: false }
             ],
             language: {
                 search: "Search courses:",
