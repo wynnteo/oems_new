@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Models\Exam;
 use App\Models\Student;
+use App\Models\Rating;
 use App\Models\Question;
 use App\Models\StudentExams;
 use App\Models\StudentExamResults;
@@ -356,9 +357,20 @@ class StudentExamController extends Controller
             ->where('session_key', $session_key)
             ->firstOrFail();
 
-        $studentExam->update([
-            'rating' => $request->rating,
-            'feedback' => $request->feedback,
+        $existingRating = Rating::where('student_id', $student->id)
+            ->where('student_exam_id', $studentExam->id)
+            ->exists();
+
+        if ($existingRating) {
+            return redirect()->back()->with('warning', 'You have already submitted your feedback for this exam.');
+        }
+
+        Rating::create([
+            'student_exam_id' => $studentExam->id,
+            'student_id'      => $student->id,
+            'exam_id'         => $code,
+            'rating'          => $request->rating,
+            'feedback'        => $request->feedback,
         ]);
 
         return redirect()->back()->with('success', 'Thank you for your feedback!');

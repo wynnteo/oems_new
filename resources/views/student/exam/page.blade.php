@@ -57,7 +57,7 @@
         transition: all 0.2s ease;
         border: 2px solid transparent;
     }
-    
+
     .form-check-input:checked + .form-check-label {
         font-weight: 600;
         color: var(--primary-color);
@@ -668,7 +668,7 @@
 
     updateTimer();
     
-    /*document.addEventListener('contextmenu', function(e) {
+    document.addEventListener('contextmenu', function(e) {
         e.preventDefault();
     });
 
@@ -682,6 +682,6 @@
         if (e.key === "F5" || (e.ctrlKey && e.key === "r")) {
             e.preventDefault();
         }
-    });*/
+    });
 </script>
 @endsection

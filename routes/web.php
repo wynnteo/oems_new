@@ -68,10 +68,10 @@ Route::get('/admin/results/view/{id}', [StudentExamsController::class, 'view'])-
         return redirect()->route('student.ewallet.index')->with('error', 'Payment cancelled.');
     })->name('paypal.cancel');
 
-    Route::post('/exam/feedback/{code}/{session_key}', [StudentExamController::class, 'submitFeedback'])->name('exam.feedback');
     Route::get('/exam/{examId}', [StudentExamController::class, 'show'])->name('student.exam.show');
     Route::post('/exam/{examId}/start', [StudentExamController::class, 'start'])->name('student.exam.start');
     Route::get('/exam/{code}/{session_key}', [StudentExamController::class, 'showExamPage'])->name('exam.page');
+    Route::post('/exam/{code}/feedback/{session_key}', [StudentExamController::class, 'submitFeedback'])->name('exam.feedback');
     Route::get('/exam/summary/{code}/{session_key}', [StudentExamController::class, 'showAfterExamCompleted'])->name('exam.summary');
     Route::post('/exam/{examId}/submit-answer', [StudentExamController::class, 'submitAnswer'])
         ->name('student.exam.submit_answer');
