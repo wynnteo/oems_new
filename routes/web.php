@@ -74,8 +74,10 @@ Route::get('/admin/results/view/{id}', [StudentExamsController::class, 'view'])-
             ->name('full-details');
 
         Route::get('/{exam}/reschedule', [ExamScheduleController::class, 'showRescheduleForm'])
-            ->name('reschedule');
-            
+            ->name('reschedule.show');
+        Route::post('/{exam}/reschedule', [ExamScheduleController::class, 'rescheduleExam'])
+        ->name('reschedule.process');
+
         Route::post('/{exam}/schedule', [ExamScheduleController::class, 'scheduleExam'])
             ->name('schedule-exam');
         Route::post('/{exam}/cancel', [ExamScheduleController::class, 'cancelExamRegistration'])

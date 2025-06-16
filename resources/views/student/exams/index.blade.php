@@ -192,7 +192,7 @@
                                                 <a href="{{ route('student.exams.show', $exam->exam->id) }}" class="btn btn-info btn-sm me-1" title="Exam Details">
                                                     <i class="material-icons text-sm">info</i>
                                                 </a>
-                                                <a href="#" class="btn btn-warning btn-sm" title="Reschedule">
+                                                <a href="{{ route('student.exams.reschedule.show', $exam->exam->id) }}" class="btn btn-warning btn-sm" title="Reschedule">
                                                     <i class="material-icons text-sm">schedule</i>
                                                 </a>
                                             </div>

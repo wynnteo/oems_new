@@ -29,9 +29,6 @@ return new class extends Migration
             $table->index(['exam_id', 'student_id']);
             $table->index(['student_id', 'status']);
             $table->index('registered_at');
-            
-            // Unique constraint to prevent duplicate registrations
-            $table->unique(['exam_id', 'student_id'], 'unique_exam_student_registration');
         });
     }
 

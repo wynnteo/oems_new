@@ -42,14 +42,6 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white {{ Request::is('student/results/*') || Request::is('student/results') ? 'active' : '' }} " href="{{ route('questions.index') }}">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">check_circle</i>
-            </div>
-            <span class="nav-link-text ms-1">Results</span>
-          </a>
-        </li>
-        <li class="nav-item">
           <a class="nav-link text-white {{ Request::is('student/ewallet/*') || Request::is('student/ewallet') ? 'active' : '' }} " href="{{ route('student.ewallet.index') }}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">payments</i>

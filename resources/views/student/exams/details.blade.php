@@ -59,8 +59,8 @@
                         <div class="col-md-6">
                             <div class="info-item mb-3">
                                 <label class="form-label text-sm font-weight-bold mb-1">Date & Time</label>
-                                <p class="text-sm mb-0">{{ \Carbon\Carbon::parse($exam->start_time)->format('l, M d, Y') }}</p>
-                                <small class="text-secondary">{{ \Carbon\Carbon::parse($exam->start_time)->format('g:i A') }} - {{ \Carbon\Carbon::parse($exam->end_time)->format('g:i A') }}</small>
+                                <p class="text-sm mb-0">{{ \Carbon\Carbon::parse($exam->start_time)->format('l, M d, Y g:i A') }} <br/>-<br/>
+                                {{ \Carbon\Carbon::parse($exam->end_time)->format('l, M d, Y g:i A') }}</p>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -162,7 +162,7 @@
 
                         <div class="d-grid gap-2">
                             @if($canReschedule)
-                                <a href="{{ route('student.exams.reschedule', $exam->id) }}" class="btn btn-warning btn-sm">
+                                <a href="{{ route('student.exams.reschedule.show', $exam->id) }}" class="btn btn-warning btn-sm">
                                     <i class="material-icons me-1">schedule</i>
                                     Reschedule
                                 </a>

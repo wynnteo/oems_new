@@ -153,6 +153,7 @@ class ExamScheduleController extends Controller
             // Check if already registered
             $existingRegistration = ExamRegistration::where('exam_id', $examId)
                 ->where('student_id', $student->id)
+                ->where('status', 'registered')
                 ->first();
 
             if ($existingRegistration) {
@@ -186,7 +187,7 @@ class ExamScheduleController extends Controller
             DB::rollBack();
             return response()->json([
                 'success' => false, 
-                'message' => 'An error occurred while registering for the exam'
+                'message' => $e->getMessage() ?: 'An error occurred while scheduling the exam'
             ], 500);
         }
     }

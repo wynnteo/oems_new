@@ -85,9 +85,8 @@
                                     <label class="form-label">Gender</label>
                                     <select name="gender" class="form-control @error('gender') is-invalid @enderror">
                                         <option value="">Select Gender</option>
-                                        <option value="male" {{ old('gender', $student->gender) == 'male' ? 'selected' : '' }}>Male</option>
-                                        <option value="female" {{ old('gender', $student->gender) == 'female' ? 'selected' : '' }}>Female</option>
-                                        <option value="other" {{ old('gender', $student->gender) == 'other' ? 'selected' : '' }}>Other</option>
+                                        <option value="male" {{ old('gender', $student->gender) == 'M' ? 'selected' : '' }}>Male</option>
+                                        <option value="female" {{ old('gender', $student->gender) == 'F' ? 'selected' : '' }}>Female</option>
                                     </select>
                                     @error('gender')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -100,7 +99,9 @@
                             <div class="col-12">
                                 <div class="input-group input-group-outline mb-3 @if(old('address', $student->address)) is-filled @endif">
                                     <label class="form-label">Address</label>
-                                    <textarea name="address" class="form-control @error('address') is-invalid @enderror" rows="3">{{ old('address', $student->address) }}</textarea>
+                                    <input type="text" name="address" class="form-control @error('address') is-invalid @enderror" 
+                                           value="{{ old('address', $student->address) }}">
+                                    
                                     @error('address')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
