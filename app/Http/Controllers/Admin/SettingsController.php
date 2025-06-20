@@ -17,16 +17,30 @@ class SettingsController extends Controller
      */
     public function index()
     {
+        // Check if settings exist, if not create default ones
+        $this->ensureDefaultSettings();
+        
         $settingsGroups = [
             'general' => Setting::where('group', 'general')->orderBy('sort_order')->get(),
             'email' => Setting::where('group', 'email')->orderBy('sort_order')->get(),
             'certificate' => Setting::where('group', 'certificate')->orderBy('sort_order')->get(),
-            'exam' => Setting::where('group', 'exam')->orderBy('sort_order')->get(),
             'notification' => Setting::where('group', 'notification')->orderBy('sort_order')->get(),
             'system' => Setting::where('group', 'system')->orderBy('sort_order')->get(),
         ];
 
         return view('admin.settings.index', compact('settingsGroups'));
+    }
+
+    /**
+     * Ensure default settings exist.
+     */
+    private function ensureDefaultSettings()
+    {
+        $settingsCount = Setting::count();
+        
+        if ($settingsCount === 0) {
+            $this->seedAllDefaultSettings();
+        }
     }
 
     /**
@@ -264,6 +278,7 @@ class SettingsController extends Controller
                     'description' => 'The name of your application',
                     'is_required' => true,
                     'validation_rules' => 'required|string|max:255',
+                    'options' => null,
                     'sort_order' => 1
                 ],
                 [
@@ -273,7 +288,9 @@ class SettingsController extends Controller
                     'group' => 'general',
                     'label' => 'Application Logo',
                     'description' => 'Upload your application logo',
+                    'is_required' => false,
                     'validation_rules' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                    'options' => null,
                     'sort_order' => 2
                 ],
                 [
@@ -283,6 +300,9 @@ class SettingsController extends Controller
                     'group' => 'general',
                     'label' => 'Application Description',
                     'description' => 'Brief description of your application',
+                    'is_required' => false,
+                    'validation_rules' => null,
+                    'options' => null,
                     'sort_order' => 3
                 ],
                 [
@@ -292,6 +312,8 @@ class SettingsController extends Controller
                     'group' => 'general',
                     'label' => 'Default Timezone',
                     'description' => 'Default timezone for the application',
+                    'is_required' => true,
+                    'validation_rules' => null,
                     'options' => [
                         'UTC' => 'UTC',
                         'America/New_York' => 'Eastern Time',
@@ -303,7 +325,6 @@ class SettingsController extends Controller
                         'Asia/Tokyo' => 'Tokyo',
                         'Asia/Singapore' => 'Singapore'
                     ],
-                    'is_required' => true,
                     'sort_order' => 4
                 ]
             ],
@@ -317,6 +338,7 @@ class SettingsController extends Controller
                     'description' => 'Default email address for outgoing emails',
                     'is_required' => true,
                     'validation_rules' => 'required|email',
+                    'options' => null,
                     'sort_order' => 1
                 ],
                 [
@@ -328,6 +350,7 @@ class SettingsController extends Controller
                     'description' => 'Default name for outgoing emails',
                     'is_required' => true,
                     'validation_rules' => 'required|string|max:255',
+                    'options' => null,
                     'sort_order' => 2
                 ],
                 [
@@ -337,6 +360,9 @@ class SettingsController extends Controller
                     'group' => 'email',
                     'label' => 'Enable Email Notifications',
                     'description' => 'Enable or disable email notifications',
+                    'is_required' => false,
+                    'validation_rules' => null,
+                    'options' => null,
                     'sort_order' => 3
                 ]
             ],
@@ -348,6 +374,8 @@ class SettingsController extends Controller
                     'group' => 'certificate',
                     'label' => 'Certificate Template',
                     'description' => 'Default certificate template',
+                    'is_required' => false,
+                    'validation_rules' => null,
                     'options' => [
                         'default' => 'Default Template',
                         'modern' => 'Modern Template',
@@ -362,7 +390,9 @@ class SettingsController extends Controller
                     'group' => 'certificate',
                     'label' => 'Certificate Signature',
                     'description' => 'Upload signature image for certificates',
+                    'is_required' => false,
                     'validation_rules' => 'image|mimes:jpeg,png,jpg,gif|max:1024',
+                    'options' => null,
                     'sort_order' => 2
                 ],
                 [
@@ -372,6 +402,9 @@ class SettingsController extends Controller
                     'group' => 'certificate',
                     'label' => 'Authority Name',
                     'description' => 'Name of the certifying authority',
+                    'is_required' => false,
+                    'validation_rules' => null,
+                    'options' => null,
                     'sort_order' => 3
                 ],
                 [
@@ -381,7 +414,36 @@ class SettingsController extends Controller
                     'group' => 'certificate',
                     'label' => 'Authority Title',
                     'description' => 'Title of the certifying authority',
+                    'is_required' => false,
+                    'validation_rules' => null,
+                    'options' => null,
                     'sort_order' => 4
+                ]
+            ],
+            'notification' => [
+                [
+                    'key' => 'email_notifications_enabled',
+                    'value' => '1',
+                    'type' => 'boolean',
+                    'group' => 'notification',
+                    'label' => 'Email Notifications',
+                    'description' => 'Enable email notifications',
+                    'is_required' => false,
+                    'validation_rules' => null,
+                    'options' => null,
+                    'sort_order' => 1
+                ],
+                [
+                    'key' => 'sms_notifications_enabled',
+                    'value' => '0',
+                    'type' => 'boolean',
+                    'group' => 'notification',
+                    'label' => 'SMS Notifications',
+                    'description' => 'Enable SMS notifications',
+                    'is_required' => false,
+                    'validation_rules' => null,
+                    'options' => null,
+                    'sort_order' => 2
                 ]
             ],
             'system' => [
@@ -392,6 +454,9 @@ class SettingsController extends Controller
                     'group' => 'system',
                     'label' => 'Maintenance Mode',
                     'description' => 'Enable maintenance mode',
+                    'is_required' => false,
+                    'validation_rules' => null,
+                    'options' => null,
                     'sort_order' => 1
                 ],
                 [
@@ -401,6 +466,9 @@ class SettingsController extends Controller
                     'group' => 'system',
                     'label' => 'Debug Mode',
                     'description' => 'Enable debug mode (not recommended for production)',
+                    'is_required' => false,
+                    'validation_rules' => null,
+                    'options' => null,
                     'sort_order' => 2
                 ],
                 [
@@ -410,6 +478,9 @@ class SettingsController extends Controller
                     'group' => 'system',
                     'label' => 'Auto Backup',
                     'description' => 'Enable automatic database backups',
+                    'is_required' => false,
+                    'validation_rules' => null,
+                    'options' => null,
                     'sort_order' => 3
                 ]
             ]
