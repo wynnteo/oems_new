@@ -8,8 +8,8 @@ use App\Models\Student;
 use App\Models\Course;
 use App\Models\Exam;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use PDF;
 
 class CertificateController extends Controller
@@ -21,7 +21,7 @@ class CertificateController extends Controller
     {
         $certificates = Certificate::with(['student', 'course', 'exam'])
             ->orderBy('issued_at', 'desc')
-            ->get();
+            ->paginate(20);
 
         return view('admin.certificates.index', compact('certificates'));
     }
@@ -43,43 +43,17 @@ class CertificateController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'student_id' => 'required|exists:students,id',
-            'course_id' => 'required|exists:courses,id',
-            'exam_id' => 'nullable|exists:exams,id',
-            'score' => 'required|numeric|min:0|max:100',
-            'issued_at' => 'required|date',
-            'certificate_data' => 'nullable|array',
-            'status' => 'required|in:generated,pending,revoked'
-        ]);
+        $validatedData = $this->validateCertificateData($request);
 
-        // Check if certificate already exists for this student and course
-        $existingCertificate = Certificate::where('student_id', $request->student_id)
-            ->where('course_id', $request->course_id)
-            ->where('exam_id', $request->exam_id)
-            ->first();
-
-        if ($existingCertificate) {
+        // Check for duplicate certificate
+        if ($this->certificateExists($validatedData['student_id'], $validatedData['course_id'], $validatedData['exam_id'])) {
             return back()->withErrors(['error' => 'Certificate already exists for this student, course, and exam combination.']);
         }
 
-        $certificate = Certificate::create([
-            'student_id' => $request->student_id,
-            'course_id' => $request->course_id,
-            'exam_id' => $request->exam_id,
-            'certificate_number' => Certificate::generateCertificateNumber(),
-            'verification_code' => Certificate::generateVerificationCode(),
-            'score' => $request->score,
-            'completion_type' => $request->completion_type ?? 'exam_passed',
-            'distinction' => $this->calculateDistinction($request->score),
-            'notes' => $request->notes ?? null,
-            'issued_at' => $request->issued_at,
-            'certificate_data' => $request->certificate_data ?? [],
-            'status' => $request->status,
-        ]);
+        $certificate = $this->createCertificate($validatedData);
 
-        // Generate PDF certificate if status is 'generated'
-        if ($request->status === 'generated') {
+        // Generate PDF if status is 'generated'
+        if ($certificate->status === 'generated') {
             $this->generateCertificatePDF($certificate);
         }
 
@@ -114,41 +88,23 @@ class CertificateController extends Controller
      */
     public function update(Request $request, Certificate $certificate)
     {
-        $request->validate([
-            'student_id' => 'required|exists:students,id',
-            'course_id' => 'required|exists:courses,id',
-            'exam_id' => 'nullable|exists:exams,id',
-            'score' => 'required|numeric|min:0|max:100',
-            'issued_at' => 'required|date',
-            'certificate_data' => 'nullable|array',
-            'status' => 'required|in:generated,pending,revoked'
-        ]);
+        $validatedData = $this->validateCertificateData($request);
 
-        // Check if certificate already exists for this student and course (excluding current)
-        $existingCertificate = Certificate::where('student_id', $request->student_id)
-            ->where('course_id', $request->course_id)
-            ->where('exam_id', $request->exam_id)
-            ->where('id', '!=', $certificate->id)
-            ->first();
-
-        if ($existingCertificate) {
+        // Check for duplicate certificate (excluding current)
+        if ($this->certificateExists(
+            $validatedData['student_id'], 
+            $validatedData['course_id'], 
+            $validatedData['exam_id'],
+            $certificate->id
+        )) {
             return back()->withErrors(['error' => 'Certificate already exists for this student, course, and exam combination.']);
         }
 
         $oldStatus = $certificate->status;
+        $certificate->update($validatedData);
 
-        $certificate->update([
-            'student_id' => $request->student_id,
-            'course_id' => $request->course_id,
-            'exam_id' => $request->exam_id,
-            'score' => $request->score,
-            'issued_at' => $request->issued_at,
-            'certificate_data' => $request->certificate_data ?? [],
-            'status' => $request->status,
-        ]);
-
-        // Generate PDF certificate if status changed to 'generated'
-        if ($oldStatus !== 'generated' && $request->status === 'generated') {
+        // Generate PDF if status changed to 'generated'
+        if ($oldStatus !== 'generated' && $certificate->status === 'generated') {
             $this->generateCertificatePDF($certificate);
         }
 
@@ -184,7 +140,7 @@ class CertificateController extends Controller
         $oldStatus = $certificate->status;
         $certificate->update(['status' => $request->status]);
 
-        // Generate PDF certificate if status changed to 'generated'
+        // Generate PDF if status changed to 'generated'
         if ($oldStatus !== 'generated' && $request->status === 'generated') {
             $this->generateCertificatePDF($certificate);
         }
@@ -202,7 +158,6 @@ class CertificateController extends Controller
     public function download(Certificate $certificate)
     {
         if (!$certificate->file_path || !Storage::exists('public/' . $certificate->file_path)) {
-            // Generate PDF if it doesn't exist
             $this->generateCertificatePDF($certificate);
         }
 
@@ -251,34 +206,6 @@ class CertificateController extends Controller
     }
 
     /**
-     * Generate certificate PDF file.
-     */
-    private function generateCertificatePDF(Certificate $certificate)
-    {
-        $certificate->load(['student', 'course', 'exam']);
-
-        // Create certificates directory if it doesn't exist
-        $certificatesDir = 'certificates/' . date('Y/m');
-        if (!Storage::exists('public/' . $certificatesDir)) {
-            Storage::makeDirectory('public/' . $certificatesDir);
-        }
-
-        $fileName = $certificate->certificate_number . '.pdf';
-        $filePath = $certificatesDir . '/' . $fileName;
-
-        // Generate PDF using a view (you'll need to create this view)
-        $pdf = PDF::loadView('admin.certificates.pdf', compact('certificate'));
-        
-        // Save PDF to storage
-        Storage::put('public/' . $filePath, $pdf->output());
-
-        // Update certificate with file path
-        $certificate->update(['file_path' => $filePath]);
-
-        return $filePath;
-    }
-
-    /**
      * Get courses by student (AJAX).
      */
     public function getCoursesByStudent(Request $request)
@@ -289,7 +216,6 @@ class CertificateController extends Controller
             return response()->json([]);
         }
 
-        // Get courses that the student is enrolled in
         $courses = Course::whereHas('enrolments', function ($query) use ($studentId) {
             $query->where('student_id', $studentId);
         })->orderBy('title')->get(['id', 'title', 'course_code']);
@@ -316,12 +242,96 @@ class CertificateController extends Controller
         return response()->json($exams);
     }
 
-    private function calculateDistinction($score)
+    /**
+     * Validate certificate data from request.
+     */
+    private function validateCertificateData(Request $request): array
+    {
+        return $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'course_id' => 'required|exists:courses,id',
+            'exam_id' => 'nullable|exists:exams,id',
+            'score' => 'required|numeric|min:0|max:100',
+            'issued_at' => 'required|date',
+            'status' => 'required|in:generated,pending,revoked',
+            'completion_type' => 'required|in:course_completion,exam_passed,achievement,participation',
+            'distinction' => 'nullable|in:pass,merit,distinction,high_distinction',
+            'notes' => 'nullable|string|max:1000',
+            'certificate_data' => 'nullable|array',
+        ]);
+    }
+
+    /**
+     * Check if certificate already exists.
+     */
+    private function certificateExists(int $studentId, int $courseId, ?int $examId, ?int $excludeId = null): bool
+    {
+        $query = Certificate::where('student_id', $studentId)
+            ->where('course_id', $courseId)
+            ->where('exam_id', $examId);
+
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        return $query->exists();
+    }
+
+    /**
+     * Create a new certificate with validated data.
+     */
+    private function createCertificate(array $validatedData): Certificate
+    {
+        // Calculate distinction based on score if not provided
+        if (empty($validatedData['distinction'])) {
+            $validatedData['distinction'] = $this->calculateDistinction($validatedData['score']);
+        }
+
+        // Generate unique identifiers
+        $validatedData['certificate_number'] = Certificate::generateCertificateNumber();
+        $validatedData['verification_code'] = Certificate::generateVerificationCode();
+
+        return Certificate::create($validatedData);
+    }
+
+    /**
+     * Generate certificate PDF file.
+     */
+    private function generateCertificatePDF(Certificate $certificate): string
+    {
+        $certificate->load(['student', 'course', 'exam']);
+
+        // Create certificates directory if it doesn't exist
+        $certificatesDir = 'certificates/' . date('Y/m');
+        if (!Storage::exists('public/' . $certificatesDir)) {
+            Storage::makeDirectory('public/' . $certificatesDir);
+        }
+
+        $fileName = $certificate->certificate_number . '.pdf';
+        $filePath = $certificatesDir . '/' . $fileName;
+
+        // Generate PDF using a view
+        $pdf = PDF::loadView('admin.certificates.pdf', compact('certificate'));
+        
+        // Save PDF to storage
+        Storage::put('public/' . $filePath, $pdf->output());
+
+        // Update certificate with file path
+        $certificate->update(['file_path' => $filePath]);
+
+        return $filePath;
+    }
+
+    /**
+     * Calculate distinction based on score.
+     */
+    private function calculateDistinction(float $score): ?string
     {
         if ($score >= 85) return 'high_distinction';
         if ($score >= 75) return 'distinction';
         if ($score >= 65) return 'merit';
         if ($score >= 50) return 'pass';
+        
         return null;
     }
 }
