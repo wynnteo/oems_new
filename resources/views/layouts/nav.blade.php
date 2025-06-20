@@ -50,7 +50,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white {{ Request::is('admin/results/*') || Request::is('admin/results') ? 'active' : '' }} " href="{{ route('questions.index') }}">
+          <a class="nav-link text-white {{ Request::is('admin/certificates/*') || Request::is('admin/certificates') ? 'active' : '' }} " href="{{ route('certificates.index') }}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">check_circle</i>
             </div>

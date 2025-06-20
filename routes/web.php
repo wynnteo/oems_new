@@ -14,7 +14,8 @@ use App\Http\Controllers\Admin\{
     CourseController,
     ExamController,
     QuestionController,
-    StudentExamsController
+    StudentExamsController,
+    CertificateController
 };
 
 // Student Controllers
@@ -76,6 +77,11 @@ Route::get('/', function () {
         ]);
 
         // Certificate Management
+        Route::controller(CertificateController::class)->prefix('certificates')->name('certificates.')->group(function () {
+            Route::post('/verify', 'verify')->name('verify');
+            Route::get('/download/{id}', 'download')->name('download');
+            Route::get('/generate/{studentId}/{examId}', 'generate')->name('generate');
+        });
         Route::resource('certificates', CertificateController::class)->names([
             'index' => 'certificates.index',
             'create' => 'certificates.create',
