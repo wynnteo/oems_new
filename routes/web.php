@@ -15,7 +15,8 @@ use App\Http\Controllers\Admin\{
     ExamController,
     QuestionController,
     StudentExamsController,
-    CertificateController
+    CertificateController,
+    SettingsController
 };
 
 // Student Controllers
@@ -59,7 +60,15 @@ Route::get('/', function () {
     Route::prefix('admin')->group(function () { 
         // Admin Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-        
+
+        Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+        Route::post('/settings/update', [SettingsController::class, 'update'])->name('settings.update');
+        Route::post('/settings/test-email', [SettingsController::class, 'testEmail'])->name('settings.test-email');
+        Route::post('/settings/clear-cache', [SettingsController::class, 'clearCache'])->name('settings.clear-cache');
+        Route::get('/settings/export', [SettingsController::class, 'export'])->name('settings.export');
+        Route::post('/settings/import', [SettingsController::class, 'import'])->name('settings.import');
+        Route::post('/settings/reset', [SettingsController::class, 'reset'])->name('settings.reset');
+
         // Course Management
         Route::controller(CourseController::class)->prefix('courses')->name('courses.')->group(function () {
             Route::get('/search', 'search')->name('search');

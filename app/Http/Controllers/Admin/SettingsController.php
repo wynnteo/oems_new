@@ -384,47 +384,6 @@ class SettingsController extends Controller
                     'sort_order' => 4
                 ]
             ],
-            'exam' => [
-                [
-                    'key' => 'default_exam_duration',
-                    'value' => '60',
-                    'type' => 'number',
-                    'group' => 'exam',
-                    'label' => 'Default Exam Duration (minutes)',
-                    'description' => 'Default duration for new exams',
-                    'validation_rules' => 'numeric|min:1|max:600',
-                    'sort_order' => 1
-                ],
-                [
-                    'key' => 'default_passing_score',
-                    'value' => '50',
-                    'type' => 'number',
-                    'group' => 'exam',
-                    'label' => 'Default Passing Score (%)',
-                    'description' => 'Default passing score percentage',
-                    'validation_rules' => 'numeric|min:0|max:100',
-                    'sort_order' => 2
-                ],
-                [
-                    'key' => 'allow_multiple_attempts',
-                    'value' => '1',
-                    'type' => 'boolean',
-                    'group' => 'exam',
-                    'label' => 'Allow Multiple Attempts',
-                    'description' => 'Allow students to retake exams',
-                    'sort_order' => 3
-                ],
-                [
-                    'key' => 'max_attempts',
-                    'value' => '3',
-                    'type' => 'number',
-                    'group' => 'exam',
-                    'label' => 'Maximum Attempts',
-                    'description' => 'Maximum number of exam attempts',
-                    'validation_rules' => 'numeric|min:1|max:10',
-                    'sort_order' => 4
-                ]
-            ],
             'system' => [
                 [
                     'key' => 'maintenance_mode',
