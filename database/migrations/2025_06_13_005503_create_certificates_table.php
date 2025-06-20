@@ -26,6 +26,8 @@ return new class extends Migration
             $table->timestamp('issued_at')->nullable();
             $table->enum('status', ['generated', 'revoked'])->default('generated');
             $table->string('verification_code', 10)->unique();
+            $table->string('completion_type')->nullable();
+            $table->string('distinction')->nullable();
             $table->string('file_path')->nullable();
             $table->index(['student_id', 'issued_at']);
         });

@@ -3,6 +3,7 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Certificate extends Model
 {
@@ -18,7 +19,10 @@ class Certificate extends Model
         'issued_at',
         'status',
         'verification_code',
-        'file_path'
+        'file_path',
+        'completion_type',
+        'distinction',
+        'notes'
     ];
 
     protected $casts = [

@@ -70,6 +70,9 @@ class CertificateController extends Controller
             'certificate_number' => Certificate::generateCertificateNumber(),
             'verification_code' => Certificate::generateVerificationCode(),
             'score' => $request->score,
+            'completion_type' => $request->completion_type ?? 'exam_passed',
+            'distinction' => $this->calculateDistinction($request->score),
+            'notes' => $request->notes ?? null,
             'issued_at' => $request->issued_at,
             'certificate_data' => $request->certificate_data ?? [],
             'status' => $request->status,
@@ -311,5 +314,14 @@ class CertificateController extends Controller
             ->get(['id', 'title', 'start_time']);
 
         return response()->json($exams);
+    }
+
+    private function calculateDistinction($score)
+    {
+        if ($score >= 85) return 'high_distinction';
+        if ($score >= 75) return 'distinction';
+        if ($score >= 65) return 'merit';
+        if ($score >= 50) return 'pass';
+        return null;
     }
 }

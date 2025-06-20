@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class CertificateService
 {
-    public function generateCertificate($studentId, $examId, $score)
+    public function generateCertificate($studentId, $examId, $score, $completionType = null, $distinction = null, $notes = null)
     {
         $student = Student::findOrFail($studentId);
         $exam = Exam::with('course')->findOrFail($examId);
@@ -30,7 +30,10 @@ class CertificateService
                 'exam_title' => $exam->title,
                 'score' => $score,
                 'issued_date' => now()->format('F j, Y'),
-                'passing_score' => $exam->passing_score ?? 70
+                'passing_score' => $exam->passing_score ?? 70,
+                'completion_type' => $completionType ?? 'exam_passed',
+                'distinction' => $this->calculateDistinction($score),
+                'notes' => $notes ?? null,
             ]
         ]);
 
@@ -73,4 +76,12 @@ class CertificateService
         return Certificate::where('verification_code', $verificationCode)->first();
     }
 
+    private function calculateDistinction($score)
+    {
+        if ($score >= 85) return 'high_distinction';
+        if ($score >= 75) return 'distinction';
+        if ($score >= 65) return 'merit';
+        if ($score >= 50) return 'pass';
+        return null;
+    }
 }
