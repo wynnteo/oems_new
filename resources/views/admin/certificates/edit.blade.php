@@ -183,11 +183,13 @@ Certificates | Admin Panel
 @endsection
 
 @section('scripts')
+@section('scripts')
 <script>
 $(document).ready(function() {
-    let examSelected = {{ $certificate->exam_id ? 'true' : 'false' }};
-    let originalExamId = {{ $certificate->exam_id ?? 'null' }};
-    
+    // Fix 1: Properly handle null values from PHP
+    let examSelected = @json($certificate->exam_id ? true : false);
+    let originalExamId = @json($certificate->exam_id);
+
     // Initialize form state based on existing data
     initializeFormState();
     
@@ -196,7 +198,8 @@ $(document).ready(function() {
         var studentId = $(this).val();
         var courseSelect = $('#course_id');
         var examSelect = $('#exam_id');
-        var currentCourseId = {{ $certificate->course_id }};
+        // Fix 2: Properly handle PHP variable in JavaScript
+        var currentCourseId = @json($certificate->course_id ?? null);
         
         // Reset course and exam dropdowns
         courseSelect.html('<option value="">Select Course</option>');
@@ -242,7 +245,7 @@ $(document).ready(function() {
     // Load exams for a specific course
     function loadExamsForCourse(courseId) {
         var examSelect = $('#exam_id');
-        var currentExamId = {{ $certificate->exam_id ?? 'null' }};
+        var currentExamId = @json($certificate->exam_id ?? null);
         
         examSelect.html('<option value="">Select Exam</option>');
         
