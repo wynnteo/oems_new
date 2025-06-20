@@ -46,16 +46,29 @@ class CertificateService
         return $certificate;
     }
 
-    private function generatePDF($certificate)
+    public function generatePDF($certificate)
     {
+        $certificate->load(['student', 'course', 'exam']);
+
+        // Create certificates directory if it doesn't exist
+        $certificatesDir = 'certificates/' . date('Y/m');
+        if (!Storage::exists('public/' . $certificatesDir)) {
+            Storage::makeDirectory('public/' . $certificatesDir);
+        }
+
+        $fileName = $certificate->certificate_number . '.pdf';
+        $filePath = $certificatesDir . '/' . $fileName;
+
+        // Generate PDF using the template
         $pdf = Pdf::loadView('certificates.template', compact('certificate'));
         
-        $filename = 'certificates/' . $certificate->certificate_number . '.pdf';
-        
-        // Save to storage
-        Storage::put($filename, $pdf->output());
-        
-        return $filename;
+        // Save PDF to storage
+        Storage::put('public/' . $filePath, $pdf->output());
+
+        // Update certificate with file path
+        $certificate->update(['file_path' => $filePath]);
+
+        return $filePath;
     }
 
     public function revokeCertificate($certificateId)
@@ -64,8 +77,9 @@ class CertificateService
         $certificate->update(['status' => 'revoked']);
         
         // Optionally delete the PDF file
-        if ($certificate->file_path) {
-            Storage::delete($certificate->file_path);
+        if ($certificate->file_path && Storage::exists('public/' . $certificate->file_path)) {
+            Storage::delete('public/' . $certificate->file_path);
+            $certificate->update(['file_path' => null]);
         }
 
         return $certificate;

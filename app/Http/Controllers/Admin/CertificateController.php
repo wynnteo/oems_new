@@ -10,6 +10,7 @@ use App\Models\Exam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use \App\Services\CertificateService;
 use PDF;
 
 class CertificateController extends Controller
@@ -143,6 +144,12 @@ class CertificateController extends Controller
         // Generate PDF if status changed to 'generated'
         if ($oldStatus !== 'generated' && $request->status === 'generated') {
             $this->generateCertificatePDF($certificate);
+        } elseif ($request->status === 'revoked') {
+            // Delete associated file if exists when revoking
+            if ($certificate->file_path && Storage::exists('public/' . $certificate->file_path)) {
+                Storage::delete('public/' . $certificate->file_path);
+                $certificate->update(['file_path' => null]);
+            }
         }
 
         return response()->json([
@@ -299,27 +306,8 @@ class CertificateController extends Controller
      */
     private function generateCertificatePDF(Certificate $certificate): string
     {
-        $certificate->load(['student', 'course', 'exam']);
-
-        // Create certificates directory if it doesn't exist
-        $certificatesDir = 'certificates/' . date('Y/m');
-        if (!Storage::exists('public/' . $certificatesDir)) {
-            Storage::makeDirectory('public/' . $certificatesDir);
-        }
-
-        $fileName = $certificate->certificate_number . '.pdf';
-        $filePath = $certificatesDir . '/' . $fileName;
-
-        // Generate PDF using a view
-        $pdf = PDF::loadView('admin.certificates.pdf', compact('certificate'));
-        
-        // Save PDF to storage
-        Storage::put('public/' . $filePath, $pdf->output());
-
-        // Update certificate with file path
-        $certificate->update(['file_path' => $filePath]);
-
-        return $filePath;
+        $certificateService = new CertificateService();
+        return $certificateService->generatePDF($certificate);
     }
 
     /**
