@@ -440,3 +440,78 @@ document.addEventListener('DOMContentLoaded', function() {
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.8)'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Performance Distribution Chart
+    const perfCtx = document.getElementById('chart-performance').getContext('2d');
+    const performanceData = {!! json_encode($performanceDistribution) !!};
+    
+    new Chart(perfCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(performanceData),
+            datasets: [{
+                data: Object.values(performanceData),
+                backgroundColor: [
+                    'rgba(76, 175, 80, 0.8)',   // Excellent - Green
+                    'rgba(33, 150, 243, 0.8)',  // Good - Blue
+                    'rgba(255, 193, 7, 0.8)',   // Average - Yellow
+                    'rgba(255, 152, 0, 0.8)',   // Below Average - Orange
+                    'rgba(244, 67, 54, 0.8)'    // Poor - Red
+                ],
+                borderColor: [
+                    'rgba(76, 175, 80, 1)',
+                    'rgba(33, 150, 243, 1)',
+                    'rgba(255, 193, 7, 1)',
+                    'rgba(255, 152, 0, 1)',
+                    'rgba(244, 67, 54, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            cutout: '60%'
+        }
+    });
+});
+</script>
+@endpush
+
+@endsection
