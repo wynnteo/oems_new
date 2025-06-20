@@ -7,6 +7,8 @@ use App\Models\Certificate;
 use App\Models\Student;
 use App\Models\Course;
 use App\Models\Exam;
+use App\Models\StudentExams;
+use App\Models\StudentExamResults;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -49,6 +51,16 @@ class CertificateController extends Controller
         // Check for duplicate certificate
         if ($this->certificateExists($validatedData['student_id'], $validatedData['course_id'], $validatedData['exam_id'])) {
             return back()->withErrors(['error' => 'Certificate already exists for this student, course, and exam combination.']);
+        }
+
+        // If exam is selected, validate exam completion and passing score
+        if (!empty($validatedData['exam_id'])) {
+            $examValidation = $this->validateExamCompletion($validatedData['student_id'], $validatedData['exam_id']);
+            if (!$examValidation['valid']) {
+                return back()->withErrors(['error' => $examValidation['message']]);
+            }
+            // Use the actual exam score
+            $validatedData['score'] = $examValidation['score'];
         }
 
         $certificate = $this->createCertificate($validatedData);
@@ -99,6 +111,16 @@ class CertificateController extends Controller
             $certificate->id
         )) {
             return back()->withErrors(['error' => 'Certificate already exists for this student, course, and exam combination.']);
+        }
+
+        // If exam is selected, validate exam completion and passing score
+        if (!empty($validatedData['exam_id'])) {
+            $examValidation = $this->validateExamCompletion($validatedData['student_id'], $validatedData['exam_id']);
+            if (!$examValidation['valid']) {
+                return back()->withErrors(['error' => $examValidation['message']]);
+            }
+            // Use the actual exam score
+            $validatedData['score'] = $examValidation['score'];
         }
 
         $oldStatus = $certificate->status;
@@ -250,22 +272,60 @@ class CertificateController extends Controller
     }
 
     /**
+     * Get exam result for student (AJAX).
+     */
+    public function getExamResult(Request $request)
+    {
+        $studentId = $request->get('student_id');
+        $examId = $request->get('exam_id');
+        
+        if (!$studentId || !$examId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Student ID and Exam ID are required'
+            ]);
+        }
+
+        $examValidation = $this->validateExamCompletion($studentId, $examId);
+        
+        if (!$examValidation['valid']) {
+            return response()->json([
+                'success' => false,
+                'message' => $examValidation['message']
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'score' => $examValidation['score'],
+            'distinction' => $this->calculateDistinction($examValidation['score']),
+            'can_generate_certificate' => true
+        ]);
+    }
+
+    /**
      * Validate certificate data from request.
      */
     private function validateCertificateData(Request $request): array
     {
-        return $request->validate([
+        $rules = [
             'student_id' => 'required|exists:students,id',
             'course_id' => 'required|exists:courses,id',
             'exam_id' => 'nullable|exists:exams,id',
-            'score' => 'required|numeric|min:0|max:100',
             'issued_at' => 'required|date',
             'status' => 'required|in:generated,pending,revoked',
             'completion_type' => 'required|in:course_completion,exam_passed,achievement,participation',
             'distinction' => 'nullable|in:pass,merit,distinction,high_distinction',
             'notes' => 'nullable|string|max:1000',
             'certificate_data' => 'nullable|array',
-        ]);
+        ];
+
+        // Score is only required if no exam is selected (manual entry)
+        if (empty($request->exam_id)) {
+            $rules['score'] = 'required|numeric|min:0|max:100';
+        }
+
+        return $request->validate($rules);
     }
 
     /**
@@ -321,5 +381,50 @@ class CertificateController extends Controller
         if ($score >= 50) return 'pass';
         
         return null;
+    }
+
+    /**
+     * Validate exam completion and passing score.
+     */
+    private function validateExamCompletion(int $studentId, int $examId): array
+    {
+        // Find the student's exam attempt
+        $studentExam = StudentExams::where('student_id', $studentId)
+            ->where('exam_id', $examId)
+            ->where('status', 'completed')
+            ->first();
+
+        if (!$studentExam) {
+            return [
+                'valid' => false,
+                'message' => 'Student has not completed this exam yet. Certificate cannot be generated.'
+            ];
+        }
+
+        // Get the exam result
+        $examResult = StudentExamResults::where('student_exam_id', $studentExam->id)
+            ->orderBy('attempt_number', 'desc')
+            ->first();
+
+        if (!$examResult) {
+            return [
+                'valid' => false,
+                'message' => 'No exam results found for this student. Certificate cannot be generated.'
+            ];
+        }
+
+        $passingScore = $studentExam->exam->passing_score ?? 50;
+        if ($examResult->score < $passingScore) {
+            return [
+                'valid' => false,
+                'message' => "Student did not pass the exam (Score: {$examResult->score}%). Certificate cannot be generated for failed exams."
+            ];
+        }
+
+        return [
+            'valid' => true,
+            'score' => $examResult->score,
+            'message' => 'Exam completed successfully'
+        ];
     }
 }

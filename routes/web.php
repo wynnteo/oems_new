@@ -81,6 +81,7 @@ Route::get('/', function () {
             Route::post('/verify', 'verify')->name('verify');
             Route::get('/courses-by-student', 'getCoursesByStudent')->name('courses-by-student');
             Route::get('/exams-by-course', 'getExamsByCourse')->name('exams-by-course');
+            Route::get('/exams-result', 'getExamResult')->name('exam-result');
             Route::get('/download/{id}', 'download')->name('download');
             Route::get('/generate/{studentId}/{examId}', 'generate')->name('generate');
         });
