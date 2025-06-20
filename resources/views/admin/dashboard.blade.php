@@ -201,8 +201,8 @@
                                     <i class="fa fa-ellipsis-v text-secondary"></i>
                                 </a>
                                 <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5" aria-labelledby="dropdownTable">
-                                    <li><a class="dropdown-item border-radius-md" href="{{ route('admin.exams.index') }}">View All Exams</a></li>
-                                    <li><a class="dropdown-item border-radius-md" href="{{ route('admin.exams.create') }}">Create New Exam</a></li>
+                                    <li><a class="dropdown-item border-radius-md" href="{{ route('exams.index') }}">View All Exams</a></li>
+                                    <li><a class="dropdown-item border-radius-md" href="{{ route('exams.create') }}">Create New Exam</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -360,7 +360,7 @@
                                         </span>
                                     </td>
                                     <td class="align-middle">
-                                        <a href="{{ route('admin.courses.show', $course->id) }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="View course">
+                                        <a href="{{ route('courses.show', $course->id) }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="View course">
                                             View
                                         </a>
                                     </td>
@@ -375,143 +375,182 @@
     </div>
 </div>
 
-@push('scripts')
+@section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Registration Chart
-    const regCtx = document.getElementById('chart-registrations').getContext('2d');
-    new Chart(regCtx, {
-        type: 'line',
-        data: {
-            labels: {!! json_encode(array_column($monthlyRegistrations, 'month')) !!},
-            datasets: [{
-                label: 'Registrations',
-                data: {!! json_encode(array_column($monthlyRegistrations, 'count')) !!},
-                borderColor: 'rgb(255, 255, 255)',
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
+    const regCtx = document.getElementById('chart-registrations');
+    if (regCtx) {
+     
+        new Chart(regCtx, {
+            type: 'line',
+            data: {
+                labels: @json(collect($monthlyRegistrations ?? [])->pluck('month')->toArray()),
+                datasets: [{
+                    label: 'Registrations',
+                    data: @json(collect($monthlyRegistrations ?? [])->pluck('count')->toArray()),
+                    borderColor: 'rgb(255, 255, 255)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgb(255, 255, 255)',
+                    pointBorderColor: 'rgb(255, 255, 255)'
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)'
-                    },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.2)'
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
                     }
                 },
-                x: {
-                    ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)'
-                    },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.2)'
-                    }
-                }
-            }
-        }
-    });
-
-    // Revenue Chart
-    const revCtx = document.getElementById('chart-revenue').getContext('2d');
-    new Chart(revCtx, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode(array_column($monthlyRevenueData, 'month')) !!},
-            datasets: [{
-                label: 'Revenue ($)',
-                data: {!! json_encode(array_column($monthlyRevenueData, 'revenue')) !!},
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                borderColor: 'rgb(255, 255, 255)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        callback: function(value) {
-                            return '$' + value.toLocaleString();
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            stepSize: 1
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.2)'
                         }
                     },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.2)'
+                    x: {
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.8)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.2)'
+                        }
                     }
                 },
-                x: {
-                    ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)'
-                    },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.2)'
+                elements: {
+                    point: {
+                        radius: 4,
+                        hoverRadius: 6
                     }
                 }
             }
-        }
-    });
+        });
+    }
+
+    // Revenue Chart
+    const revCtx = document.getElementById('chart-revenue');
+    if (revCtx) {
+        new Chart(revCtx, {
+            type: 'bar',
+            data: {
+                labels: @json(collect($monthlyRevenueData ?? [])->pluck('month')->toArray()),
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: @json(collect($monthlyRevenueData ?? [])->pluck('revenue')->toArray()),
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderColor: 'rgb(255, 255, 255)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            callback: function(value) {
+                                return '$' + Number(value).toLocaleString();
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.2)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.8)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.2)'
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     // Performance Distribution Chart
-    const perfCtx = document.getElementById('chart-performance').getContext('2d');
-    const performanceData = {!! json_encode($performanceDistribution) !!};
-    
-    new Chart(perfCtx, {
-        type: 'doughnut',
-        data: {
-            labels: Object.keys(performanceData),
-            datasets: [{
-                data: Object.values(performanceData),
-                backgroundColor: [
-                    'rgba(76, 175, 80, 0.8)',   // Excellent - Green
-                    'rgba(33, 150, 243, 0.8)',  // Good - Blue
-                    'rgba(255, 193, 7, 0.8)',   // Average - Yellow
-                    'rgba(255, 152, 0, 0.8)',   // Below Average - Orange
-                    'rgba(244, 67, 54, 0.8)'    // Poor - Red
-                ],
-                borderColor: [
-                    'rgba(76, 175, 80, 1)',
-                    'rgba(33, 150, 243, 1)',
-                    'rgba(255, 193, 7, 1)',
-                    'rgba(255, 152, 0, 1)',
-                    'rgba(244, 67, 54, 1)'
-                ],
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
+    const perfCtx = document.getElementById('chart-performance');
+    if (perfCtx) {
+        const performanceData = @json($performanceDistribution ?? []);
+        const labels = Object.keys(performanceData);
+        const data = Object.values(performanceData);
+        
+        new Chart(perfCtx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        'rgba(76, 175, 80, 0.8)',   // Excellent - Green
+                        'rgba(33, 150, 243, 0.8)',  // Good - Blue
+                        'rgba(255, 193, 7, 0.8)',   // Average - Yellow
+                        'rgba(255, 152, 0, 0.8)',   // Below Average - Orange
+                        'rgba(244, 67, 54, 0.8)'    // Poor - Red
+                    ],
+                    borderColor: [
+                        'rgba(76, 175, 80, 1)',
+                        'rgba(33, 150, 243, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(255, 152, 0, 1)',
+                        'rgba(244, 67, 54, 1)'
+                    ],
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
             },
-            cutout: '60%'
-        }
-    });
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            padding: 15,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return label + ': ' + value + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+    }
 });
 </script>
-@endpush
+@endsection
 
 @endsection

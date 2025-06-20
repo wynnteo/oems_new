@@ -75,6 +75,17 @@ Route::get('/', function () {
             'destroy' => 'courses.destroy',
         ]);
 
+        // Certificate Management
+        Route::resource('certificates', CertificateController::class)->names([
+            'index' => 'certificates.index',
+            'create' => 'certificates.create',
+            'store' => 'certificates.store',
+            'show' => 'certificates.show',
+            'edit' => 'certificates.edit',
+            'update' => 'certificates.update',
+            'destroy' => 'certificates.destroy',
+        ]);   
+
         // Student Management
         Route::controller(StudentController::class)->prefix('students')->name('students.')->group(function () {
             Route::post('/{student}/enroll', 'enroll')->name('enroll');
